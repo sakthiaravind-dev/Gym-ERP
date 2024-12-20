@@ -29,7 +29,7 @@ const MemberDetails = () => {
     id: `M${index + 1}`,
     name: `Member ${index + 1}`,
     phone: `12345${index.toString().padStart(5, "0")}`,
-    type: ["yearly", "half-yearly", "quarterly"][index % 3], 
+    type: ["yearly", "half-yearly", "quarterly", "monthly"][index % 4], 
     status: index % 2 === 0 ? "Active" : "In-Active", 
     referredBy: `Ref${index % 10 + 1}`,
     endDate: `2025-12-${(index % 31 + 1).toString().padStart(2, "0")}`,

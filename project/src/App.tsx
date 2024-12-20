@@ -5,6 +5,8 @@ import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import MemberDetails from './components/dashboard/MemberDetails'
 import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails'
+import ActiveMembers from './components/dashboard/ActiveInactive'
+import MemberAttendance from './components/dashboard/TodayAttendance'
 
 
 const App: React.FC = () => {
@@ -19,6 +21,8 @@ const App: React.FC = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/total-members" element={<MemberDetails />} />
               <Route path="/:members" element={<YearlyQuaterlyDetails />} />
+              <Route path="/members/:status" element={<ActiveMembers />} />
+              <Route path="/today/attendance" element={<MemberAttendance />} />
             </Routes>
           </main>
         </div>
