@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Clock
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -35,13 +36,14 @@ const Sidebar = () => {
       </div>
       <nav className="flex-1">
         {menuItems.map((item, index) => (
-          <div
+          <Link
+            to={item.path}
             key={index}
             className="flex flex-col items-center justify-center p-4 text-white hover:bg-[#6B206B] cursor-pointer"
           >
             <item.icon size={20} />
             <span className="text-xs mt-1">{item.label}</span>
-          </div>
+          </Link>
         ))}
       </nav>
     </div>
