@@ -17,10 +17,10 @@ export const membershipStats = [
 ];
 
 export const activityStats = [
-  { title: "MONTHLY MEMBERS", value: "421", Icon: Users, path:"/total-members" },
-  { title: "ACTIVE MEMBERS", value: "747", Icon: UserCheck, path:"/total-members" },
-  { title: "IN-ACTIVE MEMBERS", value: "1340", Icon: User, path:"/total-members" },
-  { title: "TODAY ATTENDANCE", value: "1", Icon: Clock, path:"/total-members" },
+  { title: "MONTHLY MEMBERS", value: "421", Icon: Users, path:"/monthly" },
+  { title: "ACTIVE MEMBERS", value: "747", Icon: UserCheck, path:"/members/active" },
+  { title: "IN-ACTIVE MEMBERS", value: "1340", Icon: User, path:"/members/inactive" },
+  { title: "TODAY ATTENDANCE", value: "1", Icon: Clock, path:"/today/attendance" },
 ];
 
 export const demographicStats = [
