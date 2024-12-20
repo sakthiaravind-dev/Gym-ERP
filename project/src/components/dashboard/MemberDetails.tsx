@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import StatGroup from './StatGroup';
 import { membershipStats } from '../../constants/dashboardStats';
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 
 
@@ -124,11 +125,12 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
                   <TableCell align="center">{member.referredBy}</TableCell>
                   <TableCell align="center">{member.endDate}</TableCell>
                   <TableCell align="center">
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     aria-controls={anchorEl ? "actions-menu" : undefined}
                     aria-haspopup="true"
                     onClick={handleClick}
+                    endIcon={<ArrowDropDownIcon />} 
                     >
                       Actions
                   </Button>

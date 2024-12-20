@@ -11,9 +11,9 @@ import {
 
 export const membershipStats = [
   { title: "TOTAL MEMBERS", value: "2087", Icon: Users, path:"/total-members" },
-  { title: "YEARLY MEMBERS", value: "796", Icon: Clock, path:"/total-members" },
-  { title: "HALF YEARLY MEMBERS", value: "372", Icon: UserCheck, path:"/total-members" },
-  { title: "QUARTERLY MEMBERS", value: "487", Icon: User, path:"/total-members" },
+  { title: "YEARLY MEMBERS", value: "796", Icon: Clock, path:"/yearly" },
+  { title: "HALF YEARLY MEMBERS", value: "372", Icon: UserCheck, path:"/half-yearly" },
+  { title: "QUARTERLY MEMBERS", value: "487", Icon: User, path:"/quarterly" },
 ];
 
 export const activityStats = [
