@@ -2,7 +2,7 @@ import React from 'react';
 import { Bell, BarChart2, Dumbbell, MessageCircle, User } from 'lucide-react';
 
 const iconList = [
-  { Icon: User, label: 'Profile' },
+  { Icon: User, label: 'Profile', path:'/profile'},
   { Icon: Bell, label: 'Notifications' },
   { Icon: MessageCircle, label: 'Messages' },
   { Icon: Dumbbell, label: 'Workouts' },
