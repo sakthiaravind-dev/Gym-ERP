@@ -8,7 +8,10 @@ import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails'
 import ActiveMembers from './components/dashboard/ActiveInactive'
 import MemberAttendance from './components/dashboard/TodayAttendance'
 import MemberPage from './components/dashboard/gender'
-import TransactionComponent from './components/dashboard/TransactionComponent'
+import TransactionComponent from './components/dashboard/TransactionComponent
+import ProfilePage from './components/Header1/ProfilePage';
+import AddMember from './components/Header1/AddMember';
+
 
 
 const App: React.FC = () => {
@@ -25,9 +28,13 @@ const App: React.FC = () => {
               <Route path="/:members" element={<YearlyQuaterlyDetails />} />
               <Route path="/members/:status" element={<ActiveMembers />} />
               <Route path="/today/attendance" element={<MemberAttendance />} />
+
               <Route path="/member/:gender" element={<MemberPage />} />
               <Route path="/period/:gender/:period" element={<MemberPage />} />
-              <Route path="/transaction/:period" element={<TransactionComponent />} />
+              <Route path="/transaction/:period" element={<TransactionComponent />} 
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/addmember" element={<AddMember />} />
+
             </Routes>
           </main>
         </div>

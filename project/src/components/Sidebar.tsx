@@ -30,7 +30,7 @@ const menuItems = [
 
 const Sidebar = () => {
   return (
-    <div className="w-20 min-h-screen bg-gradient-to-b from-darkRed via-darkRed/10 to-vibrantPink h-screen flex flex-col items-center py-4">
+    <div className="w-20 min-h-screen h-screen flex flex-col items-center py-4">
       <div className="mb-8">
         <h1 className="text-white font-bold text-xl">Gym+</h1>
       </div>
