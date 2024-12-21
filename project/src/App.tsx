@@ -8,6 +8,7 @@ import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails'
 import ActiveMembers from './components/dashboard/ActiveInactive'
 import MemberAttendance from './components/dashboard/TodayAttendance'
 import ProfilePage from './components/Header1/ProfilePage';
+import AddMember from './components/Header1/AddMember';
 
 
 const App: React.FC = () => {
@@ -25,6 +26,8 @@ const App: React.FC = () => {
               <Route path="/members/:status" element={<ActiveMembers />} />
               <Route path="/today/attendance" element={<MemberAttendance />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/addmember" element={<AddMember />} />
+
 
             </Routes>
           </main>
