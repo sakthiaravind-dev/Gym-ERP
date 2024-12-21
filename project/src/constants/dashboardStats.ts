@@ -24,10 +24,10 @@ export const activityStats = [
 ];
 
 export const demographicStats = [
-  { title: "MALE MEMBERS", value: "1781", Icon: UserCircle2, path:"/total-members" },
-  { title: "TRANSGENDER MEMBERS", value: "0", Icon: UserCog2, path:"/total-members" },
-  { title: "FEMALE MEMBERS", value: "245", Icon: UserCircle2, path:"/total-members" },
-  { title: "AMOUNT COLLECTED", value: "****", Icon: DollarSign, path:"/total-members" },
+  { title: "MALE MEMBERS", value: "1781", Icon: UserCircle2, path:"/member/male" },
+  { title: "TRANSGENDER MEMBERS", value: "0", Icon: UserCog2, path:"/member/transgender" },
+  { title: "FEMALE MEMBERS", value: "245", Icon: UserCircle2, path:"/member/female" },
+  { title: "AMOUNT COLLECTED", value: "****", Icon: DollarSign, path:"/transaction/all" },
 ];
 
 export const financialStats = [

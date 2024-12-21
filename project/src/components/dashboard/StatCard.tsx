@@ -10,7 +10,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, Icon, className = '' }) => {
   return (
-    <div className={`bg-white p-4 rounded-lg shadow-lg hover:shadow-xxl ${className}`}>
+    <div className={`bg-white p-4 rounded-lg shadow-lg hover:shadow-xl ${className}`}>
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-semibold text-gray-600 uppercase">{title}</h3>
