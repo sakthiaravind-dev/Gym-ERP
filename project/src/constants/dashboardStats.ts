@@ -31,8 +31,8 @@ export const demographicStats = [
 ];
 
 export const financialStats = [
-  { title: "AMOUNT SPENT", value: "****", Icon: DollarSign, path:"/total-members" },
-  { title: "TOTAL AMOUNT PENDING", value: "₹6,16,549", Icon: Users2, path:"/total-members" },
-  { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: "0", Icon: Users, path:"/total-members" },
-  { title: "MEMBER WITH ADDON / PT", value: "0", Icon: Users, path:"/total-members" },
+  { title: "AMOUNT SPENT", value: "****", Icon: DollarSign, path:"/expense" },
+  { title: "TOTAL AMOUNT PENDING", value: "₹6,16,549", Icon: Users2, path:"/pending" },
+  { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: "0", Icon: Users, path:"/followup" },
+  { title: "MEMBER WITH ADDON / PT", value: "0", Icon: Users, path:"/apt" },
 ];
