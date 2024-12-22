@@ -13,6 +13,7 @@ import ProfilePage from './components/Header1/ProfilePage';
 import AddMember from './components/Header1/AddMember';
 import AddTranscation from './components/Header1/AddTransaction';
 import AddStaff from './components/Header1/AddStaff';
+import AddLead from './components/Header1/AddLead';
 
 
 
@@ -38,6 +39,7 @@ const App: React.FC = () => {
               <Route path="/addmember" element={<AddMember />} />
               <Route path="/transaction" element={<AddTranscation />} />
               <Route path="/addstaff" element={<AddStaff />} />
+              <Route path="/addlead" element={<AddLead />} />
 
             </Routes>
           </main>

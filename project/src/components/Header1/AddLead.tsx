@@ -2,44 +2,42 @@ import React, { useState } from "react";
 
 
 
-interface TransactionData {
-  memberPack: string;
-  packAmount: string;
-  pendingDate: string;
-  pendingAmount: string;
-  discountAmount: string;
-  bloodGroup: string;
-  selectTrainer: string;
-  weight: string;
-  totalMonthPaid: string;
-  billingAmount: string;
-  registrationFee: string;
-  totalAmount: string;
-  tax: string;
-  selectDiet: string;
-  height: string;
-  emergencyPhoneNumber: string;
+interface LeadData {
+  name: string;
+  phoneNumber: string;
+  email: string;
+  dob: string;
+  gender: string;
+  occupation: string;
+  interested: string;
+  planningToJoin: string;
+  howYouKnow: string;
+  memberAddress: string;
+  comment: string;
+  status: string;
+  communicationMethod: string;
+  nextCallDate: string;
+  selectTime: string;
 }
 
-const AddTranscation: React.FC = () => {
+const AddLead: React.FC = () => {
    
-  const [transactionData, setTransactionData] = useState<TransactionData>({
-  memberPack: "",
-  packAmount: "",
-  pendingDate: "",
-  pendingAmount: "",
-  discountAmount: "",
-  bloodGroup: "",
-  selectTrainer: "",
-  weight: "",
-  totalMonthPaid: "",
-  billingAmount: "",
-  registrationFee: "",
-  totalAmount: "",
-  tax: "",
-  selectDiet: "",
-  height: "",
-  emergencyPhoneNumber: "",
+  const [leadData, setLeadData] = useState<LeadData>({
+    name: "",
+    phoneNumber: "",
+    email: "",
+    dob: "",
+    gender: "",
+    occupation: "",
+    interested: "",
+    planningToJoin: "",
+    howYouKnow: "",
+    memberAddress: "",
+    comment: "",
+    status: "",
+    communicationMethod: "",
+    nextCallDate: "",
+    selectTime: "",
   });
 
  
@@ -49,7 +47,7 @@ const AddTranscation: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target;
-    setTransactionData((prevData) => ({
+    setLeadData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -57,13 +55,13 @@ const AddTranscation: React.FC = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Transaction Data Submitted:", transactionData);
+    console.log("Transaction Data Submitted:", leadData);
     // Add logic to handle form submission (e.g., API call)
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Transaction Details</h2>
+      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>New Lead</h2>
       <form onSubmit={handleSubmit}>
         <div
           style={{
@@ -75,218 +73,223 @@ const AddTranscation: React.FC = () => {
           {/* Column 1 */}
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Pack
+              Name*
             </label>
             <input
               type="text"
-              name="memberPack"
-              value={transactionData.memberPack}
+              name="name"
+              value={leadData.name}
               onChange={handleChange}
-              placeholder="Member Pack"
+              placeholder="Enter Name"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Total Mont Paid*
+              Phone Number*
             </label>
             <input
               type="text"
-              name="totalMonthPaid"
-              value={transactionData.totalMonthPaid}
+              name="phoneNumber"
+              value={leadData.phoneNumber}
               onChange={handleChange}
-               placeholder="Total Month"
+               placeholder="Enter Phone Number"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Pack Amount*
+              Email*
             </label>
             <input
-              type="text"
-              name="packAmount"
-              value={transactionData.packAmount}
+              type="email"
+              name="email"
+              value={leadData.email}
               onChange={handleChange}
-              placeholder="Member Amount"
+              placeholder="Enter email"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Billing Amount*
+              DOB
             </label>
             <input
-              type="text"
-              name="billingAmount"
-              value={transactionData.billingAmount}
+              type="date"
+              name="dob"
+              value={leadData.dob}
               onChange={handleChange}
-              placeholder="Bill amount"
               style={inputStyle}
             />
           </div>
-
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Discount Amount*
-            </label>
-            <input
-              type="text"
-              name="discountAmount"
-              value={transactionData.discountAmount}
-              onChange={handleChange}
-              placeholder="NaN"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Registration Fee
-            </label>
-            <input
-              type="text"
-              name="registrationFee"
-              value={transactionData.registrationFee}
-              onChange={handleChange}
-              placeholder="0"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Pending Amount
-            </label>
-            <input
-              type="text"
-              name="pendingAmount"
-              value={transactionData.pendingAmount}
-              onChange={handleChange}
-              placeholder="NaN"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Select Trainer
+              Gender
             </label>
             <select
-              name="selectTrainer"
-              value={transactionData.selectTrainer}
+              name="gender"
+              value={leadData.gender}
               onChange={handleChange}
               style={inputStyle}
             >
               <option value="">-----</option>
-              <option value="Lokesh">Lokesh Raj R</option>
-              <option value="praveen">Praveen</option>
-              
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Transgender">Transgender</option>
             </select>
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Select Diet
+              Occupation
+            </label>
+            <input
+              type="text"
+              name="occupation"
+              value={leadData.occupation}
+              onChange={handleChange}
+              placeholder="Enter occupation"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Interested in
+            </label>
+            <input
+              type="text"
+              name="interested"
+              value={leadData.interested}
+              onChange={handleChange}
+              placeholder="Enter your interest"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Planning to join
             </label>
             <select
              
-              name="selectDiet"
-              value={transactionData.selectDiet}
+              name="identityDocumentType"
+              value={leadData.planningToJoin}
               onChange={handleChange}
               style={inputStyle}
             >
                  <option value="">-----</option>
-             
+              <option value="Quarterly">Quarterly</option>
+              <option value="Half">Half yearly</option>
+              <option value="2 months">2 months</option>
+              <option value="4 months">4 months</option>
+              <option value="Annual">Annual</option>
+              <option value="Black">BLACK FRIDAY</option>
             </select>
           </div>
 
+
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Total Amount
+              How did you come to know about us
             </label>
             <input
               type="text"
-              name="totalAmount"
-              value={transactionData.totalAmount}
+              name="howYouKnow"
+              value={leadData.howYouKnow}
               onChange={handleChange}
-              placeholder="NaN"
               style={inputStyle}
             />
           </div>
-
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Pending date
+              Member Address
             </label>
-            <input
-              type="date"
-              name="pendingDate"
-              value={transactionData.pendingDate}
+            <textarea
+              name="memberAddress"
+              value={leadData.memberAddress}
               onChange={handleChange}
-              placeholder="dd-mm-yyyy"
-              style={inputStyle}
+              placeholder="Enter Address"
+              style={{ ...inputStyle, height: "60px" }}
             />
           </div>
+          </div>
 
+          <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Follow-ups</h2>
+</div>
+            
+            <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Comment
+            </label>
+            <textarea
+              name="comment"
+              value={leadData.comment}
+              onChange={handleChange}
+              placeholder="Enter comment"
+              style={{ ...inputStyle, height: "60px" }}
+            />
+          </div>
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Tax(%)
+              Status*
             </label>
-            <input
-              name="tax"
-              value={transactionData.tax}
+            <select
+              name="status"
+              value={leadData.status}
               onChange={handleChange}
               style={inputStyle}
             >
+              <option value="">-----</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
               
-            </input>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Communication Method*
+            </label>
+            <select
+              name="communicationMethod"
+              value={leadData.communicationMethod}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              <option value="">-----</option>
+              <option value="Call">Call</option>
+              <option value="SMS">SMS</option>
+              
+            </select>
           </div>
 
-          <div>
+            <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Height
+              Next Call Date
             </label>
             <input
-              type="text"
-              name="height"
-              value={transactionData.height}
+              type="date"
+              name="nextCallDate"
+              value={leadData.nextCallDate}
               onChange={handleChange}
-              placeholder="Height"
               style={inputStyle}
             />
           </div>
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Weight
+              Select a time
             </label>
             <input
-              type="text"
-              name="weight"
-              value={transactionData.weight}
+              type="time"
+              name="selecttime"
+              value={leadData.selectTime}
               onChange={handleChange}
-              placeholder="Weight"
               style={inputStyle}
             />
           </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Emergency Phone Number*
-            </label>
-            <input
-              type="text"
-              name="emergencyPhoneNumber"
-              value={transactionData.emergencyPhoneNumber}
-              onChange={handleChange}
-              placeholder="Phone Number"
-              style={inputStyle}
-            />
-          </div>
-          </div>
-          
             
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <button
@@ -315,4 +318,4 @@ const inputStyle = {
   border: "1px solid #ccc",
 };
 
-export default AddTranscation;
+export default AddLead;

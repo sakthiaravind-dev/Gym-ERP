@@ -208,11 +208,11 @@ const AddMember: React.FC = () => {
               style={inputStyle}
             >
                  <option value="">-----</option>
-              <option value="Male">Aadhar card</option>
-              <option value="Female">PAN card</option>
-              <option value="Transgender">Indian Passport</option>
-              <option value="Transgender">Driving license</option>
-              <option value="Transgender">Electoral photo identity card</option>
+              <option value="Aadhar">Aadhar card</option>
+              <option value="Pan">PAN card</option>
+              <option value="Passport">Indian Passport</option>
+              <option value="License">Driving license</option>
+              <option value="Electoral">Electoral photo identity card</option>
             </select>
           </div>
 
