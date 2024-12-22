@@ -9,6 +9,11 @@ import ActiveMembers from './components/dashboard/ActiveInactive'
 import MemberAttendance from './components/dashboard/TodayAttendance'
 import MemberPage from './components/dashboard/gender'
 import TransactionComponent from './components/dashboard/TransactionComponent'
+import Expense from './components/dashboard/Expense'
+import FeePending from './components/dashboard/FeePending'
+import MembershipFollowUp from './components/dashboard/MembershipFollowUp'
+import MemberAPTDetails from './components/dashboard/MemberAPTDetails'
+import ActivePT from './components/dashboard/ActivePT'
 
 
 const App: React.FC = () => {
@@ -28,6 +33,11 @@ const App: React.FC = () => {
               <Route path="/member/:gender" element={<MemberPage />} />
               <Route path="/period/:gender/:period" element={<MemberPage />} />
               <Route path="/transaction/:period" element={<TransactionComponent />} />
+              <Route path="/expense" element={<Expense />} />
+              <Route path="/pending" element={<FeePending />} />
+              <Route path="/followup" element={<MembershipFollowUp />} />
+              <Route path="/apt" element={<MemberAPTDetails />} />
+              <Route path="/apt/:status" element={<ActivePT />} />
             </Routes>
           </main>
         </div>

@@ -1,8 +1,5 @@
 import React, { useState } from "react";
 import {
-  Grid,
-  Card,
-  CardContent,
   Typography,
   Table,
   TableBody,
@@ -15,37 +12,52 @@ import {
   MenuItem,
   TextField,
   Button,
+  Box,
   TablePagination,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useParams } from "react-router-dom";
+import { Users } from "lucide-react";
+import StatGroup from './StatGroup';
 
-// Mock member data
+
+const cardConfig = [
+    { title: "ACTIVE PT MEMBERS", value: "0", Icon: Users, path: "/apt/active" },
+    { title: "IN-ACTIVE PT MEMBERS", value: "30", Icon: Users, path: "/apt/inactive" },
+  ];
+
 const mockMemberData = Array.from({ length: 50 }, (_, index) => ({
     id: `M${index + 1}`,
     name: `Member ${index + 1}`,
     phoneNumber: `12345${index.toString().padStart(5, "0")}`,
-    type: ["Yearly", "Monthly", "Quarterly"][index % 3],
-    referredBy: `Referrer ${index % 10 + 1}`,
+    pack: ["annual", "half-yearly", "monthly", "quarterly"][index % 4],
     status: index % 2 === 0 ? "Active" : "Inactive",
-    comment: "", 
-    followUpStatus: "", 
+    type: ["Yearly", "half-yearly", "monthly", "quarterly"][index % 4],
+    endDate: `2025-12-${(index % 31 + 1).toString().padStart(2, "0")}`,
   }));
   
 
-const tableHeaders = [
-  "MEMBER ID",
-  "MEMBER NAME",
-  "PHONE NUMBER",
-  "MEMBER TYPE",
-  "REFERRED BY",
-  "STATUS",
-  "COMMENT",
-  "FOLLOW-UP STATUS",
-  "ACTIONS",
-];
+  const tableHeaders = [
+    "MEMBER ID",
+    "MEMBER NAME",
+    "MEMBER PHONE NUMBER",
+    "MEMBER PACK",
+    "MEMBER TYPE",
+    "PT EXP DATE",
+    "ACTIONS",
+  ];
+  
+  const pttableHeaders = [
+      "MEMBER ID",
+      "MEMBER NAME",
+      "MEMBER PHONE NUMBER",
+      "MEMBER PACk",
+      "MEMBER TYPE",
+      "MEMBER STATUS",
+      "ACTIONS",
+    ];
 
-const ActiveMembers = () => {
+const ActivePT = () => {
   const { status } = useParams<{ status: string }>();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -96,18 +108,7 @@ const ActiveMembers = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <div className="w-1/4">
-      <Grid item xs={6} sx={{marginBottom: '20px'}}>
-        <Card>
-          <CardContent>
-            <Typography variant="h4">
-              {filteredMembers.length}
-            </Typography>
-            <Typography>{status == 'active'? 'Active': 'In-Active'} Members</Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-      </div>
+      <StatGroup stats={cardConfig} />
 
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
         <Typography
@@ -118,7 +119,7 @@ const ActiveMembers = () => {
             fontWeight: "bold",
           }}
         >
-          {status == 'active'? 'Active': 'In-Active'} Member Details
+          {status == 'active'? 'ACTIVE': 'IN-ACTIVE'} MEMBER WITH ADDON/PERSONAL TRAINING DETAILS
         </Typography>
 
         <div className="w-1/4">
@@ -152,13 +153,11 @@ const ActiveMembers = () => {
                 paginatedMembers.map((member, index) => (
                   <TableRow key={index}>
                     <TableCell align="center">{member.id}</TableCell>
-                    <TableCell align="center">{member.name}</TableCell>
-                    <TableCell align="center">{member.phoneNumber}</TableCell>
-                    <TableCell align="center">{member.type}</TableCell>
-                    <TableCell align="center">{member.referredBy}</TableCell>
-                    <TableCell align="center">{member.status}</TableCell>
-                    <TableCell align="center">{member.comment}</TableCell>
-                    <TableCell align="center">{member.followUpStatus}</TableCell>
+                  <TableCell align="center">{member.name}</TableCell>
+                  <TableCell align="center">{member.phoneNumber}</TableCell>
+                  <TableCell align="center">{member.pack}</TableCell>
+                  <TableCell align="center">{member.type}</TableCell>
+                  <TableCell align="center">{member.endDate}</TableCell>
                     <TableCell align="center">
                       <Button
                         variant="contained"
@@ -206,8 +205,37 @@ const ActiveMembers = () => {
           onRowsPerPageChange={handleRowsPerPageChange}
         />
       </div>
+
+      <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
+      <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
+      Personal Training Going To End
+      </Typography>
+
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              {pttableHeaders.map((header, index) => (
+                <TableCell key={index} align="center" sx={{backgroundColor: '#F7EEF9', fontWeight: '700'}}>
+                  {header}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+          </TableBody>
+        </Table>
+        
+      </TableContainer>
+      <Box sx={{ marginTop: 3, display: "flex", gap: 1 }}>
+      <Button variant="contained" color="primary" sx={{}}>
+            Export Data
+        </Button>
+        </Box>
+      </div>
     </div>
   );
 };
 
-export default ActiveMembers;
+export default ActivePT;
