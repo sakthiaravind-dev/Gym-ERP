@@ -22,13 +22,17 @@ import AddLead from './components/Header1/AddLead';
 import RenewalForm from './components/Header1/RenewalForm';
 import Renewal from './components/Header1/Renewal';
 import TaxCalculator from './components/Header1/TaxCalculator';
+import SupplementBill from './components/Header1/SupplementBill';
+
 
 
 const App: React.FC = () => {
   return (
     <Router>
+      
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
+        
         <div className="flex-1">
           <Header />
           <main className="p-6">
@@ -54,6 +58,7 @@ const App: React.FC = () => {
               <Route path="/renewal" element={<Renewal />} />
               <Route path="/renewalform" element={<RenewalForm />} />
               <Route path="/taxcalculator" element={<TaxCalculator />} />
+              <Route path="/supplementbill" element={<SupplementBill />} />
             </Routes>
           </main>
         </div>

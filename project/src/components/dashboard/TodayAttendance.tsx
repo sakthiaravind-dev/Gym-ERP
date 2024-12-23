@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 
-const MemberAttendance = () => {
+const MemberAttendance: React.FC = () => {
   const [id, setId] = useState("");
   const handleFilter = () => {
     console.log("Filter clicked!");
@@ -138,7 +138,7 @@ const MemberAttendance = () => {
                     <TableCell>{row.daysLeft}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="primary" size="small">
-                        Edit
+                        Action
                       </Button>
                     </TableCell>
                   </TableRow>
