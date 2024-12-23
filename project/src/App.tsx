@@ -3,17 +3,17 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
-import MemberDetails from './components/dashboard/MemberDetails'
-import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails'
-import ActiveMembers from './components/dashboard/ActiveInactive'
-import MemberAttendance from './components/dashboard/TodayAttendance'
-import MemberPage from './components/dashboard/gender'
-import TransactionComponent from './components/dashboard/TransactionComponent'
-import Expense from './components/dashboard/Expense'
-import FeePending from './components/dashboard/FeePending'
-import MembershipFollowUp from './components/dashboard/MembershipFollowUp'
-import MemberAPTDetails from './components/dashboard/MemberAPTDetails'
-import ActivePT from './components/dashboard/ActivePT'
+import MemberDetails from './components/dashboard/MemberDetails';
+import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails';
+import ActiveMembers from './components/dashboard/ActiveInactive';
+import MemberAttendance from './components/dashboard/TodayAttendance';
+import MemberPage from './components/dashboard/gender';
+import TransactionComponent from './components/dashboard/TransactionComponent';
+import Expense from './components/dashboard/Expense';
+import FeePending from './components/dashboard/FeePending';
+import MembershipFollowUp from './components/dashboard/MembershipFollowUp';
+import MemberAPTDetails from './components/dashboard/MemberAPTDetails';
+import ActivePT from './components/dashboard/ActivePT';
 import ProfilePage from './components/Header1/ProfilePage';
 import AddMember from './components/Header1/AddMember';
 import AddTranscation from './components/Header1/AddTransaction';
@@ -22,7 +22,6 @@ import AddLead from './components/Header1/AddLead';
 import RenewalForm from './components/Header1/RenewalForm';
 import Renewal from './components/Header1/Renewal';
 import TaxCalculator from './components/Header1/TaxCalculator';
-
 
 const App: React.FC = () => {
   return (
