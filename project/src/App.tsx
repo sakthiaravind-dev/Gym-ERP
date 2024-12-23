@@ -19,6 +19,9 @@ import AddMember from './components/Header1/AddMember';
 import AddTranscation from './components/Header1/AddTransaction';
 import AddStaff from './components/Header1/AddStaff';
 import AddLead from './components/Header1/AddLead';
+import RenewalForm from './components/Header1/RenewalForm';
+import Renewal from './components/Header1/Renewal';
+import TaxCalculator from './components/Header1/TaxCalculator';
 
 
 const App: React.FC = () => {
@@ -48,6 +51,9 @@ const App: React.FC = () => {
               <Route path="/transaction" element={<AddTranscation />} />
               <Route path="/addstaff" element={<AddStaff />} />
               <Route path="/addlead" element={<AddLead />} />
+              <Route path="/renewal" element={<Renewal />} />
+              <Route path="/renewalform" element={<RenewalForm />} />
+              <Route path="/taxcalculator" element={<TaxCalculator />} />
             </Routes>
           </main>
         </div>
