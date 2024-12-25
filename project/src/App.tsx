@@ -23,6 +23,10 @@ import RenewalForm from './components/Header1/RenewalForm';
 import Renewal from './components/Header1/Renewal';
 import TaxCalculator from './components/Header1/TaxCalculator';
 import SupplementBill from './components/Header1/SupplementBill';
+import BillData from './components/Header1/AddBill';
+import ExpenseData from './components/Header1/AddExpense';
+import DietDetailsPage from './components/Header1/DietDetails';
+
 
 
 const App: React.FC = () => {
@@ -58,6 +62,9 @@ const App: React.FC = () => {
               <Route path="/renewalform" element={<RenewalForm />} />
               <Route path="/taxcalculator" element={<TaxCalculator />} />
               <Route path="/supplementbill" element={<SupplementBill />} />
+              <Route path="/addbill" element={<BillData />} />
+              <Route path="/addexpense" element={<ExpenseData />} />
+              <Route path="/dietdetails" element={<DietDetailsPage />} />
             </Routes>
           </main>
         </div>
