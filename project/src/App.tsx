@@ -31,7 +31,10 @@ import SupplementBill from './components/Header1/SupplementBill';
 import BillData from './components/Header1/AddBill';
 import ExpenseData from './components/Header1/AddExpense';
 import DietDetailsPage from './components/Header1/DietDetails';
-
+import CurrentPackage from './components/Header1/CurrentPackage';
+import AddPackage from './components/Header1/AddPackage';
+import AddEvent from './components/Header1/AddEvent';
+import AddOffer from './components/Header1/AddOffer';
 
 
 const App: React.FC = () => {
@@ -75,6 +78,10 @@ const App: React.FC = () => {
               <Route path="/dietdetails" element={<DietDetailsPage />} />
               <Route path="/members" element={<Members />} />
               <Route path="/staff" element={<StaffDetails />} />
+              <Route path="/currentpackage" element={<CurrentPackage />} />
+              <Route path="/addpackage" element={<AddPackage />} />
+              <Route path="/addevent" element={<AddEvent />} />
+              <Route path="/addoffer" element={<AddOffer />} />
             </Routes>
           </main>
         </div>
