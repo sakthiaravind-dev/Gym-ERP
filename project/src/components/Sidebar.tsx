@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const menuItems = [
+const menuItems =
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },
   { icon: LineChart, label: 'Reports', path: '/reports' },
@@ -27,7 +27,7 @@ const menuItems = [
   { icon: Settings, label: 'Admin', path: '/admin' },
   { icon: UserPlus, label: 'Leads', path: '/leads' },
   { icon: ClipboardList, label: 'Attendance', path: '/attendance' },
-  { icon: Clock, label: 'Employee', path: '/employee' },
+  { icon: Clock, label: 'Employee', path: '/employee' }
 ];
 
 const Sidebar = () => {

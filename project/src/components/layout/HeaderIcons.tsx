@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Bell, BarChart2, Dumbbell, MessageCircle, User } from 'lucide-react';
 
 const iconList = [
-  { Icon: User, label: 'Profile', path:'/profile'},
+  { Icon: User, label: 'Profile', path: '/profile' },
   { Icon: Bell, label: 'Notifications' },
   { Icon: MessageCircle, label: 'Messages' },
   { Icon: Dumbbell, label: 'Workouts' },
@@ -12,14 +13,10 @@ const iconList = [
 const HeaderIcons: React.FC = () => {
   return (
     <div className="flex items-center space-x-4">
-      {iconList.map(({ Icon, label }, index) => (
-        <button
-          key={index}
-          className="p-2 hover:bg-gray-100 rounded-full"
-          title={label}
-        >
+      {iconList.map(({ Icon, label, path }, index) => (
+        <Link to={path || '#'} key={index} className="p-2 hover:bg-gray-100 rounded-full" title={label}>
           <Icon size={20} className="text-purple-700" />
-        </button>
+        </Link>
       ))}
     </div>
   );
