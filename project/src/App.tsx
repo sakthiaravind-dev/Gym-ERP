@@ -48,6 +48,11 @@ const App: React.FC = () => {
               <Route path="/absent" element={<AbsentDetails />} />
               <Route path="/renewal" element={<MembershipRenewal />} />
               <Route path="/pt/pending" element={<PTFeePending />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/addmember" element={<AddMember />} />
+              <Route path="/transaction" element={<AddTranscation />} />
+              <Route path="/addstaff" element={<AddStaff />} />
+              <Route path="/addlead" element={<AddLead />} />
             </Routes>
           </main>
         </div>
