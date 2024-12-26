@@ -8,39 +8,44 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Menu,
+  MenuItem,
   TablePagination,
   TextField,
   Paper,
   Button,
 } from "@mui/material";
-import { Users } from "lucide-react";
-import StatGroup from "./StatGroup";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
-
-const cardConfig = [
-    { title: "TOTAL AMOUNT", value: "0", Icon: Users, path: "/expense" },
-    { title: "TOTAL AMOUNT SPENT THIS YEAR", value: "0", Icon: Users, path: "/expense" },
-    { title: "AMOUNT SPENT THIS MONTH", value: "0", Icon: Users, path: "/expense" },
-    { title: "TOTAL AMOUNT SPENT TODAY", value: "0", Icon: Users, path: "/expense" },
-  ];
-
-const Expense = () => {
-  const tableRows = Array.from({ length: 0 }, (_, index) => ({
+const AbsentDetails = () => {
+  const tableRows = Array.from({ length: 10 }, (_, index) => ({
     id: `${index + 1}`,
-    item: `Item ${index + 1}`,
-    date: `2025-12-${(index % 31 + 1).toString().padStart(2, "0")}`,
-    description: `Description ${index + 1}`,
-    amount: `${(index + 1) * 100}`,
-    receipt: `Receipt ${index + 1}`,
+    name: `Member ${index + 1}`,
+    phoneNumber: `12345${index.toString().padStart(5, "0")}`,
   }));
 
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleAction = (action: string) => {
+        console.log(`${action} clicked`);
+        setAnchorEl(null); // Close menu after action
+      };
+
+      const handleClose = () => {
+        setAnchorEl(null);
+      };
+  
 
   // Filter rows based on search text
   const filteredRows = tableRows.filter((row) =>
-    row.item.toLowerCase().includes(searchText.toLowerCase())
+    row.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   // Paginated rows
@@ -65,19 +70,7 @@ const Expense = () => {
         <Button variant="contained" color="primary" >
           Filter
         </Button>
-        <Button variant="contained" color="primary">
-          Upcoming Service
-        </Button>
-        <Button variant="contained" color="primary">
-          Export Data
-        </Button>
-        <Button variant="contained" color="primary">
-          Add Expense
-        </Button>
       </Box>
-      <div>
-        <StatGroup stats={cardConfig} />
-      </div>
       {/* Header */}
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
       <Typography
@@ -85,7 +78,7 @@ const Expense = () => {
         gutterBottom
         style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}
       >
-        Expense Details
+        Continuous Absent Details
       </Typography>
 
       {/* Search Field */}
@@ -104,28 +97,30 @@ const Expense = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
-              <TableCell>ID</TableCell>
-              <TableCell>Item</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Receipt</TableCell>
+            <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'  }}>
+                <TableCell>SNO</TableCell>
+              <TableCell>MEMBER ID</TableCell>
+              <TableCell>MEMBER NAME</TableCell>
+              <TableCell>PHONE NUMBER</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedRows.map((row) => (
+            {paginatedRows.map((row, index) => (
               <TableRow key={row.id}>
+                <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell>{row.id}</TableCell>
-                <TableCell>{row.item}</TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>{row.description}</TableCell>
-                <TableCell>{row.amount}</TableCell>
-                <TableCell>{row.receipt}</TableCell>
+                <TableCell>{row.name}</TableCell>
+                <TableCell>{row.phoneNumber}</TableCell>
                 <TableCell>
-                  <Button variant="contained" color="primary">
-                    Actions
+                <Button
+                    variant="contained"
+                    aria-controls={anchorEl ? "actions-menu" : undefined}
+                    aria-haspopup="true"
+                    onClick={handleClick}
+                    endIcon={<ArrowDropDownIcon />} 
+                    >
+                      Actions
                   </Button>
                 </TableCell>
               </TableRow>
@@ -133,6 +128,15 @@ const Expense = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Menu
+          id="actions-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={() => handleAction("View")}>View</MenuItem>
+          <MenuItem onClick={() => handleAction("sent-message")}>Sent Messange</MenuItem>
+        </Menu>
 
       {/* Pagination */}
       <TablePagination
@@ -148,4 +152,4 @@ const Expense = () => {
   );
 };
 
-export default Expense;
+export default AbsentDetails;

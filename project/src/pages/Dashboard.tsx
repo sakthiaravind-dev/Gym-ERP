@@ -5,7 +5,8 @@ import {
   membershipStats, 
   activityStats, 
   demographicStats, 
-  financialStats 
+  financialStats, 
+  pendingStats
 } from '../constants/dashboardStats';
 
 const Dashboard: React.FC = () => {
@@ -15,6 +16,7 @@ const Dashboard: React.FC = () => {
       <StatGroup stats={activityStats} />
       <StatGroup stats={demographicStats} />
       <StatGroup stats={financialStats} />
+      <StatGroup stats={pendingStats} />
       <FollowUpTask />
     </>
   );

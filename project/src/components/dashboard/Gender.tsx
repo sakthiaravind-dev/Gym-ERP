@@ -98,7 +98,7 @@ const MemberPage = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+              <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
                 <TableCell>SNO</TableCell>
                 <TableCell>MEMBER ID</TableCell>
                 <TableCell>MEMBER NAME</TableCell>

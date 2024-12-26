@@ -36,3 +36,9 @@ export const financialStats = [
   { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: "0", Icon: Users, path:"/followup" },
   { title: "MEMBER WITH ADDON / PT", value: "0", Icon: Users, path:"/apt" },
 ];
+
+export const pendingStats = [
+  { title: "CONTINUOUS ABSENT", value: " ", Icon: Users, path:"/absent" },
+  { title: "TODAYS RENEWAL", value: " ", Icon: Users, path:"/renewal" },
+  { title: "PT PENDING DETAILS", value: " ", Icon: Users, path:"/pt/pending" },
+];

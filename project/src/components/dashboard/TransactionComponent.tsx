@@ -119,7 +119,7 @@ const TransactionComponent = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+              <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
                 <TableCell>SNO</TableCell>
                 <TableCell>BILL DATE</TableCell>
                 <TableCell>START DATE</TableCell>

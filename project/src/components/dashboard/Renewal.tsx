@@ -12,12 +12,8 @@ import {
   Paper,
   TextField,
 } from "@mui/material";
-import StatGroup from './StatGroup';
-import { Users } from "lucide-react";
 
-const cardConfig = [
-    { title: "TOTAL MEMBER", value: "0", Icon: Users, path: "/followup" },
-  ];
+
 
 
 const tableHeaders = [
@@ -32,7 +28,7 @@ const tableHeaders = [
   "ACTIONS",
 ];
 
-const MembershipFollowUp = () => {
+const MembershipRenewal = () => {
   return (
     <div style={{ padding: "20px" }}>
 
@@ -44,11 +40,10 @@ const MembershipFollowUp = () => {
           Hide Filter
         </Button>
       </Box>
-      <StatGroup stats={cardConfig} />
 
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
       <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
-       Membership Follow-Up
+       Membership Going to end
       </Typography>
 
       <div className="w-1/4">
@@ -86,4 +81,4 @@ const MembershipFollowUp = () => {
   );
 };
 
-export default MembershipFollowUp;
+export default MembershipRenewal;

@@ -15,33 +15,31 @@ import {
   TablePagination,
 } from "@mui/material";
 import StatGroup from './StatGroup';
-import { membershipStats } from '../../constants/dashboardStats';
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { Users } from "lucide-react";
 
+const cardConfig = [
+    { title: "TOTAL AMOUNT PENDING", value: "₹2500", Icon: Users, path: "/pending" },
+  ];
 
-
-
-// Mock member data
 const mockMemberData = Array.from({ length: 50 }, (_, index) => ({
   id: `M${index + 1}`,
   name: `Member ${index + 1}`,
+  amount: `${(index + 1) * 100}`,
   phoneNumber: `12345${index.toString().padStart(5, "0")}`,
-  type: ["Yearly", "Monthly", "Quarterly"][index % 3],
-  referredBy: `Referrer ${index % 10 + 1}`,
-  endDate: `2025-12-${(index % 31 + 1).toString().padStart(2, "0")}`,
+  expDate: `2025-12-${(index % 31 + 1).toString().padStart(2, "0")}`,
 }));
 
 const tableHeaders = [
   "MEMBER ID",
   "MEMBER NAME",
+  "PENDING AMOUNT",
   "MEMBER PHONE NUMBER",
-  "MEMBER TYPE",
-  "REFERRED BY",
-  "END ON",
+  "PENDING EXP DATE",
   "ACTIONS",
 ];
 
-const MemberDetails = () => {
+const PTFeePending = () => {
   const [memberData] = useState(mockMemberData); 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0); 
@@ -65,7 +63,7 @@ const MemberDetails = () => {
   );
   const handleAction = (action: string) => {
     console.log(`${action} clicked`);
-    setAnchorEl(null); // Close menu after action
+    setAnchorEl(null); 
   };
 
 const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -85,11 +83,11 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
 
   return (
     <div style={{ padding: "20px" }}>
-      <StatGroup stats={membershipStats} />
+      <StatGroup stats={cardConfig} />
 
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
       <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
-        Member Details
+       Fee Pending Details
       </Typography>
 
       <div className="w-1/4">
@@ -120,10 +118,9 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
                 <TableRow key={index}>
                   <TableCell align="center">{member.id}</TableCell>
                   <TableCell align="center">{member.name}</TableCell>
+                  <TableCell align="center">{member.amount}</TableCell>
                   <TableCell align="center">{member.phoneNumber}</TableCell>
-                  <TableCell align="center">{member.type}</TableCell>
-                  <TableCell align="center">{member.referredBy}</TableCell>
-                  <TableCell align="center">{member.endDate}</TableCell>
+                  <TableCell align="center">{member.expDate}</TableCell>
                   <TableCell align="center">
                   <Button
                     variant="contained"
@@ -153,12 +150,9 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={() => handleAction("Pay Bill")}>Pay Bill</MenuItem>
+        <MenuItem onClick={() => handleAction("Pay Bill")}>Pay Pendings</MenuItem>
         <MenuItem onClick={() => handleAction("View")}>View</MenuItem>
-        <MenuItem onClick={() => handleAction("Edit")}>Edit</MenuItem>
         <MenuItem onClick={() => handleAction("Delete")}>Delete</MenuItem>
-        <MenuItem onClick={() => handleAction("Diet")}>Diet</MenuItem>
-        <MenuItem onClick={() => handleAction("Work-out")}>Work-out</MenuItem>
       </Menu>
 
       <TablePagination
@@ -175,4 +169,4 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
   );
 };
 
-export default MemberDetails;
+export default PTFeePending;

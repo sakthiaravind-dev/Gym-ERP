@@ -141,7 +141,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+              <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
                 <TableCell>SNO</TableCell>
                 <TableCell>Member ID</TableCell>
                 <TableCell>Member Name</TableCell>
