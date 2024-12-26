@@ -14,6 +14,11 @@ import FeePending from './components/dashboard/FeePending'
 import MembershipFollowUp from './components/dashboard/MembershipFollowUp'
 import MemberAPTDetails from './components/dashboard/MemberAPTDetails'
 import ActivePT from './components/dashboard/ActivePT'
+import ProfilePage from './components/Header1/ProfilePage';
+import AddMember from './components/Header1/AddMember';
+import AddTranscation from './components/Header1/AddTransaction';
+import AddStaff from './components/Header1/AddStaff';
+import AddLead from './components/Header1/AddLead';
 import AbsentDetails from './components/dashboard/AbsentDetails';
 import MembershipRenewal from './components/dashboard/Renewal';
 import PTFeePending from './components/dashboard/PTFeeDetails';

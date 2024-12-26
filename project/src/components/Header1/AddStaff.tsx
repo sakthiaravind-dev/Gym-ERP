@@ -2,38 +2,47 @@ import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 
-interface MemberData {
-  memberId: string;
-  memberName: string;
-  memberDOB: string;
-  memberEmail: string;
-  memberPhoneNumber: string;
-  memberAddress: string;
+interface StaffData {
+  dateOfJoining: string;
+  employeeID: string;
+  employeeDOB: string;
+  employeeEmail: string;
+  employeePhoneNumber: string;
+  employeeAddress: string;
   gender: string;
-  paymentMode: string;
+  employeeName: string;
+  employeeBloodGroup: string,
+  employeeFatherName: string,
+  employeeMotherName: string,
+  employeePrimarySkill: string,
+  branch: string,
+  employeeMaritalStatus: string,
   documentIdNumber: string;
   identityDocumentType: string;
-  referredBy: string;
-  memberJoiningDate: string;
-  billDate: string;
+  designation: string,
+  
 }
 
-const AddMember: React.FC = () => {
+const AddStaff: React.FC = () => {
    
-  const [memberData, setMemberData] = useState<MemberData>({
-    memberId: "",
-    memberName: "",
-    memberDOB: "",
-    memberEmail: "",
-    memberPhoneNumber: "",
-    memberAddress: "",
+  const [staffData, setStaffData] = useState<StaffData>({
+    dateOfJoining: "",
+    employeeID: "",
+    employeeDOB: "",
+    employeeEmail: "",
+    employeePhoneNumber: "",
+    employeeAddress: "",
     gender: "",
-    paymentMode: "",
+    employeeName: "",
+    employeeBloodGroup: "",
+    employeeFatherName: "",
+    employeeMotherName: "",
+    employeePrimarySkill: "",
+    branch: "",
+    employeeMaritalStatus: "",
     documentIdNumber: "",
     identityDocumentType: "",
-    referredBy: "",
-    memberJoiningDate: "",
-    billDate: "",
+    designation: "",
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -60,7 +69,7 @@ const AddMember: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target;
-    setMemberData((prevData) => ({
+    setStaffData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -68,13 +77,13 @@ const AddMember: React.FC = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Member Data Submitted:", memberData);
+    console.log("Member Data Submitted:", staffData);
     // Add logic to handle form submission (e.g., API call)
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Member Details</h2>
+      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Employee</h2>
       <form onSubmit={handleSubmit}>
         <div
           style={{
@@ -86,95 +95,98 @@ const AddMember: React.FC = () => {
           {/* Column 1 */}
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member ID
-            </label>
-            <input
-              type="text"
-              name="memberId"
-              value={memberData.memberId}
-              onChange={handleChange}
-              placeholder="Member ID"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Bill Date*
+              Date of joining*
             </label>
             <input
               type="date"
-              name="billDate"
-              value={memberData.billDate}
+              name="dateOfJoining"
+              value={staffData.dateOfJoining}
               onChange={handleChange}
+              placeholder="dd-mm-yyyy"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Name*
+              Employee ID*
             </label>
             <input
               type="text"
-              name="memberName"
-              value={memberData.memberName}
+              name="employeeID"
+              value={staffData.employeeID}
               onChange={handleChange}
-              placeholder="Member Name"
+              placeholder="Employee ID"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Joining Date*
-            </label>
-            <input
-              type="date"
-              name="memberJoiningDate"
-              value={memberData.memberJoiningDate}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member DOB*
-            </label>
-            <input
-              type="date"
-              name="memberDOB"
-              value={memberData.memberDOB}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Phone Number*
+              Employee Name*
             </label>
             <input
               type="text"
-              name="memberPhoneNumber"
-              value={memberData.memberPhoneNumber}
+              name="employeeName"
+              value={staffData.employeeName}
               onChange={handleChange}
-              placeholder="Member Phone Number"
+              placeholder="Employee Name"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Blood Group
+            </label>
+            <input
+              type="text"
+              name="employeeBloodGroup"
+              value={staffData.employeeBloodGroup}
+              onChange={handleChange}
+              placeholder="Employee Blood Group"
+              style={inputStyle}
+            />
+          </div>
+
+          
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee DOB*
+            </label>
+            <input
+              type="date"
+              name="employeeDOB"
+              value={staffData.employeeDOB}
+              onChange={handleChange}
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Email
+              Employee Phone Number*
+            </label>
+            <input
+              type="text"
+              name="employeePhoneNumber"
+              value={staffData.employeePhoneNumber}
+              onChange={handleChange}
+              placeholder="Employee Phone Number"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Email
             </label>
             <input
               type="email"
-              name="memberEmail"
-              value={memberData.memberEmail}
+              name="employeeEmail"
+              value={staffData.employeeEmail}
               onChange={handleChange}
-              placeholder="Member email"
+              placeholder="Employee email"
               style={inputStyle}
             />
           </div>
@@ -185,14 +197,30 @@ const AddMember: React.FC = () => {
             </label>
             <select
               name="gender"
-              value={memberData.gender}
+              value={staffData.gender}
               onChange={handleChange}
               style={inputStyle}
             >
               <option value="">-----</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Transgender">Transgender</option>
+              
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Branch
+            </label>
+            <select
+              name="branch"
+              value={staffData.branch}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              <option value="">-----</option>
+              <option value="Focus7">Focus7 fitness and Sports club </option>
+              
+              
             </select>
           </div>
 
@@ -203,7 +231,7 @@ const AddMember: React.FC = () => {
             <select
              
               name="identityDocumentType"
-              value={memberData.identityDocumentType}
+              value={staffData.identityDocumentType}
               onChange={handleChange}
               style={inputStyle}
             >
@@ -223,12 +251,89 @@ const AddMember: React.FC = () => {
             <input
               type="text"
               name="documentIdNumber"
-              value={memberData.documentIdNumber}
+              value={staffData.documentIdNumber}
               onChange={handleChange}
               placeholder="document ID Number"
               style={inputStyle}
             />
           </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Father Name
+            </label>
+            <input
+              type="text"
+              name="employeeFatherName"
+              value={staffData.employeeFatherName}
+              onChange={handleChange}
+              placeholder="Employee Father Name"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Mother Name
+            </label>
+            <input
+              type="text"
+              name="employeeMotherName"
+              value={staffData.employeeMotherName}
+              onChange={handleChange}
+              placeholder="Employee Mother Name"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Primary Skill/compentency
+            </label>
+            <input
+              type="text"
+              name="employeePrimarySkill"
+              value={staffData.employeePrimarySkill}
+              onChange={handleChange}
+              placeholder="Employee Skill"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Employee Marital Status
+            </label>
+            <select
+             
+              name="employeeMaritalStatus"
+              value={staffData.employeeMaritalStatus}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+                 <option value="">-----</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Designation
+            </label>
+            <select
+             
+              name="designation"
+              value={staffData.designation}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+                 <option value="">-----</option>
+              <option value="Aadhar">Senior Trainer</option>
+              <option value="Pan">Trainer</option>
+              <option value="Passport">Substitute</option>
+              <option value="License">Administator</option>
+              
+            </select>
+          </div>
+
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
@@ -236,51 +341,20 @@ const AddMember: React.FC = () => {
             </label>
             <textarea
               name="memberAddress"
-              value={memberData.memberAddress}
+              value={staffData.employeeAddress}
               onChange={handleChange}
               placeholder="Enter Address"
               style={{ ...inputStyle, height: "60px" }}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Payment Mode*
-            </label>
-            <select
-              name="paymentMode"
-              value={memberData.paymentMode}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="Cash">Cash</option>
-              <option value="Credit">Card</option>
-              <option value="POS">POS</option>
-              <option value="Google pay">Google pay</option>
-              <option value="Paytm">Paytm</option>
-              <option value="Amazon pay">Amazon pay</option>
-              <option value="Netbanking">Netbanking</option>
-            </select>
-          </div>
+          
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Referred By
-            </label>
-            <input
-              type="text"
-              name="referredBy"
-              value={memberData.referredBy}
-              onChange={handleChange}
-              placeholder="Referred By"
-              style={inputStyle}
-            />
-          </div>
+          
           
             <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Select Image
+              Select Image to upload
             </label>
 
           <div
@@ -334,7 +408,7 @@ const AddMember: React.FC = () => {
               cursor: "pointer",
             }}
           >
-            Proceed
+            Add Employee to list
           </button>
         </div>
       </form>
@@ -349,4 +423,4 @@ const inputStyle = {
   border: "1px solid #ccc",
 };
 
-export default AddMember;
+export default AddStaff;
