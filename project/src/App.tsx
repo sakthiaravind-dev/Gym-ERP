@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
+import StaffDetails from './pages/Staff';
+import Members from './pages/Members';
 import MemberDetails from './components/dashboard/MemberDetails';
 import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails';
 import ActiveMembers from './components/dashboard/ActiveInactive';
@@ -31,12 +33,12 @@ import ExpenseData from './components/Header1/AddExpense';
 import DietDetailsPage from './components/Header1/DietDetails';
 
 
+
 const App: React.FC = () => {
   return (
     <Router>
       <div className="flex min-h-screen bg-[#F1F7F8]">
       
-      <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         
         <div className="flex-1">
@@ -71,6 +73,8 @@ const App: React.FC = () => {
               <Route path="/addbill" element={<BillData />} />
               <Route path="/addexpense" element={<ExpenseData />} />
               <Route path="/dietdetails" element={<DietDetailsPage />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/staff" element={<StaffDetails />} />
             </Routes>
           </main>
         </div>

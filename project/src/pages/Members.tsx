@@ -5,6 +5,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  Box,
   TableHead,
   TableRow,
   Paper,
@@ -14,8 +15,6 @@ import {
   Button,
   TablePagination,
 } from "@mui/material";
-import StatGroup from './StatGroup';
-import { membershipStats } from '../../constants/dashboardStats';
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 
@@ -41,7 +40,7 @@ const tableHeaders = [
   "ACTIONS",
 ];
 
-const MemberDetails = () => {
+const Members = () => {
   const [memberData] = useState(mockMemberData); 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0); 
@@ -85,8 +84,14 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
 
   return (
     <div style={{ padding: "20px" }}>
-      <StatGroup stats={membershipStats} />
-
+        <Box sx={{ marginBottom: 3, display: "flex", gap: 1 }}>
+        <Button variant="contained" color="primary" >
+          Filter
+        </Button>
+        <Button variant="contained" color="primary">
+          Export Data
+        </Button>
+      </Box>
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
       <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
         Member Details
@@ -175,4 +180,4 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
   );
 };
 
-export default MemberDetails;
+export default Members;

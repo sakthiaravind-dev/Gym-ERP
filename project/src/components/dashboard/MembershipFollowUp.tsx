@@ -65,7 +65,7 @@ const MembershipFollowUp = () => {
           <TableHead>
             <TableRow>
               {tableHeaders.map((header, index) => (
-                <TableCell key={index} align="center" sx={{backgroundColor: '#F7EEF9'}}>
+                <TableCell key={index} align="center" sx={{backgroundColor: '#F7EEF9', fontWeight: '700'  }}>
                   {header}
                 </TableCell>
               ))}

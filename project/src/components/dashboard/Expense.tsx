@@ -104,7 +104,7 @@ const Expense = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+            <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
               <TableCell>ID</TableCell>
               <TableCell>Item</TableCell>
               <TableCell>Date</TableCell>

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const menuItems =
+const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },
   { icon: LineChart, label: 'Reports', path: '/reports' },
