@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './components/layout/Sidebar';
+import Sidebar from './components/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import MemberDetails from './components/dashboard/MemberDetails'
@@ -14,12 +14,14 @@ import FeePending from './components/dashboard/FeePending'
 import MembershipFollowUp from './components/dashboard/MembershipFollowUp'
 import MemberAPTDetails from './components/dashboard/MemberAPTDetails'
 import ActivePT from './components/dashboard/ActivePT'
-
+import AbsentDetails from './components/dashboard/AbsentDetails';
+import MembershipRenewal from './components/dashboard/Renewal';
+import PTFeePending from './components/dashboard/PTFeeDetails';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-[#F1F7F8]">
         <Sidebar />
         <div className="flex-1">
           <Header />
@@ -38,6 +40,9 @@ const App: React.FC = () => {
               <Route path="/followup" element={<MembershipFollowUp />} />
               <Route path="/apt" element={<MemberAPTDetails />} />
               <Route path="/apt/:status" element={<ActivePT />} />
+              <Route path="/absent" element={<AbsentDetails />} />
+              <Route path="/renewal" element={<MembershipRenewal />} />
+              <Route path="/pt/pending" element={<PTFeePending />} />
             </Routes>
           </main>
         </div>

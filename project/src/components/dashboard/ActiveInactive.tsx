@@ -72,7 +72,7 @@ const ActiveMembers = () => {
 
   const handleAction = (action: string) => {
     console.log(`${action} clicked`);
-    setAnchorEl(null); // Close menu after action
+    setAnchorEl(null); 
   };
 
   const handlePageChange = (
