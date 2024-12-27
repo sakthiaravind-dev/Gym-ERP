@@ -56,7 +56,7 @@ const TransactionComponent = () => {
         case "today":
           return memberYear === today.getFullYear() && memberMonth === today.getMonth() && memberDay === today.getDate();
         default:
-          return true; // Show all for the "all" case
+          return true; 
       }
     });
     setFilteredMembers(filtered);
@@ -119,18 +119,18 @@ const TransactionComponent = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>
-                <TableCell>SNO</TableCell>
-                <TableCell>BILL DATE</TableCell>
-                <TableCell>START DATE</TableCell>
-                <TableCell>MEMBER ID</TableCell>
-                <TableCell>MEMBER NAME</TableCell>
-                <TableCell>MEMBER TYPE</TableCell>
-                <TableCell>MEMBER PHONE NUMBER</TableCell>
-                <TableCell>TOTAL MONTH PAID</TableCell>
-                <TableCell>TOTAL AMOUNT RECEIVED</TableCell>
-                <TableCell>PAYMENT MODE</TableCell>
-                <TableCell>RECEIVED BY</TableCell>
+              <TableRow >
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>SNO</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>BILL DATE</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>START DATE</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>MEMBER ID</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>MEMBER NAME</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>MEMBER TYPE</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>MEMBER PHONE NUMBER</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>TOTAL MONTH PAID</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>TOTAL AMOUNT RECEIVED</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>PAYMENT MODE</TableCell>
+                <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700'   }}>RECEIVED BY</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
