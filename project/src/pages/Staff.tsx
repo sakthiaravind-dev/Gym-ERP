@@ -107,7 +107,7 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
 
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
       <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
-       Fee Pending Details
+       Staff Details
       </Typography>
 
       <div className="w-1/4">

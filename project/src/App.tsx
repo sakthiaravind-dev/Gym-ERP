@@ -5,6 +5,7 @@ import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import StaffDetails from './pages/Staff';
 import Members from './pages/Members';
+import BookingDetails from './pages/Bookings';
 import MemberDetails from './components/dashboard/MemberDetails';
 import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails';
 import ActiveMembers from './components/dashboard/ActiveInactive';
@@ -47,7 +48,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/total-members" element={<MemberDetails />} />
-              <Route path="/:members" element={<YearlyQuaterlyDetails />} />
+              <Route path="/details/:members" element={<YearlyQuaterlyDetails />} />
               <Route path="/members/:status" element={<ActiveMembers />} />
               <Route path="/today/attendance" element={<MemberAttendance />} />
               <Route path="/member/:gender" element={<MemberPage />} />
@@ -59,7 +60,7 @@ const App: React.FC = () => {
               <Route path="/apt" element={<MemberAPTDetails />} />
               <Route path="/apt/:status" element={<ActivePT />} />
               <Route path="/absent" element={<AbsentDetails />} />
-              <Route path="/renewal" element={<MembershipRenewal />} />
+              <Route path="/membership-renewal" element={<MembershipRenewal />} />
               <Route path="/pt/pending" element={<PTFeePending />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/addmember" element={<AddMember />} />
@@ -74,7 +75,8 @@ const App: React.FC = () => {
               <Route path="/addexpense" element={<ExpenseData />} />
               <Route path="/dietdetails" element={<DietDetailsPage />} />
               <Route path="/members" element={<Members />} />
-              <Route path="/staff" element={<StaffDetails />} />
+              <Route path="/staff-members" element={<StaffDetails />} />
+              <Route path="/bookings" element={<BookingDetails />} />
             </Routes>
           </main>
         </div>
