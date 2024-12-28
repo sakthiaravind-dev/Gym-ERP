@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface MemberData {
   memberId: string;
@@ -19,7 +28,6 @@ interface MemberData {
 }
 
 const AddMember: React.FC = () => {
-   
   const [memberData, setMemberData] = useState<MemberData>({
     memberId: "",
     memberName: "",
@@ -38,6 +46,7 @@ const AddMember: React.FC = () => {
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
@@ -45,16 +54,16 @@ const AddMember: React.FC = () => {
       setPreviewUrl(URL.createObjectURL(file)); // Create a preview URL for the image
     }
   };
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-        'image/jpeg': ['.jpg', '.jpeg'],
-        'image/png': ['.png'],
-        'application/pdf': ['.pdf'],
-      },
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'application/pdf': ['.pdf'],
+    },
     maxFiles: 1, // Allow only one image
   });
-
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -66,10 +75,36 @@ const AddMember: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     console.log("Member Data Submitted:", memberData);
-    // Add logic to handle form submission (e.g., API call)
+
+    // Insert data into Supabase
+    const { data, error } = await supabase
+      .from('members')
+      .insert([
+        {
+          member_id: memberData.memberId,
+          member_name: memberData.memberName,
+          member_dob: memberData.memberDOB,
+          member_email: memberData.memberEmail,
+          member_phone_number: memberData.memberPhoneNumber,
+          member_address: memberData.memberAddress,
+          gender: memberData.gender,
+          payment_mode: memberData.paymentMode,
+          document_id_number: memberData.documentIdNumber,
+          identity_document_type: memberData.identityDocumentType,
+          referred_by: memberData.referredBy,
+          member_joining_date: memberData.memberJoiningDate,
+          bill_date: memberData.billDate,
+        },
+      ]);
+
+    if (error) {
+      console.error("Error inserting data:", error);
+    } else {
+      console.log("Data inserted successfully:", data);
+    }
   };
 
   return (
@@ -201,13 +236,12 @@ const AddMember: React.FC = () => {
               Identity Document Type
             </label>
             <select
-             
               name="identityDocumentType"
               value={memberData.identityDocumentType}
               onChange={handleChange}
               style={inputStyle}
             >
-                 <option value="">-----</option>
+              <option value="">-----</option>
               <option value="Aadhar">Aadhar card</option>
               <option value="Pan">PAN card</option>
               <option value="Passport">Indian Passport</option>
@@ -278,48 +312,45 @@ const AddMember: React.FC = () => {
             />
           </div>
           
-            <div>
+          <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
               Select Image
             </label>
 
-          <div
-          
-          {...getRootProps()}
-          style={{
-            border: "2px dashed #2485bd",
-            padding: "7px",
-            borderRadius: "8px",
-            textAlign: "center",
-            cursor: "pointer",
-            marginBottom: "20px",
-            width: 400,
-            height: 40
-          }}
-        >
-             
-          <input {...getInputProps()} />
-          <p style={{ margin: 0 }}>Choose File</p>
-        </div>
-        </div>
-        {previewUrl && (
-          <div style={{ marginBottom: "20px" }}>
-            <img
-              src={previewUrl}
-              alt="Selected"
+            <div
+              {...getRootProps()}
               style={{
-                maxWidth: "100%",
-                height: "auto",
+                border: "2px dashed #2485bd",
+                padding: "7px",
                 borderRadius: "8px",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                textAlign: "center",
+                cursor: "pointer",
+                marginBottom: "20px",
+                width: 400,
+                height: 40
               }}
-            />
-            <p style={{ fontSize: "14px", marginTop: "10px" }}>
-              Selected File: {selectedImage?.name}
-            </p>
+            >
+              <input {...getInputProps()} />
+              <p style={{ margin: 0 }}>Choose File</p>
+            </div>
           </div>
-        )}
-
+          {previewUrl && (
+            <div style={{ marginBottom: "20px" }}>
+              <img
+                src={previewUrl}
+                alt="Selected"
+                style={{
+                  maxWidth: "100%",
+                  height: "auto",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                }}
+              />
+              <p style={{ fontSize: "14px", marginTop: "10px" }}>
+                Selected File: {selectedImage?.name}
+              </p>
+            </div>
+          )}
         </div>
 
         <div style={{ marginTop: "20px", textAlign: "center" }}>

@@ -1,6 +1,14 @@
 import React, { useState } from "react";
+import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface LeadData {
   name: string;
@@ -21,7 +29,6 @@ interface LeadData {
 }
 
 const AddLead: React.FC = () => {
-   
   const [leadData, setLeadData] = useState<LeadData>({
     name: "",
     phoneNumber: "",
@@ -40,9 +47,6 @@ const AddLead: React.FC = () => {
     selectTime: "",
   });
 
- 
-
-
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -53,10 +57,38 @@ const AddLead: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Transaction Data Submitted:", leadData);
-    // Add logic to handle form submission (e.g., API call)
+    console.log("Lead Data Submitted:", leadData);
+
+    // Insert data into Supabase
+    const { data, error } = await supabase
+      .from('leads_followups')
+      .insert([
+        {
+          name: leadData.name,
+          phone_number: leadData.phoneNumber,
+          email: leadData.email,
+          dob: leadData.dob,
+          gender: leadData.gender,
+          occupation: leadData.occupation,
+          interested: leadData.interested,
+          planning_to_join: leadData.planningToJoin,
+          how_you_know: leadData.howYouKnow,
+          member_address: leadData.memberAddress,
+          comment: leadData.comment,
+          status: leadData.status,
+          communication_method: leadData.communicationMethod,
+          next_call_date: leadData.nextCallDate,
+          select_time: leadData.selectTime,
+        },
+      ]);
+
+    if (error) {
+      console.error("Error inserting data:", error);
+    } else {
+      console.log("Data inserted successfully:", data);
+    }
   };
 
   return (
@@ -94,7 +126,7 @@ const AddLead: React.FC = () => {
               name="phoneNumber"
               value={leadData.phoneNumber}
               onChange={handleChange}
-               placeholder="Enter Phone Number"
+              placeholder="Enter Phone Number"
               style={inputStyle}
             />
           </div>
@@ -174,13 +206,12 @@ const AddLead: React.FC = () => {
               Planning to join
             </label>
             <select
-             
-              name="identityDocumentType"
+              name="planningToJoin"
               value={leadData.planningToJoin}
               onChange={handleChange}
               style={inputStyle}
             >
-                 <option value="">-----</option>
+              <option value="">-----</option>
               <option value="Quarterly">Quarterly</option>
               <option value="Half">Half yearly</option>
               <option value="2 months">2 months</option>
@@ -189,7 +220,6 @@ const AddLead: React.FC = () => {
               <option value="Black">BLACK FRIDAY</option>
             </select>
           </div>
-
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
@@ -215,82 +245,80 @@ const AddLead: React.FC = () => {
               style={{ ...inputStyle, height: "60px" }}
             />
           </div>
-          </div>
+        </div>
 
-          <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Follow-ups</h2>
-</div>
-            
-            <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Comment
-            </label>
-            <textarea
-              name="comment"
-              value={leadData.comment}
-              onChange={handleChange}
-              placeholder="Enter comment"
-              style={{ ...inputStyle, height: "60px" }}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Status*
-            </label>
-            <select
-              name="status"
-              value={leadData.status}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              
-            </select>
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Communication Method*
-            </label>
-            <select
-              name="communicationMethod"
-              value={leadData.communicationMethod}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="Call">Call</option>
-              <option value="SMS">SMS</option>
-              
-            </select>
-          </div>
+        <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+          <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Follow-ups</h2>
+        </div>
 
-            <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Next Call Date
-            </label>
-            <input
-              type="date"
-              name="nextCallDate"
-              value={leadData.nextCallDate}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Select a time
-            </label>
-            <input
-              type="time"
-              name="selecttime"
-              value={leadData.selectTime}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-            
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+            Comment
+          </label>
+          <textarea
+            name="comment"
+            value={leadData.comment}
+            onChange={handleChange}
+            placeholder="Enter comment"
+            style={{ ...inputStyle, height: "60px" }}
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+            Status*
+          </label>
+          <select
+            name="status"
+            value={leadData.status}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            <option value="">-----</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+            Communication Method*
+          </label>
+          <select
+            name="communicationMethod"
+            value={leadData.communicationMethod}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            <option value="">-----</option>
+            <option value="Call">Call</option>
+            <option value="SMS">SMS</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+            Next Call Date
+          </label>
+          <input
+            type="date"
+            name="nextCallDate"
+            value={leadData.nextCallDate}
+            onChange={handleChange}
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+            Select a time
+          </label>
+          <input
+            type="time"
+            name="selectTime"
+            value={leadData.selectTime}
+            onChange={handleChange}
+            style={inputStyle}
+          />
+        </div>
+
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <button
             type="submit"
