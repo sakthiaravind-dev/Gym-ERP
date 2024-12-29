@@ -28,6 +28,7 @@ interface MemberData {
   referredBy: string;
   memberJoiningDate: string;
   billDate: string;
+  memberType: string; // Add memberType field
 }
 
 const AddMember: React.FC = () => {
@@ -45,6 +46,7 @@ const AddMember: React.FC = () => {
     referredBy: "",
     memberJoiningDate: "",
     billDate: "",
+    memberType: "", // Initialize memberType
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -118,6 +120,7 @@ const AddMember: React.FC = () => {
           referred_by: memberData.referredBy,
           member_joining_date: memberData.memberJoiningDate,
           bill_date: memberData.billDate,
+          member_type: memberData.memberType, // Include memberType
         },
       ]);
 
@@ -139,6 +142,7 @@ const AddMember: React.FC = () => {
         referredBy: "",
         memberJoiningDate: "",
         billDate: "",
+        memberType: "", // Reset memberType
       });
       setSelectedImage(null);
       setPreviewUrl(null);
@@ -349,6 +353,23 @@ const AddMember: React.FC = () => {
               placeholder="Referred By"
               style={inputStyle}
             />
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Member Type*
+            </label>
+            <select
+              name="memberType"
+              value={memberData.memberType}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              <option value="">-----</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Yearly">Yearly</option>
+            </select>
           </div>
           
           <div>

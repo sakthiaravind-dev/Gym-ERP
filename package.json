@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@types/xlsx": "^0.0.35",
+    "file-saver": "^2.0.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7"
+  }
+}
