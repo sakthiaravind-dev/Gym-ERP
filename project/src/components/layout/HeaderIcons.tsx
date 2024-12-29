@@ -29,7 +29,7 @@ const iconList = [
   { Icon: FitnessCenterIcon, label: 'Assign', subMenu: [
     { Icon: FitnessCenterIcon, label: 'Personal-Diet', path: '/addmember' },
     { Icon: FitnessCenterIcon, label: 'Common-Diet', path: '/addstaff' },
-    { Icon: FitnessCenterIcon, label: 'Workout', path: '/addlead' },
+    { Icon: FitnessCenterIcon, label: 'Workout', path: '/currentworkout' },
   ]},
   { Icon: StyleIcon, label: 'Offers & Events', subMenu: [
     { Icon: StyleIcon, label: 'Package', path: '/addpackage' },

@@ -39,6 +39,8 @@ import AddOffer from './components/Header1/AddOffer';
 import Events from './components/Header1/Event';
 import Offers from './components/Header1/Offer';
 import AddService from './components/Header1/AddService';
+import CurrentWorkout from './components/Header1/CurrentWorkout';
+import AddWorkout from './components/Header1/AddWorkout';
 
 
 const App: React.FC = () => {
@@ -90,6 +92,8 @@ const App: React.FC = () => {
               <Route path="/offer" element={<Offers />} />
               <Route path="/event" element={<Events />} />
               <Route path="/service" element={<AddService />} />
+              <Route path="/currentworkout" element={<CurrentWorkout />} />
+              <Route path="/addworkout" element={<AddWorkout />} />
             </Routes>
           </main>
         </div>
