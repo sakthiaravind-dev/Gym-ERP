@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { createClient } from '@supabase/supabase-js';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface StaffData {
   dateOfJoining: string;
@@ -11,20 +22,18 @@ interface StaffData {
   employeeAddress: string;
   gender: string;
   employeeName: string;
-  employeeBloodGroup: string,
-  employeeFatherName: string,
-  employeeMotherName: string,
-  employeePrimarySkill: string,
-  branch: string,
-  employeeMaritalStatus: string,
+  employeeBloodGroup: string;
+  employeeFatherName: string;
+  employeeMotherName: string;
+  employeePrimarySkill: string;
+  branch: string;
+  employeeMaritalStatus: string;
   documentIdNumber: string;
   identityDocumentType: string;
-  designation: string,
-  
+  designation: string;
 }
 
 const AddStaff: React.FC = () => {
-   
   const [staffData, setStaffData] = useState<StaffData>({
     dateOfJoining: "",
     employeeID: "",
@@ -47,6 +56,7 @@ const AddStaff: React.FC = () => {
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
@@ -54,16 +64,16 @@ const AddStaff: React.FC = () => {
       setPreviewUrl(URL.createObjectURL(file)); // Create a preview URL for the image
     }
   };
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-        'image/jpeg': ['.jpg', '.jpeg'],
-        'image/png': ['.png'],
-        'application/pdf': ['.pdf'],
-      },
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'application/pdf': ['.pdf'],
+    },
     maxFiles: 1, // Allow only one image
   });
-
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -75,14 +85,84 @@ const AddStaff: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Member Data Submitted:", staffData);
-    // Add logic to handle form submission (e.g., API call)
+    console.log("Staff Data Submitted:", staffData);
+
+    // Upload image to Supabase storage
+    if (selectedImage) {
+      const fileName = `staff_${staffData.employeeID}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('images')
+        .upload(fileName, selectedImage);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        return;
+      }
+
+      toast.success("Image uploaded successfully!");
+    }
+
+    // Insert data into Supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase
+      .from('employees')
+      .insert([
+        {
+          employee_id: staffData.employeeID,
+          date_of_joining: staffData.dateOfJoining,
+          employee_name: staffData.employeeName,
+          employee_dob: staffData.employeeDOB,
+          employee_email: staffData.employeeEmail,
+          employee_phone_number: staffData.employeePhoneNumber,
+          employee_address: staffData.employeeAddress,
+          gender: staffData.gender,
+          employee_blood_group: staffData.employeeBloodGroup,
+          employee_father_name: staffData.employeeFatherName,
+          employee_mother_name: staffData.employeeMotherName,
+          employee_primary_skill: staffData.employeePrimarySkill,
+          branch: staffData.branch,
+          employee_marital_status: staffData.employeeMaritalStatus,
+          document_id_number: staffData.documentIdNumber,
+          identity_document_type: staffData.identityDocumentType,
+          designation: staffData.designation,
+        },
+      ]);
+
+    if (error) {
+      toast.error("Failed to add employee: " + error.message);
+    } else {
+      toast.success("Employee added successfully!");
+      setStaffData({
+        dateOfJoining: "",
+        employeeID: "",
+        employeeDOB: "",
+        employeeEmail: "",
+        employeePhoneNumber: "",
+        employeeAddress: "",
+        gender: "",
+        employeeName: "",
+        employeeBloodGroup: "",
+        employeeFatherName: "",
+        employeeMotherName: "",
+        employeePrimarySkill: "",
+        branch: "",
+        employeeMaritalStatus: "",
+        documentIdNumber: "",
+        identityDocumentType: "",
+        designation: "",
+      });
+      setSelectedImage(null);
+      setPreviewUrl(null);
+    }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Employee</h2>
       <form onSubmit={handleSubmit}>
         <div
@@ -148,8 +228,6 @@ const AddStaff: React.FC = () => {
             />
           </div>
 
-          
-
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
               Employee DOB*
@@ -204,7 +282,6 @@ const AddStaff: React.FC = () => {
               <option value="">-----</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              
             </select>
           </div>
           <div>
@@ -219,8 +296,6 @@ const AddStaff: React.FC = () => {
             >
               <option value="">-----</option>
               <option value="Focus7">Focus7 fitness and Sports club </option>
-              
-              
             </select>
           </div>
 
@@ -229,13 +304,12 @@ const AddStaff: React.FC = () => {
               Identity Document Type
             </label>
             <select
-             
               name="identityDocumentType"
               value={staffData.identityDocumentType}
               onChange={handleChange}
               style={inputStyle}
             >
-                 <option value="">-----</option>
+              <option value="">-----</option>
               <option value="Aadhar">Aadhar card</option>
               <option value="Pan">PAN card</option>
               <option value="Passport">Indian Passport</option>
@@ -285,7 +359,7 @@ const AddStaff: React.FC = () => {
           </div>
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Employee Primary Skill/compentency
+              Employee Primary Skill/competency
             </label>
             <input
               type="text"
@@ -301,16 +375,14 @@ const AddStaff: React.FC = () => {
               Employee Marital Status
             </label>
             <select
-             
               name="employeeMaritalStatus"
               value={staffData.employeeMaritalStatus}
               onChange={handleChange}
               style={inputStyle}
             >
-                 <option value="">-----</option>
+              <option value="">-----</option>
               <option value="Single">Single</option>
               <option value="Married">Married</option>
-              
             </select>
           </div>
 
@@ -319,28 +391,25 @@ const AddStaff: React.FC = () => {
               Designation
             </label>
             <select
-             
               name="designation"
               value={staffData.designation}
               onChange={handleChange}
               style={inputStyle}
             >
-                 <option value="">-----</option>
-              <option value="Aadhar">Senior Trainer</option>
-              <option value="Pan">Trainer</option>
-              <option value="Passport">Substitute</option>
-              <option value="License">Administator</option>
-              
+              <option value="">-----</option>
+              <option value="Senior Trainer">Senior Trainer</option>
+              <option value="Trainer">Trainer</option>
+              <option value="Substitute">Substitute</option>
+              <option value="Administrator">Administrator</option>
             </select>
           </div>
 
-
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Address
+              Employee Address
             </label>
             <textarea
-              name="memberAddress"
+              name="employeeAddress"
               value={staffData.employeeAddress}
               onChange={handleChange}
               placeholder="Enter Address"
@@ -348,52 +417,45 @@ const AddStaff: React.FC = () => {
             />
           </div>
 
-          
-
-          
-          
-            <div>
+          <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
               Select Image to upload
             </label>
 
-          <div
-          
-          {...getRootProps()}
-          style={{
-            border: "2px dashed #2485bd",
-            padding: "7px",
-            borderRadius: "8px",
-            textAlign: "center",
-            cursor: "pointer",
-            marginBottom: "20px",
-            width: 400,
-            height: 40
-          }}
-        >
-             
-          <input {...getInputProps()} />
-          <p style={{ margin: 0 }}>Choose File</p>
-        </div>
-        </div>
-        {previewUrl && (
-          <div style={{ marginBottom: "20px" }}>
-            <img
-              src={previewUrl}
-              alt="Selected"
+            <div
+              {...getRootProps()}
               style={{
-                maxWidth: "100%",
-                height: "auto",
+                border: "2px dashed #2485bd",
+                padding: "7px",
                 borderRadius: "8px",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                textAlign: "center",
+                cursor: "pointer",
+                marginBottom: "20px",
+                width: 400,
+                height: 40
               }}
-            />
-            <p style={{ fontSize: "14px", marginTop: "10px" }}>
-              Selected File: {selectedImage?.name}
-            </p>
+            >
+              <input {...getInputProps()} />
+              <p style={{ margin: 0 }}>Choose File</p>
+            </div>
           </div>
-        )}
-
+          {previewUrl && (
+            <div style={{ marginBottom: "20px" }}>
+              <img
+                src={previewUrl}
+                alt="Selected"
+                style={{
+                  maxWidth: "100%",
+                  height: "auto",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                }}
+              />
+              <p style={{ fontSize: "14px", marginTop: "10px" }}>
+                Selected File: {selectedImage?.name}
+              </p>
+            </div>
+          )}
         </div>
 
         <div style={{ marginTop: "20px", textAlign: "center" }}>

@@ -1,6 +1,13 @@
+/// <reference types="vite/client" />
 import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-
+// Initialize Supabase client using environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface ExpenseData {
   item: string;
@@ -8,12 +15,9 @@ interface ExpenseData {
   description: string;
   amount: string;
   paymentMode: string;
-  
-
 }
 
 const AddExpense: React.FC = () => {
-   
   const [expenseData, setExpenseData] = useState<ExpenseData>({
     item: "",
     dateOfPurchase: "",
@@ -21,9 +25,6 @@ const AddExpense: React.FC = () => {
     amount: "",
     paymentMode: "",
   });
-
- 
-
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -35,14 +36,40 @@ const AddExpense: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Transaction Data Submitted:", expenseData);
-    // Add logic to handle form submission (e.g., API call)
+    const { item, dateOfPurchase, description, amount, paymentMode } = expenseData;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert([
+        {
+          item,
+          date_of_purchase: dateOfPurchase,
+          description,
+          amount: parseFloat(amount),
+          payment_mode: paymentMode,
+        },
+      ]);
+
+    if (error) {
+      toast.error("Failed to add expense: " + error.message);
+    } else {
+      toast.success("Expense added successfully!");
+      setExpenseData({
+        item: "",
+        dateOfPurchase: "",
+        description: "",
+        amount: "",
+        paymentMode: "",
+      });
+    }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Expense</h2>
       <form onSubmit={handleSubmit}>
         <div
@@ -68,7 +95,7 @@ const AddExpense: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13,color: "#71045f" }}>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
               Date of Purchase*
             </label>
             <input
@@ -81,7 +108,7 @@ const AddExpense: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f"}}>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
               Description
             </label>
             <input
@@ -128,9 +155,8 @@ const AddExpense: React.FC = () => {
               <option value="Netbanking">Netbanking</option>
             </select>
           </div>
-          </div>
-          
-            
+        </div>
+
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <button
             type="submit"
