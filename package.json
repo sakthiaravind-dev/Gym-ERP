@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@supabase/supabase-js": "^2.47.10",
-    "chart.js": "^4.4.7",
-    "react-chartjs-2": "^5.2.0"
-  }
-}
