@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { createClient } from '@supabase/supabase-js';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+/// <reference types="vite/client" />
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -80,6 +83,7 @@ const AddMember: React.FC = () => {
     console.log("Member Data Submitted:", memberData);
 
     // Insert data into Supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase
       .from('members')
       .insert([
@@ -101,14 +105,32 @@ const AddMember: React.FC = () => {
       ]);
 
     if (error) {
-      console.error("Error inserting data:", error);
+      toast.error("Failed to add member: " + error.message);
     } else {
-      console.log("Data inserted successfully:", data);
+      toast.success("Member added successfully!");
+      setMemberData({
+        memberId: "",
+        memberName: "",
+        memberDOB: "",
+        memberEmail: "",
+        memberPhoneNumber: "",
+        memberAddress: "",
+        gender: "",
+        paymentMode: "",
+        documentIdNumber: "",
+        identityDocumentType: "",
+        referredBy: "",
+        memberJoiningDate: "",
+        billDate: "",
+      });
+      setSelectedImage(null);
+      setPreviewUrl(null);
     }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Member Details</h2>
       <form onSubmit={handleSubmit}>
         <div

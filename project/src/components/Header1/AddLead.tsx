@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { createClient } from '@supabase/supabase-js';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+/// <reference types="vite/client" />
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -62,6 +65,7 @@ const AddLead: React.FC = () => {
     console.log("Lead Data Submitted:", leadData);
 
     // Insert data into Supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase
       .from('leads_followups')
       .insert([
@@ -85,14 +89,32 @@ const AddLead: React.FC = () => {
       ]);
 
     if (error) {
-      console.error("Error inserting data:", error);
+      toast.error("Failed to add lead: " + error.message);
     } else {
-      console.log("Data inserted successfully:", data);
+      toast.success("Lead added successfully!");
+      setLeadData({
+        name: "",
+        phoneNumber: "",
+        email: "",
+        dob: "",
+        gender: "",
+        occupation: "",
+        interested: "",
+        planningToJoin: "",
+        howYouKnow: "",
+        memberAddress: "",
+        comment: "",
+        status: "",
+        communicationMethod: "",
+        nextCallDate: "",
+        selectTime: "",
+      });
     }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>New Lead</h2>
       <form onSubmit={handleSubmit}>
         <div
