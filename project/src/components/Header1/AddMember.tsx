@@ -82,6 +82,23 @@ const AddMember: React.FC = () => {
     event.preventDefault();
     console.log("Member Data Submitted:", memberData);
 
+    // Upload image to Supabase storage
+    if (selectedImage) {
+      const fileName = `member_${memberData.memberId}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('images')
+        .upload(fileName, selectedImage);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        return;
+      }
+
+      toast.success("Image uploaded successfully!");
+    }
+
     // Insert data into Supabase
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase

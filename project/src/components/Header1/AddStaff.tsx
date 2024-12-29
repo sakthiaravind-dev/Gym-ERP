@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { createClient } from '@supabase/supabase-js';
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+/// <reference types="vite/client" />
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -87,7 +89,25 @@ const AddStaff: React.FC = () => {
     event.preventDefault();
     console.log("Staff Data Submitted:", staffData);
 
+    // Upload image to Supabase storage
+    if (selectedImage) {
+      const fileName = `staff_${staffData.employeeID}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('images')
+        .upload(fileName, selectedImage);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        return;
+      }
+
+      toast.success("Image uploaded successfully!");
+    }
+
     // Insert data into Supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase
       .from('employees')
       .insert([
@@ -113,14 +133,36 @@ const AddStaff: React.FC = () => {
       ]);
 
     if (error) {
-      console.error("Error inserting data:", error);
+      toast.error("Failed to add employee: " + error.message);
     } else {
-      console.log("Data inserted successfully:", data);
+      toast.success("Employee added successfully!");
+      setStaffData({
+        dateOfJoining: "",
+        employeeID: "",
+        employeeDOB: "",
+        employeeEmail: "",
+        employeePhoneNumber: "",
+        employeeAddress: "",
+        gender: "",
+        employeeName: "",
+        employeeBloodGroup: "",
+        employeeFatherName: "",
+        employeeMotherName: "",
+        employeePrimarySkill: "",
+        branch: "",
+        employeeMaritalStatus: "",
+        documentIdNumber: "",
+        identityDocumentType: "",
+        designation: "",
+      });
+      setSelectedImage(null);
+      setPreviewUrl(null);
     }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Employee</h2>
       <form onSubmit={handleSubmit}>
         <div
