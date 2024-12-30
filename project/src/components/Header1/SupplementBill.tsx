@@ -112,7 +112,7 @@ const SupplementBill: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>, bill) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>, bill: Bill) => {
     setAnchorEl(event.currentTarget);
     setSelectedBill(bill);
   };
@@ -163,7 +163,7 @@ const SupplementBill: React.FC = () => {
     }) : null);
   };
 
-  const handleAddSubmit = async (newBill) => {
+  const handleAddSubmit = async (newBill: Bill) => {
     const { error } = await supabase.from("supplements_billing").insert(newBill);
     if (error) {
       toast.error("Failed to add bill: " + error.message);
@@ -260,7 +260,7 @@ const SupplementBill: React.FC = () => {
               <TableBody>
                 {filteredData.length > 0 ? (
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  filteredData.map((row, index) => (
+                  filteredData.map((row, _index) => (
                     <TableRow key={row.id}>
                       <TableCell>{row.id}</TableCell>
                       <TableCell>{row.bill_date}</TableCell>

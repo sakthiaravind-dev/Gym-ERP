@@ -95,7 +95,7 @@ const StaffDetails = () => {
     saveAs(data, "staff.xlsx");
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>, staff) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>, staff: Staff) => {
     setAnchorEl(event.currentTarget);
     setSelectedStaff(staff);
   };
