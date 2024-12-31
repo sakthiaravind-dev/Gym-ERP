@@ -155,15 +155,17 @@ const Members = () => {
 
   const handleEditSubmit = async () => {
     if (selectedMember) {
+      const updatedMember = {
+        member_name: selectedMember.member_name || null,
+        member_phone_number: selectedMember.member_phone_number || null,
+        member_type: selectedMember.member_type || null,
+        referred_by: selectedMember.referred_by || null,
+        bill_date: selectedMember.bill_date || null,
+      };
+
       const { error } = await supabase
         .from("members")
-        .update({
-          member_name: selectedMember.member_name,
-          member_phone_number: selectedMember.member_phone_number,
-          member_type: selectedMember.member_type,
-          referred_by: selectedMember.referred_by,
-          bill_date: selectedMember.bill_date,
-        })
+        .update(updatedMember)
         .eq("member_id", selectedMember.member_id);
       if (error) {
         toast.error("Failed to update member: " + error.message);
