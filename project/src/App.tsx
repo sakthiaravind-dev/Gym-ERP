@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Sidebar from './components/Sidebar';
@@ -43,6 +43,7 @@ import AddService from './components/Header1/AddService';import CurrentWorkouts 
 import AddWorkout from './components/Assign/addWorkOut';
 import DietManagement from './components/Assign/diet';
 import AddDiet from './components/Assign/addDiet';
+import Login from './pages/login'
 
 const theme = createTheme({
   palette: {
@@ -56,10 +57,18 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loginStatus = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(!!loginStatus);
+  }, []);
   return (
     <ThemeProvider theme={theme}>
       <Router>
         <div className="flex min-h-screen bg-[#F1F7F8]">
+        {isLoggedIn ? (
+            <>
           <Sidebar />
           <div className="flex-1">
             <Header />
@@ -112,6 +121,13 @@ const App: React.FC = () => {
               </Routes>
             </main>
           </div>
+          </>
+          ) : (
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+            </Routes>
+            )}
         </div>
       </Router>
     </ThemeProvider>
