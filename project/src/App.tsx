@@ -33,7 +33,13 @@ import SupplementBill from './components/Header1/SupplementBill';
 import BillData from './components/Header1/AddBill';
 import ExpenseData from './components/Header1/AddExpense';
 import DietDetailsPage from './components/Header1/DietDetails';
-import CurrentWorkouts from './components/Assign/WorkOut';
+import CurrentPackage from './components/Header1/CurrentPackage';
+import AddPackage from './components/Header1/AddPackage';
+import AddEvent from './components/Header1/AddEvent';
+import AddOffer from './components/Header1/AddOffer';
+import Events from './components/Header1/Event';
+import Offers from './components/Header1/Offer';
+import AddService from './components/Header1/AddService';import CurrentWorkouts from './components/Assign/WorkOut';
 import AddWorkout from './components/Assign/addWorkOut';
 import DietManagement from './components/Assign/diet';
 import AddDiet from './components/Assign/addDiet';
@@ -90,6 +96,13 @@ const App: React.FC = () => {
                 <Route path="/members" element={<Members />} />
                 <Route path="/staff-members" element={<StaffDetails />} />
                 <Route path="/bookings" element={<BookingDetails />} />
+              <Route path="/currentpackage" element={<CurrentPackage />} />
+              <Route path="/addpackage" element={<AddPackage />} />
+              <Route path="/addevent" element={<AddEvent />} />
+              <Route path="/addoffer" element={<AddOffer />} />
+              <Route path="/offer" element={<Offers />} />
+              <Route path="/event" element={<Events />} />
+              <Route path="/service" element={<AddService />} />
                 <Route path="/work-out" element={<CurrentWorkouts />} />
                 <Route path="/add/work-out" element={<AddWorkout />} />
                 <Route path="/diet" element={<DietManagement />} />
