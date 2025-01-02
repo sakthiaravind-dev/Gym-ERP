@@ -6,6 +6,7 @@ import {
   Grid,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useNavigate } from "react-router-dom";
 
 const workoutData = [
   { id: 154, name: "Dumbbell Shoulder Press", type: "Shoulder", group: "Shoulder" },
@@ -38,6 +39,7 @@ const columns: GridColDef[] = [
 ];
 
 const CurrentWorkouts = () => {
+  const navigate = useNavigate();
   return (
     <div style={{ padding: "20px" }}>
       <Box>
@@ -49,7 +51,7 @@ const CurrentWorkouts = () => {
           </Typography>
         </Grid>
         <Grid item xs={12} sm={6} display="flex" justifyContent="flex-end" gap={2}>
-          <Button variant="contained" color="primary">
+          <Button variant="contained" color="primary" onClick={() => navigate('/add/work-out')}>
             Add Workout
           </Button>
           <Button variant="contained" color="secondary">

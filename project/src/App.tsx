@@ -38,7 +38,6 @@ import AddWorkout from './components/Assign/addWorkOut';
 import DietManagement from './components/Assign/diet';
 import AddDiet from './components/Assign/addDiet';
 
-// Create a custom theme (optional)
 const theme = createTheme({
   palette: {
     primary: {
