@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Sidebar from './components/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
@@ -32,56 +33,74 @@ import SupplementBill from './components/Header1/SupplementBill';
 import BillData from './components/Header1/AddBill';
 import ExpenseData from './components/Header1/AddExpense';
 import DietDetailsPage from './components/Header1/DietDetails';
+import CurrentWorkouts from './components/Assign/WorkOut';
+import AddWorkout from './components/Assign/addWorkOut';
+import DietManagement from './components/Assign/diet';
+import AddDiet from './components/Assign/addDiet';
 
-
+// Create a custom theme (optional)
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    background: {
+      default: '#F1F7F8',
+    },
+  },
+});
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <div className="flex min-h-screen bg-[#F1F7F8]">
-      
-        <Sidebar />
-        
-        <div className="flex-1">
-          <Header />
-          <main className="p-6">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/total-members" element={<MemberDetails />} />
-              <Route path="/details/:members" element={<YearlyQuaterlyDetails />} />
-              <Route path="/members/:status" element={<ActiveMembers />} />
-              <Route path="/today/attendance" element={<MemberAttendance />} />
-              <Route path="/member/:gender" element={<MemberPage />} />
-              <Route path="/period/:gender/:period" element={<MemberPage />} />
-              <Route path="/transaction/:period" element={<TransactionComponent />} />
-              <Route path="/expense" element={<Expense />} />
-              <Route path="/pending" element={<FeePending />} />
-              <Route path="/followup" element={<MembershipFollowUp />} />
-              <Route path="/apt" element={<MemberAPTDetails />} />
-              <Route path="/apt/:status" element={<ActivePT />} />
-              <Route path="/absent" element={<AbsentDetails />} />
-              <Route path="/membership-renewal" element={<MembershipRenewal />} />
-              <Route path="/pt/pending" element={<PTFeePending />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/addmember" element={<AddMember />} />
-              <Route path="/transaction" element={<AddTranscation />} />
-              <Route path="/addstaff" element={<AddStaff />} />
-              <Route path="/addlead" element={<AddLead />} />
-              <Route path="/renewal" element={<Renewal />} />
-              <Route path="/renewalform" element={<RenewalForm />} />
-              <Route path="/taxcalculator" element={<TaxCalculator />} />
-              <Route path="/supplementbill" element={<SupplementBill />} />
-              <Route path="/addbill" element={<BillData />} />
-              <Route path="/addexpense" element={<ExpenseData />} />
-              <Route path="/dietdetails" element={<DietDetailsPage />} />
-              <Route path="/members" element={<Members />} />
-              <Route path="/staff-members" element={<StaffDetails />} />
-              <Route path="/bookings" element={<BookingDetails />} />
-            </Routes>
-          </main>
+    <ThemeProvider theme={theme}>
+      <Router>
+        <div className="flex min-h-screen bg-[#F1F7F8]">
+          <Sidebar />
+          <div className="flex-1">
+            <Header />
+            <main className="p-6">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/total-members" element={<MemberDetails />} />
+                <Route path="/details/:members" element={<YearlyQuaterlyDetails />} />
+                <Route path="/members/:status" element={<ActiveMembers />} />
+                <Route path="/today/attendance" element={<MemberAttendance />} />
+                <Route path="/member/:gender" element={<MemberPage />} />
+                <Route path="/period/:gender/:period" element={<MemberPage />} />
+                <Route path="/transaction/:period" element={<TransactionComponent />} />
+                <Route path="/expense" element={<Expense />} />
+                <Route path="/pending" element={<FeePending />} />
+                <Route path="/followup" element={<MembershipFollowUp />} />
+                <Route path="/apt" element={<MemberAPTDetails />} />
+                <Route path="/apt/:status" element={<ActivePT />} />
+                <Route path="/absent" element={<AbsentDetails />} />
+                <Route path="/membership-renewal" element={<MembershipRenewal />} />
+                <Route path="/pt/pending" element={<PTFeePending />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/addmember" element={<AddMember />} />
+                <Route path="/transaction" element={<AddTranscation />} />
+                <Route path="/addstaff" element={<AddStaff />} />
+                <Route path="/addlead" element={<AddLead />} />
+                <Route path="/renewal" element={<Renewal />} />
+                <Route path="/renewalform" element={<RenewalForm />} />
+                <Route path="/taxcalculator" element={<TaxCalculator />} />
+                <Route path="/supplementbill" element={<SupplementBill />} />
+                <Route path="/addbill" element={<BillData />} />
+                <Route path="/addexpense" element={<ExpenseData />} />
+                <Route path="/dietdetails" element={<DietDetailsPage />} />
+                <Route path="/members" element={<Members />} />
+                <Route path="/staff-members" element={<StaffDetails />} />
+                <Route path="/bookings" element={<BookingDetails />} />
+                <Route path="/work-out" element={<CurrentWorkouts />} />
+                <Route path="/add/work-out" element={<AddWorkout />} />
+                <Route path="/diet" element={<DietManagement />} />
+                <Route path="/add/diet" element={<AddDiet />} />
+              </Routes>
+            </main>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 };
 
