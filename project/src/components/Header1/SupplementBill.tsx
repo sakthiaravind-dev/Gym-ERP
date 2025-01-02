@@ -27,6 +27,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "react-toastify";
+import StatGroup from './StatGroupTop';
+import { Users } from "lucide-react";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -46,25 +48,24 @@ const SupplementBill: React.FC = () => {
   }
   
   const [data, setData] = useState<Bill[]>([]);
-  const [totalAmount, setTotalAmount] = useState<number>(0);
-  const [totalPending, setTotalPending] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredData, setFilteredData] = useState<Bill[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
+  const cardConfig = [
+    { title: "TOTAL AMOUNT", value: "0", Icon: Users, path:"/message" },
+  ];
+  const card1Config = [
+    { title: "TOTAL PENDING AMOUNT", value: "0", Icon: Users, path: "/message"},
+  ];
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const totalAmt = data.reduce((sum, item) => sum + parseFloat(item.amount), 0);
-    const totalPend = data.reduce((sum, item) => sum + parseFloat(item.pending), 0);
-    setTotalAmount(totalAmt);
-    setTotalPending(totalPend);
-  }, [data]);
+
 
   useEffect(() => {
     const filtered = data.filter(
@@ -176,46 +177,12 @@ const SupplementBill: React.FC = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-        <Box
-          sx={{
-            flex: 1,
-            marginRight: 2,
-            padding: 2,
-            borderRadius: 2,
-            backgroundColor: "#f3f4f6",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography sx={{ fontWeight: "bold", color: "#4a4a4a" }}>
-            Total Amount Collected
-          </Typography>
-          <Typography sx={{ fontSize: 20, fontWeight: "bold", color: "#3b82f6" }}>
-            ₹{totalAmount}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            padding: 2,
-            borderRadius: 2,
-            backgroundColor: "#f3f4f6",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography sx={{ fontWeight: "bold", color: "#4a4a4a" }}>
-            Total Amount Pending
-          </Typography>
-          <Typography sx={{ fontSize: 20, fontWeight: "bold", color: "#e53e3e" }}>
-            ₹{totalPending}
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", marginBottom: "20px" }}>
+        
+      
+          <StatGroup stats={cardConfig} />
+          <StatGroup stats={card1Config} />
+        
       </Box>
 
       <Box sx={{ padding: 3, backgroundColor: "#e9f7fc", minHeight: "100vh" }}>

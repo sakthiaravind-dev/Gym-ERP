@@ -27,7 +27,7 @@ const iconList = [
     { Icon: LiveHelpIcon, label: 'Tutorial', path: '/' } 
 ]},
   { Icon: FitnessCenterIcon, label: 'Assign', subMenu: [
-    { Icon: FitnessCenterIcon, label: 'Personal-Diet', path: '/addmember' },
+    { Icon: FitnessCenterIcon, label: 'Personal-Diet', path: '/dietdetails' },
     { Icon: FitnessCenterIcon, label: 'Common-Diet', path: '/addstaff' },
     { Icon: FitnessCenterIcon, label: 'Workout', path: '/currentworkout' },
   ]},
@@ -46,10 +46,10 @@ const iconList = [
     { Icon: BarChartIcon, label: 'Package Report', path: '/addexpense' }
   ] },
   { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', subMenu: [
-    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', path: '/renewal' },
-    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Campaign', path: '/' },
-    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Message Report', path: '/supplementbill' },
-    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Chat', path: '/addexpense' }
+    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', path: '/addpost' },
+    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Campaign', path: '/campaign' },
+    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Message Report', path: '/message' },
+    { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Chat', path: '/chat' }
   ] },
   { Icon: AccountCircleIcon, label: 'Profile', path: '/profile' },
 ];

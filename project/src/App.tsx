@@ -41,6 +41,9 @@ import Offers from './components/Header1/Offer';
 import AddService from './components/Header1/AddService';
 import CurrentWorkout from './components/Header1/CurrentWorkout';
 import AddWorkout from './components/Header1/AddWorkout';
+import AddPost from './components/Header1/AddPost';
+import Message from './components/Header1/Message';
+import MessageDetails from './components/Header1/Messagedetails';
 
 
 const App: React.FC = () => {
@@ -94,6 +97,9 @@ const App: React.FC = () => {
               <Route path="/service" element={<AddService />} />
               <Route path="/currentworkout" element={<CurrentWorkout />} />
               <Route path="/addworkout" element={<AddWorkout />} />
+              <Route path="/addpost" element={<AddPost />} />
+              <Route path="/message" element={<Message />} />
+              <Route path="/messagedetails" element={<MessageDetails />} />
             </Routes>
           </main>
         </div>
