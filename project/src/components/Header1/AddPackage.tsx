@@ -1,6 +1,17 @@
 import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface PackageData {
   packageName: string;
@@ -11,25 +22,19 @@ interface PackageData {
   type: string;
   status: string;
   packageTax: string;
-  
-
 }
 
 const AddPackage: React.FC = () => {
-   
   const [packageData, setPackageData] = useState<PackageData>({
-  packageName: "",
-  packageDescription:"",
-  packageAmount: "",
-  packageDuration: "",
-  packageService: "",
-  type: "",
-  status: "",
-  packageTax: "", 
+    packageName: "",
+    packageDescription: "",
+    packageAmount: "",
+    packageDuration: "",
+    packageService: "",
+    type: "",
+    status: "",
+    packageTax: "",
   });
-
- 
-
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -41,14 +46,52 @@ const AddPackage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Transaction Data Submitted:", packageData);
-    // Add logic to handle form submission (e.g., API call)
+    console.log("Package Data Submitted:", packageData);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from('current_package')
+        .insert([{
+          package_name: packageData.packageName,
+          package_duration: packageData.packageDuration,
+          package_description: packageData.packageDescription,
+          package_service: packageData.packageService,
+          package_amount: packageData.packageAmount,
+          status: packageData.status,
+          type: packageData.type,
+          package_tax: packageData.packageTax,
+        }]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Package added successfully!");
+      setPackageData({
+        packageName: "",
+        packageDescription: "",
+        packageAmount: "",
+        packageDuration: "",
+        packageService: "",
+        type: "",
+        status: "",
+        packageTax: "",
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("Failed to add package: " + error.message);
+      } else {
+        toast.error("Failed to add package");
+      }
+    }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Package</h2>
       <form onSubmit={handleSubmit}>
         <div
@@ -74,7 +117,7 @@ const AddPackage: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13,color: "#71045f" }}>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
               Package duration*
             </label>
             <input
@@ -88,12 +131,12 @@ const AddPackage: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f"}}>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
               Package description
             </label>
             <input
               type="text"
-              name="PackageDescription"
+              name="packageDescription"
               value={packageData.packageDescription}
               onChange={handleChange}
               placeholder="Package description"
@@ -140,7 +183,6 @@ const AddPackage: React.FC = () => {
               <option value="">-----</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
-              
             </select>
           </div>
           <div>
@@ -158,7 +200,6 @@ const AddPackage: React.FC = () => {
               <option value="quaterly">Quaterly</option>
               <option value="half-yearly">Half-yearly</option>
               <option value="yearly">Yearly</option>
-              
             </select>
           </div>
           <div>
@@ -174,10 +215,8 @@ const AddPackage: React.FC = () => {
               style={inputStyle}
             />
           </div>
-          </div>
+        </div>
 
-          
-            
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <button
             type="submit"
