@@ -1,24 +1,47 @@
-// components/Login.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 
-const Login: React.FC = () => {
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+interface LoginProps {
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Login: React.FC<LoginProps> = ({ setIsLoggedIn }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
 
   // Handle form submission
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // Basic validation for empty fields
     if (!username || !password) {
       setErrorMessage('Please enter both username and password.');
       return;
     }
 
-    // Simulate successful login
-    if (username === 'admin' && password === 'admin123') {
+    // Check credentials with Supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase
+      .from('auth')
+      .select('*')
+      .eq('user', username)
+      .eq('pass', password)
+      .single();
+
+    if (data) {
+      await supabase
+        .from('auth')
+        .update({ checker: true })
+        .eq('user', username);
+
       localStorage.setItem('isLoggedIn', 'true');
+      setIsLoggedIn(true);
       navigate('/'); // Redirect to the dashboard or home page
     } else {
       setErrorMessage('Invalid username or password.');
