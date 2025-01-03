@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuItem, IconButton, ListItemText } from '@mui/material';
-import { Bell, BarChart2, MessageCircle } from 'lucide-react';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
@@ -13,11 +12,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 
 interface MenuItem {
-  Icon?: React.ElementType; 
+  Icon?: React.ElementType;
   label: string;
   path?: string;
   onClick?: () => void;
-  subMenu?: MenuItem[]; 
+  subMenu?: MenuItem[];
 }
 
 const HeaderIcons: React.FC = () => {
@@ -57,8 +56,8 @@ const HeaderIcons: React.FC = () => {
       Icon: FitnessCenterIcon,
       label: 'Workouts',
       subMenu: [
-        { label: 'Personal Diet', onClick: () => alert('Personal Diet selected!') },
-        { label: 'Common Diet', onClick: () => alert('Common Diet selected!') },
+        { Icon: FitnessCenterIcon, label: 'Personal-diet', path: '/currentworkout' },
+        { Icon: FitnessCenterIcon, label: 'Common-diet', path: '/dietdetails' },
         { Icon: FitnessCenterIcon, label: 'Workout', path: '/currentworkout' },
       ],
     },
@@ -99,20 +98,7 @@ const HeaderIcons: React.FC = () => {
       label: 'Profile',
       path: '/profile',
     },
-    {
-      Icon: Bell,
-      label: 'Notifications',
-    },
-    {
-      Icon: MessageCircle,
-      label: 'Messages',
-    },
-    {
-      Icon: BarChart2,
-      label: 'Statistics',
-    },
   ];
-  
 
   const handleClick = (event: React.MouseEvent<HTMLElement>, subMenu: MenuItem[]) => {
     if (subMenu) {
@@ -131,11 +117,11 @@ const HeaderIcons: React.FC = () => {
       {iconList.map(({ Icon, label, subMenu, path }, index) => (
         <div key={index}>
           <IconButton
-            onClick={(e) => subMenu ? handleClick(e, subMenu) : path ? navigate(path) : undefined}
+            onClick={(e) => (subMenu ? handleClick(e, subMenu) : path ? navigate(path) : undefined)}
             className="hover:bg-gray-100 rounded-full"
             title={label}
           >
-            <Icon size={20} className="text-purple-700" />
+            {Icon && <Icon style={{ fontSize: 24, color: "#71045F" }} />}
           </IconButton>
         </div>
       ))}
@@ -147,7 +133,7 @@ const HeaderIcons: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        {currentMenu.map(({ label, path, onClick }, idx) => (
+        {currentMenu.map(({ Icon, label, path, onClick }, idx) => (
           <MenuItem
             key={idx}
             onClick={() => {
@@ -156,6 +142,7 @@ const HeaderIcons: React.FC = () => {
               if (onClick) onClick();
             }}
           >
+            {Icon && <Icon style={{ marginRight: 8, fontSize: 20}} />}
             <ListItemText primary={label} />
           </MenuItem>
         ))}
