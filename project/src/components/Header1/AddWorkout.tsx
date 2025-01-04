@@ -3,6 +3,7 @@ import React, { useState } from "react";
 
 
 interface WorkoutData {
+  id: string;
   name: string;
   type: string;
   group: string;
@@ -13,6 +14,7 @@ interface WorkoutData {
 const AddWorkout: React.FC = () => {
    
   const [workoutData, setWorkoutData] = useState<WorkoutData>({
+  id: "",
   name: "",
   type: "",
   group: "",
@@ -48,6 +50,19 @@ const AddWorkout: React.FC = () => {
           }}
         >
           {/* Column 1 */}
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Workout ID*
+            </label>
+            <input
+              type="text"
+              name="id"
+              value={workoutData.id}
+              onChange={handleChange}
+              placeholder="ID"
+              style={inputStyle}
+            />
+          </div>
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
               Workout Name*

@@ -56,7 +56,7 @@ const HeaderIcons: React.FC = () => {
       Icon: FitnessCenterIcon,
       label: 'Workouts',
       subMenu: [
-        { Icon: FitnessCenterIcon, label: 'Personal-diet', path: '/currentworkout' },
+        { Icon: FitnessCenterIcon, label: 'Personal-diet', path: '/diet' },
         { Icon: FitnessCenterIcon, label: 'Common-diet', path: '/dietdetails' },
         { Icon: FitnessCenterIcon, label: 'Workout', path: '/currentworkout' },
       ],

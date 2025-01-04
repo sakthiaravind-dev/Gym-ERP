@@ -28,6 +28,7 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import StatGroup from '../components/dashboard/StatGroup';
 import { Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -180,6 +181,11 @@ const StaffDetails = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+  
+  const handleAddStaff = () => {
+    navigate("/addstaff");
+  }
+  const navigate = useNavigate();
 
   const cardConfig = [
     { title: "TOTAL NO STAFF", value: staffData.length.toString(), Icon: Users, path: "/pending" },
@@ -188,14 +194,8 @@ const StaffDetails = () => {
   return (
     <div style={{ padding: "20px" }}>
       <Box sx={{ marginBottom: 3, display: "flex", gap: 1 }}>
-        <Button variant="contained" color="primary">
-          Add Salary
-        </Button>
-        <Button variant="contained" color="primary">
-          View Salary
-        </Button>
-        <Button variant="contained" color="primary">
-          Track Trainer
+        <Button variant="contained" color="primary" onClick={handleAddStaff}>
+          Add Staff
         </Button>
         <Button variant="contained" color="primary" onClick={handleExport}>
           Export Data
