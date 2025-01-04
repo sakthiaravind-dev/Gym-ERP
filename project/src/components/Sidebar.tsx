@@ -14,7 +14,7 @@ import {
   Banknote
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+// hi
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },

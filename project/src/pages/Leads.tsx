@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Table,
@@ -12,41 +12,122 @@ import {
   Typography,
   TextField,
   Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Modal,
+  IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CloseIcon from "@mui/icons-material/Close";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+interface Lead {
+  id: number;
+  name: string;
+  contact: string;
+  follow_up: string;
+  status: string;
+  comment: string;
+}
 
 const Leads: React.FC = () => {
-  const [leads, setLeads] = useState([
-    {
-      id: 1,
-      name: "ANUP KUMAR",
-      contact: "9547379746",
-      followUp: "27/11/2024",
-      status: "active",
-      comment: "Planning for next week direct visit",
-    },
-    {
-      id: 2,
-      name: "KARTHIKEYAN",
-      contact: "7010084823",
-      followUp: "07/12/2024",
-      status: "active",
-      comment: "Need to follow up on first week DECEMBER",
-    },
-    {
-      id: 3,
-      name: "MANU",
-      contact: "7831883981",
-      followUp: "05/02/2025",
-      status: "active",
-      comment: "Spoken with Shobana, he said he will reach clinic on February second week.",
-    },
-  ]);
-
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(5);
+  const [openAddModal, setOpenAddModal] = useState<boolean>(false);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
+  const [currentLead, setCurrentLead] = useState<Lead | null>(null);
+  const [newLead, setNewLead] = useState<Omit<Lead, "id">>({
+    name: "",
+    contact: "",
+    follow_up: "",
+    status: "",
+    comment: "",
+  });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    const { data, error } = await supabase.from("leads").select("*");
+    if (error) {
+      toast.error("Failed to fetch leads: " + error.message);
+    } else {
+      setLeads(data);
+    }
+  };
+
+  const handleAddLead = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.from("leads").insert([newLead]);
+    if (error) {
+      toast.error("Failed to add lead: " + error.message);
+    } else {
+      toast.success("Lead added successfully!");
+      fetchLeads();
+      setOpenAddModal(false);
+      setNewLead({
+        name: "",
+        contact: "",
+        follow_up: "",
+        status: "",
+        comment: "",
+      });
+    }
+  };
+
+  const handleEditLead = async () => {
+    if (currentLead) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from("leads")
+        .update(currentLead)
+        .eq("id", currentLead.id);
+      if (error) {
+        toast.error("Failed to update lead: " + error.message);
+      } else {
+        toast.success("Lead updated successfully!");
+        fetchLeads();
+        setOpenEditModal(false);
+        setCurrentLead(null);
+      }
+    }
+  };
+
+  const handleDeleteLead = async (id: number) => {
+    const { error } = await supabase.from("leads").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete lead: " + error.message);
+    } else {
+      toast.success("Lead deleted successfully!");
+      fetchLeads();
+    }
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, lead: Lead) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentLead(lead);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const filteredLeads = leads.filter(
     (lead) =>
@@ -63,7 +144,7 @@ const Leads: React.FC = () => {
         lead.id,
         lead.name,
         lead.contact,
-        lead.followUp,
+        lead.follow_up,
         lead.status,
         lead.comment,
       ]),
@@ -81,6 +162,7 @@ const Leads: React.FC = () => {
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <Box
         sx={{
           display: "flex",
@@ -96,6 +178,7 @@ const Leads: React.FC = () => {
             color: "white",
             padding: "5px 15px",
           }}
+          onClick={() => setOpenAddModal(true)}
         >
           Add Lead
         </Button>
@@ -151,13 +234,41 @@ const Leads: React.FC = () => {
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{lead.name}</TableCell>
                 <TableCell>{lead.contact}</TableCell>
-                <TableCell>{lead.followUp}</TableCell>
+                <TableCell>{lead.follow_up}</TableCell>
                 <TableCell>{lead.status}</TableCell>
                 <TableCell>{lead.comment}</TableCell>
                 <TableCell>
-                  <Button variant="contained" size="small" sx={{ backgroundColor: "#2485bd" }}>
-                    Actions
-                  </Button>
+                  <IconButton
+                    aria-controls="simple-menu"
+                    aria-haspopup="true"
+                    onClick={(e) => handleMenuClick(e, lead)}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    id="simple-menu"
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        setOpenEditModal(true);
+                        handleMenuClose();
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleDeleteLead(lead.id);
+                        handleMenuClose();
+                      }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
                 </TableCell>
               </TableRow>
             ))}
@@ -178,8 +289,142 @@ const Leads: React.FC = () => {
           Export Data
         </Button>
       </Box>
+
+      {/* Add Lead Modal */}
+      <Modal open={openAddModal} onClose={() => setOpenAddModal(false)}>
+        <Box sx={modalStyle}>
+          <IconButton
+            sx={{ position: "absolute", top: 10, right: 10 }}
+            onClick={() => setOpenAddModal(false)}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Add New Lead
+          </Typography>
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.name}
+            onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+          />
+          <TextField
+            label="Contact"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.contact}
+            onChange={(e) => setNewLead({ ...newLead, contact: e.target.value })}
+          />
+          <TextField
+            label="Follow-Up On"
+            type="date"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.follow_up}
+            onChange={(e) => setNewLead({ ...newLead, follow_up: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Status"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.status}
+            onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
+          />
+          <TextField
+            label="Comment"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.comment}
+            onChange={(e) => setNewLead({ ...newLead, comment: e.target.value })}
+          />
+          <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleAddLead}>
+            Add Lead
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Edit Lead Modal */}
+      {currentLead && (
+        <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+          <Box sx={modalStyle}>
+            <IconButton
+              sx={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => setOpenEditModal(false)}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+              Edit Lead
+            </Typography>
+            <TextField
+              label="Name"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.name}
+              onChange={(e) => setCurrentLead({ ...currentLead, name: e.target.value })}
+            />
+            <TextField
+              label="Contact"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.contact}
+              onChange={(e) => setCurrentLead({ ...currentLead, contact: e.target.value })}
+            />
+            <TextField
+              label="Follow-Up On"
+              type="date"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.follow_up}
+              onChange={(e) => setCurrentLead({ ...currentLead, follow_up: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Status"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.status}
+              onChange={(e) => setCurrentLead({ ...currentLead, status: e.target.value })}
+            />
+            <TextField
+              label="Comment"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.comment}
+              onChange={(e) => setCurrentLead({ ...currentLead, comment: e.target.value })}
+            />
+            <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleEditLead}>
+              Save Changes
+            </Button>
+          </Box>
+        </Modal>
+      )}
     </Box>
   );
+};
+
+const modalStyle = {
+  position: "absolute" as const,
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
 };
 
 export default Leads;
