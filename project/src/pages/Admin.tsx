@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Table,
@@ -15,37 +15,111 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Modal,
+  IconButton,
 } from "@mui/material";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CloseIcon from "@mui/icons-material/Close";
 
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+interface User {
+  id: number;
+  username: string;
+  profile_name: string;
+  user_email: string;
+  user_type: string;
+}
 
 const Admin: React.FC = () => {
-  const [users, setUsers] = useState([
-    {
-      username: "focus7",
-      profileName: "Janardhanan R",
-      userEmail: "focus7fitnessandsportsclub@gmail.com",
-      userType: "admin",
-    },
-    {
-      username: "manager",
-      profileName: "TeamFocus",
-      userEmail: "focus7fitnessandsportsclub@gmail.com",
-      userType: "manager",
-    },
-  ]);
-
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(5);
-  
-  
-  
+  const [openAddModal, setOpenAddModal] = useState<boolean>(false);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [newUser, setNewUser] = useState<Omit<User, "id">>({
+    username: "",
+    profile_name: "",
+    user_email: "",
+    user_type: "",
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    const { data, error } = await supabase.from("admin").select("*");
+    if (error) {
+      toast.error("Failed to fetch users: " + error.message);
+    } else {
+      setUsers(data);
+    }
+  };
+
+  const handleAddUser = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.from("admin").insert([newUser]);
+    if (error) {
+      toast.error("Failed to add user: " + error.message);
+    } else {
+      toast.success("User added successfully!");
+      fetchUsers();
+      setOpenAddModal(false);
+      setNewUser({
+        username: "",
+        profile_name: "",
+        user_email: "",
+        user_type: "",
+      });
+    }
+  };
+
+  const handleEditUser = async () => {
+    if (currentUser) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from("admin")
+        .update(currentUser)
+        .eq("id", currentUser.id);
+      if (error) {
+        toast.error("Failed to update user: " + error.message);
+      } else {
+        toast.success("User updated successfully!");
+        fetchUsers();
+        setOpenEditModal(false);
+        setCurrentUser(null);
+      }
+    }
+  };
+
+  const handleDeleteUser = async (id: number) => {
+    const { error } = await supabase.from("admin").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete user: " + error.message);
+    } else {
+      toast.success("User deleted successfully!");
+      fetchUsers();
+    }
+  };
 
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.profileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userType.toLowerCase().includes(searchTerm.toLowerCase())
+      user.profile_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleExport = () => {
@@ -53,9 +127,9 @@ const Admin: React.FC = () => {
       ["Username", "Profile Name", "User Email", "User Type"],
       ...users.map((user) => [
         user.username,
-        user.profileName,
-        user.userEmail,
-        user.userType,
+        user.profile_name,
+        user.user_email,
+        user.user_type,
       ]),
     ];
     const csvContent = `data:text/csv;charset=utf-8,${csvData
@@ -71,8 +145,7 @@ const Admin: React.FC = () => {
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-        
-        
+      <ToastContainer />
       <Box
         sx={{
           display: "flex",
@@ -81,7 +154,6 @@ const Admin: React.FC = () => {
           marginBottom: "20px",
         }}
       >
-        
         <Button
           variant="contained"
           sx={{
@@ -89,6 +161,7 @@ const Admin: React.FC = () => {
             color: "white",
             padding: "5px 15px",
           }}
+          onClick={() => setOpenAddModal(true)}
         >
           Add User
         </Button>
@@ -137,17 +210,21 @@ const Admin: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredUsers.slice(0, entriesPerPage).map((user, index) => (
-              <TableRow key={index}>
+            {filteredUsers.slice(0, entriesPerPage).map((user) => (
+              <TableRow key={user.id}>
                 <TableCell>{user.username}</TableCell>
-                <TableCell>{user.profileName}</TableCell>
-                <TableCell>{user.userEmail}</TableCell>
-                <TableCell>{user.userType}</TableCell>
+                <TableCell>{user.profile_name}</TableCell>
+                <TableCell>{user.user_email}</TableCell>
+                <TableCell>{user.user_type}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"
                     size="small"
-                    sx={{ marginRight: "5px", backgroundColor: "#2485bd" }}
+                    sx={{ backgroundColor: "#2485bd", marginRight: 1 }}
+                    onClick={() => {
+                      setCurrentUser(user);
+                      setOpenEditModal(true);
+                    }}
                   >
                     Edit
                   </Button>
@@ -155,6 +232,7 @@ const Admin: React.FC = () => {
                     variant="contained"
                     size="small"
                     sx={{ backgroundColor: "#D32F2F" }}
+                    onClick={() => handleDeleteUser(user.id)}
                   >
                     Delete
                   </Button>
@@ -178,8 +256,128 @@ const Admin: React.FC = () => {
           Export Data
         </Button>
       </Box>
+
+      {/* Add User Modal */}
+      <Modal open={openAddModal} onClose={() => setOpenAddModal(false)}>
+        <Box sx={modalStyle}>
+          <IconButton
+            sx={{ position: "absolute", top: 10, right: 10 }}
+            onClick={() => setOpenAddModal(false)}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Add New User
+          </Typography>
+          <TextField
+            label="Username"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newUser.username}
+            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+          />
+          <TextField
+            label="Profile Name"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newUser.profile_name}
+            onChange={(e) => setNewUser({ ...newUser, profile_name: e.target.value })}
+          />
+          <TextField
+            label="User Email"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newUser.user_email}
+            onChange={(e) => setNewUser({ ...newUser, user_email: e.target.value })}
+          />
+          <FormControl fullWidth sx={{ marginBottom: 2 }}>
+            <InputLabel>User Type</InputLabel>
+            <Select
+              value={newUser.user_type}
+              onChange={(e) => setNewUser({ ...newUser, user_type: e.target.value })}
+              label="User Type"
+            >
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
+            </Select>
+          </FormControl>
+          <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleAddUser}>
+            Add User
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Edit User Modal */}
+      {currentUser && (
+        <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+          <Box sx={modalStyle}>
+            <IconButton
+              sx={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => setOpenEditModal(false)}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+              Edit User
+            </Typography>
+            <TextField
+              label="Username"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentUser.username}
+              onChange={(e) => setCurrentUser({ ...currentUser, username: e.target.value })}
+            />
+            <TextField
+              label="Profile Name"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentUser.profile_name}
+              onChange={(e) => setCurrentUser({ ...currentUser, profile_name: e.target.value })}
+            />
+            <TextField
+              label="User Email"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentUser.user_email}
+              onChange={(e) => setCurrentUser({ ...currentUser, user_email: e.target.value })}
+            />
+            <FormControl fullWidth sx={{ marginBottom: 2 }}>
+              <InputLabel>User Type</InputLabel>
+              <Select
+                value={currentUser.user_type}
+                onChange={(e) => setCurrentUser({ ...currentUser, user_type: e.target.value })}
+                label="User Type"
+              >
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="manager">Manager</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleEditUser}>
+              Save Changes
+            </Button>
+          </Box>
+        </Modal>
+      )}
     </Box>
   );
+};
+
+const modalStyle = {
+  position: "absolute" as const,
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
 };
 
 export default Admin;
