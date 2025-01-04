@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Table,
@@ -12,18 +12,124 @@ import {
   Typography,
   TextField,
   Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Modal,
+  IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CloseIcon from "@mui/icons-material/Close";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+interface Event {
+  id: number;
+  name: string;
+  date: string;
+  time: string;
+  description: string;
+  status: string;
+}
 
 const EventsPage: React.FC = () => {
-  const mockEvents: any[] = []; // Placeholder for event data
-
+  const [events, setEvents] = useState<Event[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
+  const [openAddModal, setOpenAddModal] = useState<boolean>(false);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [newEvent, setNewEvent] = useState<Omit<Event, "id">>({
+    name: "",
+    date: "",
+    time: "",
+    description: "",
+    status: "",
+  });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const filteredEvents = mockEvents.filter(
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    const { data, error } = await supabase.from("events").select("*");
+    if (error) {
+      toast.error("Failed to fetch events: " + error.message);
+    } else {
+      setEvents(data);
+    }
+  };
+
+  const handleAddEvent = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.from("events").insert([newEvent]);
+    if (error) {
+      toast.error("Failed to add event: " + error.message);
+    } else {
+      toast.success("Event added successfully!");
+      fetchEvents();
+      setOpenAddModal(false);
+      setNewEvent({
+        name: "",
+        date: "",
+        time: "",
+        description: "",
+        status: "",
+      });
+    }
+  };
+
+  const handleEditEvent = async () => {
+    if (currentEvent) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from("events")
+        .update(currentEvent)
+        .eq("id", currentEvent.id);
+      if (error) {
+        toast.error("Failed to update event: " + error.message);
+      } else {
+        toast.success("Event updated successfully!");
+        fetchEvents();
+        setOpenEditModal(false);
+        setCurrentEvent(null);
+      }
+    }
+  };
+
+  const handleDeleteEvent = async (id: number) => {
+    const { error } = await supabase.from("events").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete event: " + error.message);
+    } else {
+      toast.success("Event deleted successfully!");
+      fetchEvents();
+    }
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, eventItem: Event) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentEvent(eventItem);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const filteredEvents = events.filter(
     (event) =>
       event.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(event.id).includes(searchTerm) ||
@@ -33,7 +139,7 @@ const EventsPage: React.FC = () => {
   const handleExport = () => {
     const csvData = [
       ["ID", "NAME", "DATE", "TIME", "DESCRIPTION", "STATUS"],
-      ...mockEvents.map((event) => [
+      ...events.map((event) => [
         event.id,
         event.name,
         event.date,
@@ -55,6 +161,7 @@ const EventsPage: React.FC = () => {
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       {/* Top Section with Heading, Search, and Add Button */}
       <Box
         sx={{
@@ -72,6 +179,7 @@ const EventsPage: React.FC = () => {
             color: "white",
             padding: "5px 15px",
           }}
+          onClick={() => setOpenAddModal(true)}
         >
           Add new event
         </Button>
@@ -135,9 +243,37 @@ const EventsPage: React.FC = () => {
                   <TableCell>{event.description}</TableCell>
                   <TableCell>{event.status}</TableCell>
                   <TableCell>
-                    <Button variant="contained" size="small" style={{ backgroundColor: "#2485bd" }}>
-                      Actions
-                    </Button>
+                    <IconButton
+                      aria-controls="simple-menu"
+                      aria-haspopup="true"
+                      onClick={(e) => handleMenuClick(e, event)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      id="simple-menu"
+                      anchorEl={anchorEl}
+                      keepMounted
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          setOpenEditModal(true);
+                          handleMenuClose();
+                        }}
+                      >
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          handleDeleteEvent(event.id);
+                          handleMenuClose();
+                        }}
+                      >
+                        Delete
+                      </MenuItem>
+                    </Menu>
                   </TableCell>
                 </TableRow>
               ))
@@ -177,8 +313,146 @@ const EventsPage: React.FC = () => {
           Export Data
         </Button>
       </Box>
+
+      {/* Add Event Modal */}
+      <Modal open={openAddModal} onClose={() => setOpenAddModal(false)}>
+        <Box sx={modalStyle}>
+          <IconButton
+            sx={{ position: "absolute", top: 10, right: 10 }}
+            onClick={() => setOpenAddModal(false)}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Add New Event
+          </Typography>
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newEvent.name}
+            onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })}
+          />
+          <TextField
+            label="Date"
+            type="date"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newEvent.date}
+            onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Time"
+            type="time"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newEvent.time}
+            onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newEvent.description}
+            onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+          />
+          <TextField
+            label="Status"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newEvent.status}
+            onChange={(e) => setNewEvent({ ...newEvent, status: e.target.value })}
+          />
+          <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleAddEvent}>
+            Add Event
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Edit Event Modal */}
+      {currentEvent && (
+        <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+          <Box sx={modalStyle}>
+            <IconButton
+              sx={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => setOpenEditModal(false)}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+              Edit Event
+            </Typography>
+            <TextField
+              label="Name"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentEvent.name}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, name: e.target.value })}
+            />
+            <TextField
+              label="Date"
+              type="date"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentEvent.date}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, date: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Time"
+              type="time"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentEvent.time}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, time: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Description"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentEvent.description}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, description: e.target.value })}
+            />
+            <TextField
+              label="Status"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentEvent.status}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, status: e.target.value })}
+            />
+            <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleEditEvent}>
+              Save Changes
+            </Button>
+          </Box>
+        </Modal>
+      )}
     </Box>
   );
+};
+
+const modalStyle = {
+  position: "absolute" as const,
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
 };
 
 export default EventsPage;
