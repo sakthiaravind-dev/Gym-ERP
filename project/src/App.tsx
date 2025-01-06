@@ -37,6 +37,8 @@ import CurrentPackage from './components/Header1/CurrentPackage';
 import AddPackage from './components/Header1/AddPackage';
 import AddEvent from './components/Header1/AddEvent';
 import AddOffer from './components/Header1/AddOffer';
+import AddPost from './components/Header1/AddPost';
+import AddBooking from './components/Header1/AddBooking';
 import Events from './components/Header1/Event';
 import Offers from './components/Header1/Offer';
 import AddService from './components/Header1/AddService';
@@ -143,6 +145,8 @@ const App: React.FC = () => {
                     <Route path="/addpackage" element={<AddPackage />} />
                     <Route path="/addevent" element={<AddEvent />} />
                     <Route path="/addoffer" element={<AddOffer />} />
+                    <Route path="/addpost" element={<AddPost />} />
+                    <Route path="/addbooking" element={<AddBooking />} />
                     <Route path="/offer" element={<Offers />} />
                     <Route path="/event" element={<Events />} />
                     <Route path="/service" element={<AddService />} />

@@ -36,6 +36,9 @@ const BookingDetails = () => {
     <div style={{ padding: "20px" }}>
 
 <Box sx={{ marginBottom: 3, display: "flex", gap: 1 }}>
+<Button variant="contained" color="primary">
+          Add Booking Slot
+        </Button>
         <Button variant="contained" color="primary" >
           Filter
         </Button>

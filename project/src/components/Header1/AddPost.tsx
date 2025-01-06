@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Typography, Box } from '@mui/material';
 
 const AddPost: React.FC = () => {
+  const [memberID, setMemberID] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -14,6 +15,7 @@ const AddPost: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Handle form submission logic here
+    console.log('Member ID:', memberID);
     console.log('Description:', description);
     console.log('Selected File:', selectedFile);
   };
@@ -33,6 +35,21 @@ const AddPost: React.FC = () => {
       <Typography variant="h5" align="center" gutterBottom>
         Add New Post
       </Typography>
+      <div>
+      <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
+              Member ID
+            </label>
+      <TextField
+        label="Member ID"
+        multiline
+        rows={1}
+        fullWidth
+        margin="normal"
+        variant="outlined"
+        value={memberID}
+        onChange={(e) => setMemberID(e.target.value)}
+      />
+      </div>
       <div>
       <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
               Description
