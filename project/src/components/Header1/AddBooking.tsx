@@ -2,31 +2,41 @@ import React, { useState } from "react";
 
 
 
-interface WorkoutData {
+interface BookingData {
+  sno: string;
+  date: string;
   id: string;
   name: string;
-  type: string;
-  group: string;
- 
+  phone: string;
+  slot: string;
+  service: string;
+  loginTime: string;
+  
  
 }
 
-const AddWorkout: React.FC = () => {
+const AddBooking: React.FC = () => {
    
-  const [workoutData, setWorkoutData] = useState<WorkoutData>({
-  id: "",
-  name: "",
-  type: "",
-  group: "",
+  const [bookingData, setBookingData] = useState<BookingData>({
+    sno: "",
+    date: "",
+    id: "",
+    name: "",
+    phone: "",
+    slot: "",
+    service: "",
+    loginTime: "",
   });
 
+ 
   
+
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target;
-    setWorkoutData((prevData) => ({
+    setBookingData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -34,13 +44,13 @@ const AddWorkout: React.FC = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Member Data Submitted:", workoutData);
+    console.log("Member Data Submitted:", bookingData);
     // Add logic to handle form submission (e.g., API call)
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Workout</h2>
+      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Booking Slot</h2>
       <form onSubmit={handleSubmit}>
         <div
           style={{
@@ -52,64 +62,98 @@ const AddWorkout: React.FC = () => {
           {/* Column 1 */}
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Workout ID*
+              Date
             </label>
             <input
-              type="text"
-              name="id"
-              value={workoutData.id}
+              type="date"
+              name="date"
+              value={bookingData.date}
               onChange={handleChange}
-              placeholder="ID"
+              placeholder="Date"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              ID
+            </label>
+            <input
+              type="id"
+              name="id"
+              value={bookingData.id}
+              onChange={handleChange}
               style={inputStyle}
             />
           </div>
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Workout Name*
+              Name
             </label>
             <input
               type="text"
               name="name"
-              value={workoutData.name}
+              value={bookingData.name}
               onChange={handleChange}
               placeholder="Name"
               style={inputStyle}
             />
           </div>
-
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Workout Type
+              Phone number
             </label>
             <input
               type="text"
-              name="type"
-              value={workoutData.type}
+              name="phone"
+              value={bookingData.phone}
               onChange={handleChange}
+              placeholder="Phone number"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Slot
+            </label>
+            <input
+              type="text"
+              name="slot"
+              value={bookingData.slot}
+              onChange={handleChange}
+              placeholder="Slot"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Service
+            </label>
+            <input
+              type="text"
+              name="service"
+              value={bookingData.service}
+              onChange={handleChange}
+              placeholder="Service"
               style={inputStyle}
             />
           </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Select Workout Group
+              Login Time
             </label>
-            <select
-              name="group"
-              value={workoutData.group}
+            <input
+              type="time"
+              name="time"
+              value={bookingData.loginTime}
               onChange={handleChange}
+              placeholder="Enter time"
               style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="warmup">Warm up</option>
-              <option value="cardio">Cardio</option>
-              <option value="core">Core</option>
-              <option value="weight">Weight Training</option>
-              <option value="cool">Cool down</option>
-              
-            </select>
+            />
           </div>
-         
+          
+
         </div>
 
           
@@ -141,4 +185,4 @@ const inputStyle = {
   border: "1px solid #ccc",
 };
 
-export default AddWorkout;
+export default AddBooking;

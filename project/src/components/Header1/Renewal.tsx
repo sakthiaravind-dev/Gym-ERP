@@ -1,14 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Renewal: React.FC = () => {
   const [id, setId] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    if (id) {
-      alert(`ID submitted: ${id}`); 
-    } else {
-      alert("Please enter an ID.");
-    }
+  const handleAddRenewal = () => {
+    navigate("/renewalform");
   };
 
   return (
@@ -24,7 +22,7 @@ const Renewal: React.FC = () => {
       }}
     >
       <h2 style={{ color: "purple", marginBottom: "20px", fontWeight: "bold" }}>Enter ID For Payment</h2>
-      <div style={{ display: "flex", gap: "10px", alignItems: "center", }}>
+      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <input
           type="text"
           placeholder="Enter ID"
@@ -39,7 +37,6 @@ const Renewal: React.FC = () => {
           }}
         />
         <button
-          onClick={handleSubmit}
           style={{
             padding: "15px 80px",
             backgroundColor: "#56baed",
@@ -50,6 +47,7 @@ const Renewal: React.FC = () => {
             cursor: "pointer",
             transition: "all 0.3s ease-in-out",
           }}
+          onClick={handleAddRenewal}
         >
           Go
         </button>

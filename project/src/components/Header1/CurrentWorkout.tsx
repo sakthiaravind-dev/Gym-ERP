@@ -16,6 +16,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 
 const CurrentWorkouts: React.FC = () => {
@@ -62,6 +63,10 @@ const CurrentWorkouts: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+  const navigate = useNavigate();
+  const handleAddWorkout = () => {
+    navigate("/addworkout");
+  }
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
@@ -75,6 +80,7 @@ const CurrentWorkouts: React.FC = () => {
       >
         <Button
           variant="contained"
+          onClick={handleAddWorkout}
           sx={{
             backgroundColor: "#2485bd",
             color: "white",
@@ -89,7 +95,7 @@ const CurrentWorkouts: React.FC = () => {
           gutterBottom
           sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F" }}
         >
-          Current Workouts
+          Current Workout
         </Typography>
         <TextField
           label="Search"

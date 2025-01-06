@@ -56,7 +56,7 @@ const HeaderIcons: React.FC = () => {
       Icon: FitnessCenterIcon,
       label: 'Workouts',
       subMenu: [
-        { Icon: FitnessCenterIcon, label: 'Personal-diet', path: '/currentworkout' },
+        { Icon: FitnessCenterIcon, label: 'Personal-diet', path: '/diet' },
         { Icon: FitnessCenterIcon, label: 'Common-diet', path: '/dietdetails' },
         { Icon: FitnessCenterIcon, label: 'Workout', path: '/currentworkout' },
       ],
@@ -69,7 +69,7 @@ const HeaderIcons: React.FC = () => {
         { Icon: StyleIcon, label: 'Add-on Package', path: '/addstaff' },
         { Icon: StyleIcon, label: 'Events', path: '/event' },
         { Icon: StyleIcon, label: 'Offers', path: '/offer' },
-        { Icon: StyleIcon, label: 'Booking Slot', path: '/addstaff' },
+        { Icon: StyleIcon, label: 'Booking Slot', path: '/addbooking' },
         { Icon: StyleIcon, label: 'Add Service', path: '/service' },
       ],
     },
@@ -87,7 +87,7 @@ const HeaderIcons: React.FC = () => {
       Icon: ChatBubbleOutlineOutlinedIcon,
       label: 'Post',
       subMenu: [
-        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', path: '/renewal' },
+        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', path: '/addpost' },
         { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Campaign', path: '/' },
         { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Message Report', path: '/supplementbill' },
         { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Chat', path: '/addexpense' },

@@ -3,9 +3,12 @@ import { useDropzone } from "react-dropzone";
 
 
 interface OfferData {
+  id: string;
   name: string;
   expiryDate: string;
+  time: string;
   description: string;
+  status: string;
   selectImage: string;
  
 }
@@ -13,9 +16,12 @@ interface OfferData {
 const AddOffer: React.FC = () => {
    
   const [offerData, setOfferData] = useState<OfferData>({
+  id: "",
   name: "",
   expiryDate: "",
+  time: "",
   description: "",
+  status: "",
   selectImage: "",
   });
 
@@ -69,6 +75,19 @@ const AddOffer: React.FC = () => {
           {/* Column 1 */}
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              ID*
+            </label>
+            <input
+              type="text"
+              name="id"
+              value={offerData.id}
+              onChange={handleChange}
+              placeholder="ID"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
               Name*
             </label>
             <input
@@ -93,6 +112,19 @@ const AddOffer: React.FC = () => {
               style={inputStyle}
             />
           </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Time
+            </label>
+            <input
+              type="time"
+              name="time"
+              value={offerData.time}
+              onChange={handleChange}
+              placeholder="Time"
+              style={inputStyle}
+            />
+          </div>
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
@@ -104,6 +136,19 @@ const AddOffer: React.FC = () => {
               onChange={handleChange}
               placeholder="Enter description"
               style={{ ...inputStyle, height: "60px" }}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
+              Status
+            </label>
+            <input
+              type="text"
+              name="status"
+              value={offerData.status}
+              onChange={handleChange}
+              placeholder="Status"
+              style={inputStyle}
             />
           </div>
           <div>
