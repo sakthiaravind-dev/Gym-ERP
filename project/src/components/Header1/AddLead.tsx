@@ -1,7 +1,29 @@
-import React, { useState } from "react";
-import { createClient } from '@supabase/supabase-js';
+import React, { useState, useEffect } from "react";
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Modal,
+  IconButton,
+  Menu,
+} from "@mui/material";
+import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CloseIcon from "@mui/icons-material/Close";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 /// <reference types="vite/client" />
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -13,359 +35,452 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-interface LeadData {
+interface Lead {
+  id: string;
+  sno: number | null;
   name: string;
-  phoneNumber: string;
-  email: string;
-  dob: string;
-  gender: string;
-  occupation: string;
-  interested: string;
-  planningToJoin: string;
-  howYouKnow: string;
-  memberAddress: string;
-  comment: string;
+  contact: string;
+  follow_up: string;
   status: string;
-  communicationMethod: string;
-  nextCallDate: string;
-  selectTime: string;
+  comment: string;
 }
 
 const AddLead: React.FC = () => {
-  const [leadData, setLeadData] = useState<LeadData>({
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
+  const [openAddModal, setOpenAddModal] = useState<boolean>(false);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
+  const [currentLead, setCurrentLead] = useState<Lead | null>(null);
+  const [newLead, setNewLead] = useState<Lead>({
+    id: "",
+    sno: null,
     name: "",
-    phoneNumber: "",
-    email: "",
-    dob: "",
-    gender: "",
-    occupation: "",
-    interested: "",
-    planningToJoin: "",
-    howYouKnow: "",
-    memberAddress: "",
-    comment: "",
+    contact: "",
+    follow_up: "",
     status: "",
-    communicationMethod: "",
-    nextCallDate: "",
-    selectTime: "",
+    comment: "",
   });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = event.target;
-    setLeadData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    const { data, error } = await supabase.from("leads").select("*");
+    if (error) {
+      toast.error("Failed to fetch leads: " + error.message);
+    } else {
+      setLeads(data);
+    }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log("Lead Data Submitted:", leadData);
-
-    // Insert data into Supabase
+  const handleAddLead = async () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, error } = await supabase
-      .from('leads_followups')
-      .insert([
-        {
-          name: leadData.name,
-          phone_number: leadData.phoneNumber,
-          email: leadData.email,
-          dob: leadData.dob,
-          gender: leadData.gender,
-          occupation: leadData.occupation,
-          interested: leadData.interested,
-          planning_to_join: leadData.planningToJoin,
-          how_you_know: leadData.howYouKnow,
-          member_address: leadData.memberAddress,
-          comment: leadData.comment,
-          status: leadData.status,
-          communication_method: leadData.communicationMethod,
-          next_call_date: leadData.nextCallDate,
-          select_time: leadData.selectTime,
-        },
-      ]);
-
+    const { data, error } = await supabase.from("leads").insert([newLead]);
     if (error) {
       toast.error("Failed to add lead: " + error.message);
     } else {
       toast.success("Lead added successfully!");
-      setLeadData({
+      fetchLeads();
+      setOpenAddModal(false);
+      setNewLead({
+        id: "",
+        sno: null,
         name: "",
-        phoneNumber: "",
-        email: "",
-        dob: "",
-        gender: "",
-        occupation: "",
-        interested: "",
-        planningToJoin: "",
-        howYouKnow: "",
-        memberAddress: "",
-        comment: "",
+        contact: "",
+        follow_up: "",
         status: "",
-        communicationMethod: "",
-        nextCallDate: "",
-        selectTime: "",
+        comment: "",
       });
     }
   };
 
+  const handleEditLead = async () => {
+    if (currentLead) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from("leads")
+        .update(currentLead)
+        .eq("id", currentLead.id);
+      if (error) {
+        toast.error("Failed to update lead: " + error.message);
+      } else {
+        toast.success("Lead updated successfully!");
+        fetchLeads();
+        setOpenEditModal(false);
+        setCurrentLead(null);
+      }
+    }
+  };
+
+  const handleDeleteLead = async (id: string) => {
+    const { error } = await supabase.from("leads").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete lead: " + error.message);
+    } else {
+      toast.success("Lead deleted successfully!");
+      fetchLeads();
+    }
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, lead: Lead) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentLead(lead);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const filteredLeads = leads.filter(
+    (lead) =>
+      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.contact.includes(searchTerm) ||
+      lead.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.comment.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    const csvData = [
+      ["ID", "SNO", "Name", "Contact", "Follow-Up", "Status", "Comment"],
+      ...leads.map((lead) => [
+        lead.id,
+        lead.sno,
+        lead.name,
+        lead.contact,
+        lead.follow_up,
+        lead.status,
+        lead.comment,
+      ]),
+    ];
+    const csvContent = `data:text/csv;charset=utf-8,${csvData
+      .map((e) => e.join(","))
+      .join("\n")}`;
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", "leads.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <ToastContainer />
-      <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>New Lead</h2>
-      <form onSubmit={handleSubmit}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "20px",
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#2485bd",
+            color: "white",
+            padding: "5px 15px",
           }}
+          onClick={() => setOpenAddModal(true)}
         >
-          {/* Column 1 */}
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Name*
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={leadData.name}
-              onChange={handleChange}
-              placeholder="Enter Name"
-              style={inputStyle}
-            />
-          </div>
+          Add Lead
+        </Button>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F" }}
+        >
+          Leads Dashboard
+        </Typography>
+        <TextField
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ backgroundColor: "white" }}
+        />
+      </Box>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Phone Number*
-            </label>
-            <input
-              type="text"
-              name="phoneNumber"
-              value={leadData.phoneNumber}
-              onChange={handleChange}
-              placeholder="Enter Phone Number"
-              style={inputStyle}
-            />
-          </div>
+      <Box sx={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 120, marginRight: "15px" }}>
+          <InputLabel>Show</InputLabel>
+          <Select
+            value={entriesPerPage}
+            onChange={(e) => setEntriesPerPage(Number(e.target.value))}
+            label="Show"
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+          </Select>
+        </FormControl>
+        <Typography>entries</Typography>
+      </Box>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Email*
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={leadData.email}
-              onChange={handleChange}
-              placeholder="Enter email"
-              style={inputStyle}
-            />
-          </div>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+              <TableCell>ID</TableCell>
+              <TableCell>SNO</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Contact</TableCell>
+              <TableCell>Follow-Up On</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Comment</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredLeads.slice(0, entriesPerPage).map((lead) => (
+              <TableRow key={lead.id}>
+                <TableCell>{lead.id}</TableCell>
+                <TableCell>{lead.sno}</TableCell>
+                <TableCell>{lead.name}</TableCell>
+                <TableCell>{lead.contact}</TableCell>
+                <TableCell>{lead.follow_up}</TableCell>
+                <TableCell>{lead.status}</TableCell>
+                <TableCell>{lead.comment}</TableCell>
+                <TableCell>
+                  <IconButton
+                    aria-controls="simple-menu"
+                    aria-haspopup="true"
+                    onClick={(e) => handleMenuClick(e, lead)}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    id="simple-menu"
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        setOpenEditModal(true);
+                        handleMenuClose();
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleDeleteLead(lead.id);
+                        handleMenuClose();
+                      }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              DOB
-            </label>
-            <input
-              type="date"
-              name="dob"
-              value={leadData.dob}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Gender
-            </label>
-            <select
-              name="gender"
-              value={leadData.gender}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Transgender">Transgender</option>
-            </select>
-          </div>
+      <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+        <Typography>
+          Showing 1 to {Math.min(entriesPerPage, filteredLeads.length)} of{" "}
+          {filteredLeads.length} entries
+        </Typography>
+        <Button
+          onClick={handleExport}
+          variant="contained"
+          sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px" }}
+        >
+          Export Data
+        </Button>
+      </Box>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Occupation
-            </label>
-            <input
-              type="text"
-              name="occupation"
-              value={leadData.occupation}
-              onChange={handleChange}
-              placeholder="Enter occupation"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Interested in
-            </label>
-            <input
-              type="text"
-              name="interested"
-              value={leadData.interested}
-              onChange={handleChange}
-              placeholder="Enter your interest"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Planning to join
-            </label>
-            <select
-              name="planningToJoin"
-              value={leadData.planningToJoin}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="">-----</option>
-              <option value="Quarterly">Quarterly</option>
-              <option value="Half">Half yearly</option>
-              <option value="2 months">2 months</option>
-              <option value="4 months">4 months</option>
-              <option value="Annual">Annual</option>
-              <option value="Black">BLACK FRIDAY</option>
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              How did you come to know about us
-            </label>
-            <input
-              type="text"
-              name="howYouKnow"
-              value={leadData.howYouKnow}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-              Member Address
-            </label>
-            <textarea
-              name="memberAddress"
-              value={leadData.memberAddress}
-              onChange={handleChange}
-              placeholder="Enter Address"
-              style={{ ...inputStyle, height: "60px" }}
-            />
-          </div>
-        </div>
-
-        <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-          <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Follow-ups</h2>
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-            Comment
-          </label>
-          <textarea
-            name="comment"
-            value={leadData.comment}
-            onChange={handleChange}
-            placeholder="Enter comment"
-            style={{ ...inputStyle, height: "60px" }}
+      {/* Add Lead Modal */}
+      <Modal open={openAddModal} onClose={() => setOpenAddModal(false)}>
+        <Box sx={modalStyle}>
+          <IconButton
+            sx={{ position: "absolute", top: 10, right: 10 }}
+            onClick={() => setOpenAddModal(false)}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Add New Lead
+          </Typography>
+          <TextField
+            label="ID"
+            name="id"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.id}
+            onChange={(e) => setNewLead({ ...newLead, id: e.target.value })}
           />
-        </div>
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-            Status*
-          </label>
-          <select
-            name="status"
-            value={leadData.status}
-            onChange={handleChange}
-            style={inputStyle}
-          >
-            <option value="">-----</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-            Communication Method*
-          </label>
-          <select
-            name="communicationMethod"
-            value={leadData.communicationMethod}
-            onChange={handleChange}
-            style={inputStyle}
-          >
-            <option value="">-----</option>
-            <option value="Call">Call</option>
-            <option value="SMS">SMS</option>
-          </select>
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-            Next Call Date
-          </label>
-          <input
+          <TextField
+            label="Serial No"
+            name="sno"
+            type="number"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.sno || ""}
+            onChange={(e) => setNewLead({ ...newLead, sno: parseInt(e.target.value, 10) })}
+          />
+          <TextField
+            label="Name"
+            name="name"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.name}
+            onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+          />
+          <TextField
+            label="Contact"
+            name="contact"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.contact}
+            onChange={(e) => setNewLead({ ...newLead, contact: e.target.value })}
+          />
+          <TextField
+            label="Follow-Up On"
+            name="follow_up"
             type="date"
-            name="nextCallDate"
-            value={leadData.nextCallDate}
-            onChange={handleChange}
-            style={inputStyle}
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.follow_up}
+            onChange={(e) => setNewLead({ ...newLead, follow_up: e.target.value })}
+            InputLabelProps={{ shrink: true }}
           />
-        </div>
-        <div>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13 }}>
-            Select a time
-          </label>
-          <input
-            type="time"
-            name="selectTime"
-            value={leadData.selectTime}
-            onChange={handleChange}
-            style={inputStyle}
+          <TextField
+            label="Status"
+            name="status"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.status}
+            onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
           />
-        </div>
+          <TextField
+            label="Comment"
+            name="comment"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newLead.comment}
+            onChange={(e) => setNewLead({ ...newLead, comment: e.target.value })}
+          />
+          <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleAddLead}>
+            Add Lead
+          </Button>
+        </Box>
+      </Modal>
 
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <button
-            type="submit"
-            style={{
-              padding: "5px 15px",
-              backgroundColor: "#2485bd",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Proceed
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Edit Lead Modal */}
+      {currentLead && (
+        <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+          <Box sx={modalStyle}>
+            <IconButton
+              sx={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => setOpenEditModal(false)}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+              Edit Lead
+            </Typography>
+            <TextField
+              label="ID"
+              name="id"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.id}
+              onChange={(e) => setCurrentLead({ ...currentLead, id: e.target.value })}
+            />
+            <TextField
+              label="Serial No"
+              name="sno"
+              type="number"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.sno || ""}
+              onChange={(e) => setCurrentLead({ ...currentLead, sno: parseInt(e.target.value, 10) })}
+            />
+            <TextField
+              label="Name"
+              name="name"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.name}
+              onChange={(e) => setCurrentLead({ ...currentLead, name: e.target.value })}
+            />
+            <TextField
+              label="Contact"
+              name="contact"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.contact}
+              onChange={(e) => setCurrentLead({ ...currentLead, contact: e.target.value })}
+            />
+            <TextField
+              label="Follow-Up On"
+              name="follow_up"
+              type="date"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.follow_up}
+              onChange={(e) => setCurrentLead({ ...currentLead, follow_up: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Status"
+              name="status"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.status}
+              onChange={(e) => setCurrentLead({ ...currentLead, status: e.target.value })}
+            />
+            <TextField
+              label="Comment"
+              name="comment"
+              variant="outlined"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+              value={currentLead.comment}
+              onChange={(e) => setCurrentLead({ ...currentLead, comment: e.target.value })}
+            />
+            <Button variant="contained" sx={{ backgroundColor: "#2485bd" }} onClick={handleEditLead}>
+              Save Changes
+            </Button>
+          </Box>
+        </Modal>
+      )}
+    </Box>
   );
 };
 
-const inputStyle = {
-  width: "100%",
-  padding: "8px",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
+const modalStyle = {
+  position: "absolute" as const,
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
 };
 
 export default AddLead;

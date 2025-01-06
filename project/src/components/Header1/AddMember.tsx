@@ -109,7 +109,7 @@ const AddMember: React.FC = () => {
         {
           member_id: memberData.memberId,
           member_name: memberData.memberName,
-          member_dob: memberData.memberDOB,
+          member_end_date: memberData.memberDOB,
           member_email: memberData.memberEmail,
           member_phone_number: memberData.memberPhoneNumber,
           member_address: memberData.memberAddress,

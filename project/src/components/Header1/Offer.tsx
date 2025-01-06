@@ -7,7 +7,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Menu,
   Paper,
   Box,
   Typography,
@@ -20,7 +19,6 @@ import {
   IconButton,
   Menu,
 } from "@mui/material";
-<<<<<<< HEAD
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,17 +27,10 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 /// <reference types="vite/client" />
 /// <reference types="vite/types/importMeta.d.ts" />
 /// <reference types="vite/client" />
-=======
-import { useNavigate } from "react-router-dom";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { toast } from "react-toastify";
-import { createClient } from "@supabase/supabase-js";
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-<<<<<<< HEAD
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase URL or anon key');
 }
@@ -47,34 +38,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface Offer {
-=======
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-type Offer = {
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
   id: number;
   name: string;
   date: string;
   time: string;
   description: string;
   status: string;
-<<<<<<< HEAD
 }
 
 const OffersPage: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
-=======
-};
-
-const OffersPage: React.FC = () => {
-  const navigation = useNavigate();
-
-  const [data, setData] = useState<Offer[]>([]);
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filteredData, setFilteredData] = useState<Offer[]>([]);
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
-<<<<<<< HEAD
   const [openAddModal, setOpenAddModal] = useState<boolean>(false);
   const [openEditModal, setOpenEditModal] = useState<boolean>(false);
   const [currentOffer, setCurrentOffer] = useState<Offer | null>(null);
@@ -167,36 +142,6 @@ const OffersPage: React.FC = () => {
     const csvData = [
       ["ID", "Name", "Date", "Time", "Description", "Status"],
       ...offers.map((offer) => [
-=======
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    const { data, error } = await supabase
-      .from<Offer>("add_offers")
-      .select("*");
-
-    if (error) {
-      console.error("Error fetching data:", error);
-    } else {
-      setData(data || []);
-      setFilteredData(data || []);
-    }
-  };
-
-  const handleAddOffer = () => {
-    navigation("/addoffer");
-  };
-
-  const handleExport = () => {
-    const csvData = [
-      ["ID", "NAME", "EXPIRY DATE", "TIME", "DESCRIPTION", "STATUS"],
-      ...filteredData.map((offer) => [
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
         offer.id,
         offer.name,
         offer.date,
@@ -210,53 +155,14 @@ const OffersPage: React.FC = () => {
       .join("\n")}`;
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
-<<<<<<< HEAD
     link.setAttribute("download", "offers.csv");
-=======
-    link.setAttribute("download", "offers_data.csv");
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>, offer: Offer) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedOffer(offer);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDelete = async () => {
-    if (selectedOffer) {
-      const confirmDelete = window.confirm("Are you sure you want to delete this offer?");
-      if (!confirmDelete) return;
-      const { error } = await supabase
-        .from("add_offers")
-        .delete()
-        .eq("id", selectedOffer.id);
-
-      if (error) {
-        toast.error("Failed to delete offer: " + error.message);
-      } else {
-        toast.success("Offer deleted successfully!");
-        fetchData();
-      }
-    }
-    handleClose();
-  };
-
-  const filteredEvents = filteredData.filter(
-    (offer) =>
-      offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      offer.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-<<<<<<< HEAD
       <ToastContainer />
       <Box
         sx={{
@@ -266,12 +172,8 @@ const OffersPage: React.FC = () => {
           marginBottom: "20px",
         }}
       >
-=======
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
         <Button
           variant="contained"
-          onClick={handleAddOffer}
           sx={{
             backgroundColor: "#2485bd",
             color: "white",
@@ -279,7 +181,6 @@ const OffersPage: React.FC = () => {
           }}
           onClick={() => setOpenAddModal(true)}
         >
-<<<<<<< HEAD
           Add Offer
         </Button>
         <Typography
@@ -288,12 +189,6 @@ const OffersPage: React.FC = () => {
           sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F" }}
         >
           Offers Dashboard
-=======
-          Add new offer
-        </Button>
-        <Typography variant="h5" sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F", flex: 1 }}>
-          Offers details
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
         </Typography>
         <TextField
           label="Search"
@@ -326,7 +221,6 @@ const OffersPage: React.FC = () => {
           <TableHead>
             <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
               <TableCell>ID</TableCell>
-<<<<<<< HEAD
               <TableCell>Name</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Time</TableCell>
@@ -376,49 +270,6 @@ const OffersPage: React.FC = () => {
                       Delete
                     </MenuItem>
                   </Menu>
-=======
-              <TableCell>NAME</TableCell>
-              <TableCell>EXPIRY DATE</TableCell>
-              <TableCell>TIME</TableCell>
-              <TableCell>DESCRIPTION</TableCell>
-              <TableCell>STATUS</TableCell>
-              <TableCell>ACTION</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredEvents.length > 0 ? (
-              filteredEvents.slice(0, entriesPerPage).map((offer) => (
-                <TableRow key={offer.id}>
-                  <TableCell>{offer.id}</TableCell>
-                  <TableCell>{offer.name}</TableCell>
-                  <TableCell>{offer.date}</TableCell>
-                  <TableCell>{offer.time}</TableCell>
-                  <TableCell>{offer.description}</TableCell>
-                  <TableCell>{offer.status}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      aria-controls={anchorEl ? "actions-menu" : undefined}
-                      aria-haspopup="true"
-                      onClick={(event) => handleClick(event, offer)}
-                      endIcon={<ArrowDropDownIcon />}
-                    >
-                      Actions
-                    </Button>
-                    <Menu id="actions-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                      <MenuItem onClick={() => toast.info("Edit functionality not implemented")}>
-                        Edit
-                      </MenuItem>
-                      <MenuItem onClick={handleDelete}>Delete</MenuItem>
-                    </Menu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No data available in table
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
                 </TableCell>
               </TableRow>
             ))}
@@ -426,16 +277,10 @@ const OffersPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-<<<<<<< HEAD
       <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
         <Typography>
           Showing 1 to {Math.min(entriesPerPage, filteredOffers.length)} of{" "}
           {filteredOffers.length} entries
-=======
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2, alignItems: "center" }}>
-        <Typography>
-          Showing 1 to {Math.min(entriesPerPage, filteredEvents.length)} of {filteredEvents.length} entries
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0
         </Typography>
         <Button
           onClick={handleExport}
@@ -575,7 +420,6 @@ const OffersPage: React.FC = () => {
   );
 };
 
-<<<<<<< HEAD
 const modalStyle = {
   position: "absolute" as const,
   top: "50%",
@@ -589,6 +433,3 @@ const modalStyle = {
 };
 
 export default OffersPage;
-=======
-export default OffersPage;
->>>>>>> d41f426643fed93387bafd1b942e639b96975ed0

@@ -6,7 +6,6 @@ import {
   Box,
   MenuItem,
   Select,
-  InputLabel,
   FormControl,
 } from "@mui/material";
 import StatGroup from './StatGroupTop';
