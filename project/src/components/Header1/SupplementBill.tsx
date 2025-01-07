@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Table,
@@ -39,6 +39,7 @@ const SupplementBill: React.FC = () => {
   interface Bill {
     bill_date: string;
     id: string;
+    sno: number;
     name: string;
     contact: string;
     product: string;
@@ -54,18 +55,31 @@ const SupplementBill: React.FC = () => {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
-  const cardConfig = [
-    { title: "TOTAL AMOUNT", value: "0", Icon: Users, path:"/message" },
-  ];
-  const card1Config = [
-    { title: "TOTAL PENDING AMOUNT", value: "0", Icon: Users, path: "/message"},
-  ];
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalPendingAmount, setTotalPendingAmount] = useState(0);
+
+   
+  const calculateTotals = useCallback((bills: Bill[]) => {
+    const totalAmount = bills.reduce((sum, bill) => sum + parseFloat(bill.amount), 0);
+    const totalPendingAmount = bills.reduce((sum, bill) => sum + parseFloat(bill.pending), 0);
+    setTotalAmount(totalAmount);
+    setTotalPendingAmount(totalPendingAmount);
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    const { data, error } = await supabase.from("supplements_billing").select("*");
+    if (error) {
+      console.error("Error fetching data:", error);
+    } else {
+      setData(data);
+      setFilteredData(data);
+      calculateTotals(data);
+    }
+  }, [calculateTotals]);
 
   useEffect(() => {
     fetchData();
-  }, []);
-
-
+  }, [fetchData]);
 
   useEffect(() => {
     const filtered = data.filter(
@@ -78,22 +92,14 @@ const SupplementBill: React.FC = () => {
     setFilteredData(filtered);
   }, [searchTerm, data]);
 
-  const fetchData = async () => {
-    const { data, error } = await supabase.from("supplements_billing").select("*");
-    if (error) {
-      console.error("Error fetching data:", error);
-    } else {
-      setData(data);
-      setFilteredData(data);
-    }
-  };
 
   const handleExport = () => {
     const csvData = [
-      ["Bill Date", "ID", "Name", "Contact", "Product", "Amount", "Pending", "Mode of Payment"],
+      ["Bill Date", "ID", "SNO", "Name", "Contact", "Product", "Amount", "Pending", "Mode of Payment"],
       ...data.map((row) => [
         row.bill_date,
         row.id,
+        row.sno,
         row.name,
         row.contact,
         row.product,
@@ -178,11 +184,12 @@ const SupplementBill: React.FC = () => {
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <Box sx={{ display: "flex", marginBottom: "20px" }}>
-        
-      
-          <StatGroup stats={cardConfig} />
-          <StatGroup stats={card1Config} />
-        
+        <StatGroup stats={[
+          { title: "TOTAL AMOUNT", value: totalAmount.toString(), Icon: Users, path:"/message" },
+        ]} />
+        <StatGroup stats={[
+          { title: "TOTAL PENDING AMOUNT", value: totalPendingAmount.toString(), Icon: Users, path: "/message"},
+        ]} />
       </Box>
 
       <Box sx={{ padding: 3, backgroundColor: "#e9f7fc", minHeight: "100vh" }}>
@@ -227,9 +234,9 @@ const SupplementBill: React.FC = () => {
               <TableBody>
                 {filteredData.length > 0 ? (
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  filteredData.map((row, _index) => (
+                  filteredData.map((row, index) => (
                     <TableRow key={row.id}>
-                      <TableCell>{row.id}</TableCell>
+                      <TableCell>{row.sno}</TableCell>
                       <TableCell>{row.bill_date}</TableCell>
                       <TableCell>{row.id}</TableCell>
                       <TableCell>{row.name}</TableCell>
@@ -409,7 +416,8 @@ const SupplementBill: React.FC = () => {
         <DialogContent>
           <TextField
             label="Serial No"
-            name="id"
+            name="sno"
+            type="number"
             fullWidth
             margin="normal"
           />
@@ -420,6 +428,12 @@ const SupplementBill: React.FC = () => {
             fullWidth
             margin="normal"
             InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="ID"
+            name="id"
+            fullWidth
+            margin="normal"
           />
           <TextField
             label="Name"
@@ -473,6 +487,7 @@ const SupplementBill: React.FC = () => {
           </Button>
           <Button onClick={() => handleAddSubmit({
             id: (document.querySelector('input[name="id"]') as HTMLInputElement).value,
+            sno: parseInt((document.querySelector('input[name="sno"]') as HTMLInputElement).value, 10),
             bill_date: (document.querySelector('input[name="bill_date"]') as HTMLInputElement).value,
             name: (document.querySelector('input[name="name"]') as HTMLInputElement).value,
             contact: (document.querySelector('input[name="contact"]') as HTMLInputElement).value,

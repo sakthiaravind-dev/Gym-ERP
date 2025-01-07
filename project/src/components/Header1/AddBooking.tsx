@@ -1,36 +1,38 @@
 import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+/// <reference types="vite/client" />
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface BookingData {
-  sno: string;
   date: string;
   id: string;
   name: string;
   phone: string;
   slot: string;
   service: string;
-  loginTime: string;
-  
- 
+  login_time: string;
 }
 
 const AddBooking: React.FC = () => {
-   
   const [bookingData, setBookingData] = useState<BookingData>({
-    sno: "",
     date: "",
     id: "",
     name: "",
     phone: "",
     slot: "",
     service: "",
-    loginTime: "",
+    login_time: "",
   });
-
- 
-  
-
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -42,14 +44,43 @@ const AddBooking: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Member Data Submitted:", bookingData);
-    // Add logic to handle form submission (e.g., API call)
+    console.log("Booking Data Submitted:", bookingData);
+
+    try {
+      const { date, id, name, phone, slot, service, login_time } = bookingData;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert([{ date, id, name, phone, slot, service, login_time }]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Booking added successfully!");
+      setBookingData({
+        date: "",
+        id: "",
+        name: "",
+        phone: "",
+        slot: "",
+        service: "",
+        login_time: "",
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("Failed to add booking: " + error.message);
+      } else {
+        toast.error("Failed to add booking");
+      }
+    }
   };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>Add Booking Slot</h2>
       <form onSubmit={handleSubmit}>
         <div
@@ -79,7 +110,7 @@ const AddBooking: React.FC = () => {
               ID
             </label>
             <input
-              type="id"
+              type="text"
               name="id"
               value={bookingData.id}
               onChange={handleChange}
@@ -145,18 +176,14 @@ const AddBooking: React.FC = () => {
             </label>
             <input
               type="time"
-              name="time"
-              value={bookingData.loginTime}
+              name="login_time"
+              value={bookingData.login_time}
               onChange={handleChange}
               placeholder="Enter time"
               style={inputStyle}
             />
           </div>
-          
-
         </div>
-
-          
 
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <button
