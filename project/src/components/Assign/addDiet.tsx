@@ -27,6 +27,26 @@ const AddDiet = () => {
         </Typography>
         <Box sx={{ marginBottom: 3 }}>
           <Typography variant="subtitle1" sx={{ marginBottom: 1, color: '#71045F'  }}>
+            Member ID
+          </Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Member ID"
+          />
+        </Box>
+        <Box sx={{ marginBottom: 3 }}>
+          <Typography variant="subtitle1" sx={{ marginBottom: 1, color: '#71045F'  }}>
+            Diet ID
+          </Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Diet ID"
+          />
+        </Box>
+        <Box sx={{ marginBottom: 3 }}>
+          <Typography variant="subtitle1" sx={{ marginBottom: 1, color: '#71045F'  }}>
             Diet Name*
           </Typography>
           <TextField

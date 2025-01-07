@@ -39,7 +39,6 @@ const HeaderIcons: React.FC = () => {
       label: 'Pay Bill',
       subMenu: [
         { Icon: CreditCardIcon, label: 'Renewal', path: '/renewal' },
-        { Icon: CreditCardIcon, label: 'Add Addon Bill', path: '/' },
         { Icon: CreditCardIcon, label: 'Supplement Bill', path: '/supplementbill' },
         { Icon: CreditCardIcon, label: 'Add Expense', path: '/addexpense' },
       ],
@@ -66,7 +65,6 @@ const HeaderIcons: React.FC = () => {
       label: 'Offers & Events',
       subMenu: [
         { Icon: StyleIcon, label: 'Package', path: '/addpackage' },
-        { Icon: StyleIcon, label: 'Add-on Package', path: '/addstaff' },
         { Icon: StyleIcon, label: 'Events', path: '/event' },
         { Icon: StyleIcon, label: 'Offers', path: '/offer' },
         { Icon: StyleIcon, label: 'Booking Slot', path: '/addbooking' },
@@ -77,10 +75,10 @@ const HeaderIcons: React.FC = () => {
       Icon: BarChartIcon,
       label: 'Reports',
       subMenu: [
-        { Icon: BarChartIcon, label: 'Income and Expense Report', path: '/renewal' },
+        { Icon: BarChartIcon, label: 'Income and Expense Report', path: '/' },
         { Icon: BarChartIcon, label: 'Income Report', path: '/' },
-        { Icon: BarChartIcon, label: 'Transaction Report', path: '/supplementbill' },
-        { Icon: BarChartIcon, label: 'Package Report', path: '/addexpense' },
+        { Icon: BarChartIcon, label: 'Transaction Report', path: '/' },
+        { Icon: BarChartIcon, label: 'Package Report', path: '/' },
       ],
     },
     {
@@ -88,9 +86,7 @@ const HeaderIcons: React.FC = () => {
       label: 'Post',
       subMenu: [
         { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Post', path: '/addpost' },
-        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Campaign', path: '/' },
-        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Message Report', path: '/supplementbill' },
-        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Chat', path: '/addexpense' },
+        { Icon: ChatBubbleOutlineOutlinedIcon, label: 'Message Report', path: '/messagedetails' },
       ],
     },
     {

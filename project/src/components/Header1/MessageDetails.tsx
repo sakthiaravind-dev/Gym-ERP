@@ -16,12 +16,20 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const MessageDetails: React.FC = () => {
   const mockMessage: any[] = []; // Placeholder for event data
+  const handleSendMessage = () => {
+    navigate("/message");
+  }
+  const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
+  
+ 
+  
 
   const filteredEvents = mockMessage.filter(
     (event) =>
@@ -38,7 +46,6 @@ const MessageDetails: React.FC = () => {
         event.phone,
         event.message,
         event.sent,
-        
       ]),
     ];
     const csvContent = `data:text/csv;charset=utf-8,${csvData
@@ -52,6 +59,8 @@ const MessageDetails: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  
+
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       {/* Top Section with Heading, Search, and Add Button */}
@@ -63,11 +72,18 @@ const MessageDetails: React.FC = () => {
           marginBottom: "20px",
         }}
       >
-       
         {/* Centered Heading */}
         <Typography
           variant="h5"
-          sx={{ color: "#71045F", fontWeight: "bold", margin: 0, flex: 1, textAlign: "center", marginRight: -15 }}>
+          sx={{
+            color: "#71045F",
+            fontWeight: "bold",
+            margin: 0,
+            flex: 1,
+            textAlign: "center",
+            marginRight: -15,
+          }}
+        >
           Message details
         </Typography>
         {/* Search Bar */}
@@ -80,10 +96,26 @@ const MessageDetails: React.FC = () => {
           sx={{ backgroundColor: "white" }}
         />
       </Box>
+      <Button
+            onClick={handleSendMessage}
+            variant="contained"
+            sx={{
+              backgroundColor: "#2485bd",
+              color: "white",
+              padding: "5px 15px",
+              marginTop: "-100px",
+            }}
+          >
+            Send Message
+          </Button>
 
       {/* Dropdown for entries per page */}
       <Box sx={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
-        <FormControl variant="outlined" size="small" sx={{ minWidth: 120, marginRight: "15px" }}>
+        <FormControl
+          variant="outlined"
+          size="small"
+          sx={{ minWidth: 120, marginRight: "15px" }}
+        >
           <InputLabel>Show</InputLabel>
           <Select
             value={entriesPerPage}
@@ -98,8 +130,20 @@ const MessageDetails: React.FC = () => {
         <Typography>entries</Typography>
       </Box>
 
-      {/* Table */}
-      <TableContainer component={Paper}>
+      {/* Table with Send Message Button */}
+      
+        {/* Send Message Button */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "10px",
+          }}
+        >
+          
+        </Box>
+        <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#F7EEF9" }}>

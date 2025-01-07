@@ -30,6 +30,7 @@ const AddPost: React.FC = () => {
         padding: 3,
         border: '1px solid #ccc',
         borderRadius: 2,
+        backgroundColor: "#fff",
       }}
     >
       <Typography variant="h5" align="center" gutterBottom>

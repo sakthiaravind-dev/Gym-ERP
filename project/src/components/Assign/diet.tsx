@@ -18,8 +18,10 @@ import { useNavigate } from "react-router-dom";
 
 
 const tableHeaders = [
+  "MEMBER ID",
   "DIET ID",
   "DIET NAME",
+  "DIET DESCRIPTION",
   "ACTION",
 ];
 
