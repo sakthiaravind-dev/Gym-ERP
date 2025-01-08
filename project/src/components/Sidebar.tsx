@@ -14,7 +14,7 @@ import {
   Banknote
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// hi
+
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },
@@ -27,7 +27,7 @@ const menuItems = [
   { icon: Settings, label: 'Admin', path: '/admin' },
   { icon: UserPlus, label: 'Leads', path: '/leads' },
   { icon: ClipboardList, label: 'Attendance', path: '/attendance' },
-  { icon: Clock, label: 'Employee', path: '/employee' }
+  { icon: Clock, label: 'Employee Attendance', path: '/employee-attendance' }
 ];
 
 const Sidebar = () => {

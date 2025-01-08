@@ -219,9 +219,7 @@ const Expense = () => {
         <Button variant="contained" color="primary" onClick={handleFilter}>
           Filter
         </Button>
-        <Button variant="contained" color="primary">
-          Upcoming Service
-        </Button>
+       
         <Button variant="contained" color="primary" onClick={handleExport}>
           Export Data
         </Button>

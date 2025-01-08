@@ -204,6 +204,18 @@ const Ratings: React.FC = () => {
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <Button
+          onClick={handleAddRating}
+          variant="contained"
+          sx={{
+            backgroundColor: "#2485bd",
+            color: "white",
+            padding: "5px 15px",
+            marginBottom: -6
+          }}
+        >
+          Add Ratings
+        </Button>
       <ToastContainer />
       {/* Heading at Top Center */}
       <Typography
@@ -219,20 +231,8 @@ const Ratings: React.FC = () => {
         Overall Rating Detail
       </Typography>
 
-      {/* Add Rating Button */}
-      <Box sx={{ display: "flex", justifyContent: "flex-start", marginBottom: "20px" }}>
-        <Button
-          onClick={handleAddRating}
-          variant="contained"
-          sx={{
-            backgroundColor: "#2485bd",
-            color: "white",
-            padding: "5px 15px",
-          }}
-        >
-          Add Rating
-        </Button>
-      </Box>
+      
+      
 
       {/* Table */}
       <TableContainer component={Paper}>

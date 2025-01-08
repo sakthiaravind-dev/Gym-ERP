@@ -66,7 +66,15 @@ const EmployeeAttendance: React.FC = () => {
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <Button
+          
+          variant="contained"
+          sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6 }}
+        >
+          Mark Attendance
+        </Button>
       <Box sx={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+      
         <Typography
           variant="h5"
           gutterBottom
@@ -114,11 +122,12 @@ const EmployeeAttendance: React.FC = () => {
           <TableHead>
             <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
               <TableCell>S.NO</TableCell>
-              <TableCell>MEMBER ID</TableCell>
+              <TableCell>EMPLOYEE ID</TableCell>
+              <TableCell>EMPLOYEE NAME</TableCell>
               <TableCell>DATE</TableCell>
               <TableCell>LOGIN TIME</TableCell>
               <TableCell>LOG-OUT TIME</TableCell>
-              <TableCell>MEMBER NAME</TableCell>
+              
             </TableRow>
           </TableHead>
           <TableBody>
