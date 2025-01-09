@@ -58,7 +58,6 @@ const SupplementBill: React.FC = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalPendingAmount, setTotalPendingAmount] = useState(0);
 
-   
   const calculateTotals = useCallback((bills: Bill[]) => {
     const totalAmount = bills.reduce((sum, bill) => sum + parseFloat(bill.amount), 0);
     const totalPendingAmount = bills.reduce((sum, bill) => sum + parseFloat(bill.pending), 0);
@@ -91,7 +90,6 @@ const SupplementBill: React.FC = () => {
     );
     setFilteredData(filtered);
   }, [searchTerm, data]);
-
 
   const handleExport = () => {
     const csvData = [
@@ -183,7 +181,7 @@ const SupplementBill: React.FC = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <Box sx={{ display: "flex", marginBottom: "20px" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
         <StatGroup stats={[
           { title: "TOTAL AMOUNT", value: totalAmount.toString(), Icon: Users, path:"/message" },
         ]} />

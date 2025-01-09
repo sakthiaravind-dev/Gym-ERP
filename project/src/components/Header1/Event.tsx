@@ -47,6 +47,7 @@ interface Event {
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
   const [openAddModal, setOpenAddModal] = useState<boolean>(false);
   const [openEditModal, setOpenEditModal] = useState<boolean>(false);
@@ -111,6 +112,24 @@ const EventsPage: React.FC = () => {
     setCurrentEvent(selectedEvent);
     setOpenEditModal(true);
     handleMenuClose();
+  };
+
+  const handleEditEvent = async () => {
+    if (!currentEvent) return;
+
+    const { error } = await supabase
+      .from("events")
+      .update(currentEvent)
+      .eq("id", currentEvent.id);
+
+    if (error) {
+      toast.error("Failed to update event: " + error.message);
+    } else {
+      toast.success("Event updated successfully!");
+      fetchEvents();
+      setOpenEditModal(false);
+      setCurrentEvent(null);
+    }
   };
 
   const handleDeleteEvent = async (id: number) => {
@@ -202,8 +221,7 @@ const EventsPage: React.FC = () => {
                   <TableCell>{event.status}</TableCell>
                   <TableCell>
                     <Button
-                    style={{backgroundColor: "#2485bd",
-                      color: "white",}}
+                      style={{ backgroundColor: "#2485bd", color: "white" }}
                       variant="outlined"
                       endIcon={<KeyboardArrowDownIcon />}
                       onClick={(e) => handleActionClick(e, event)}
@@ -306,6 +324,92 @@ const EventsPage: React.FC = () => {
             sx={{ backgroundColor: "#2485bd", color: "white" }}
           >
             Add Event
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Edit Event Modal */}
+      <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "white",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6">Edit Event</Typography>
+            <IconButton onClick={() => setOpenEditModal(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <TextField
+            fullWidth
+            label="Name"
+            variant="outlined"
+            value={currentEvent?.name || ""}
+            onChange={(e) => setCurrentEvent({ ...currentEvent, name: e.target.value } as Event)}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={currentEvent?.date || ""}
+            onChange={(e) => setCurrentEvent({ ...currentEvent, date: e.target.value } as Event)}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Time"
+            type="time"
+            InputLabelProps={{ shrink: true }}
+            value={currentEvent?.time || ""}
+            onChange={(e) => setCurrentEvent({ ...currentEvent, time: e.target.value } as Event)}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            variant="outlined"
+            multiline
+            rows={3}
+            value={currentEvent?.description || ""}
+            onChange={(e) => setCurrentEvent({ ...currentEvent, description: e.target.value } as Event)}
+            sx={{ marginBottom: "15px" }}
+          />
+          <FormControl fullWidth sx={{ marginBottom: "15px" }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={currentEvent?.status || ""}
+              onChange={(e) => setCurrentEvent({ ...currentEvent, status: e.target.value } as Event)}
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Inactive">Inactive</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleEditEvent}
+            sx={{ backgroundColor: "#2485bd", color: "white" }}
+          >
+            Save Changes
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => setOpenEditModal(false)}
+            sx={{ marginTop: "10px" }}
+          >
+            Cancel
           </Button>
         </Box>
       </Modal>

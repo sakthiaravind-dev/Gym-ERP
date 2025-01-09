@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Table,
@@ -15,66 +15,143 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Modal,
+  IconButton,
+  Menu,
+  MenuItem as DropdownMenuItem,
 } from "@mui/material";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import CloseIcon from '@mui/icons-material/Close';
 
-// Define a type for attendance records
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or anon key');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 interface AttendanceRecord {
-  memberId: string;
+  sno?: number;
+  emp_id: string;
   date: string;
-  loginTime: string;
-  logoutTime: string;
-  memberName: string;
+  login_time: string;
+  logout_time: string;
+  member_name: string;
 }
 
 const EmployeeAttendance: React.FC = () => {
-  // Explicitly type the state
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(5);
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [newRecord, setNewRecord] = useState<AttendanceRecord>({
+    emp_id: "",
+    date: "",
+    login_time: "",
+    logout_time: "",
+    member_name: "",
+  });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
+
+  useEffect(() => {
+    fetchAttendanceRecords();
+  }, []);
+
+  const fetchAttendanceRecords = async () => {
+    const { data, error } = await supabase.from("employee_attendance").select("*");
+    if (error) {
+      toast.error("Failed to fetch attendance records: " + error.message);
+    } else {
+      setAttendanceRecords(data);
+    }
+  };
+
+  const handleAddRecord = async () => {
+    const { error } = await supabase.from("employee_attendance").insert([newRecord]);
+    if (error) {
+      toast.error("Failed to add attendance record: " + error.message);
+    } else {
+      toast.success("Attendance record added successfully!");
+      fetchAttendanceRecords();
+      setOpenModal(false);
+      setNewRecord({
+        emp_id: "",
+        date: "",
+        login_time: "",
+        logout_time: "",
+        member_name: "",
+      });
+    }
+  };
+
+  const handleEditRecord = async () => {
+    if (!selectedRecord) return;
+    const { error } = await supabase
+      .from("employee_attendance")
+      .update(selectedRecord)
+      .eq("sno", selectedRecord.sno);
+    if (error) {
+      toast.error("Failed to update attendance record: " + error.message);
+    } else {
+      toast.success("Attendance record updated successfully!");
+      fetchAttendanceRecords();
+      setAnchorEl(null);
+      setSelectedRecord(null);
+    }
+  };
+
+  const handleDeleteRecord = async () => {
+    if (!selectedRecord) return;
+    const { error } = await supabase
+      .from("employee_attendance")
+      .delete()
+      .eq("sno", selectedRecord.sno);
+    if (error) {
+      toast.error("Failed to delete attendance record: " + error.message);
+    } else {
+      toast.success("Attendance record deleted successfully!");
+      fetchAttendanceRecords();
+      setAnchorEl(null);
+      setSelectedRecord(null);
+    }
+  };
+
+  const handleActionClick = (event: React.MouseEvent<HTMLElement>, record: AttendanceRecord) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRecord(record);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRecord(null);
+  };
 
   const filteredRecords = attendanceRecords.filter(
     (record) =>
-      record.memberId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.emp_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.member_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.date?.includes(searchTerm) ||
-      record.loginTime?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.logoutTime?.toLowerCase().includes(searchTerm.toLowerCase())
+      record.login_time?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.logout_time?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleExport = () => {
-    const csvData = [
-      ["S.NO", "MEMBER ID", "DATE", "LOGIN TIME", "LOG-OUT TIME", "MEMBER NAME"],
-      ...attendanceRecords.map((record, index) => [
-        index + 1,
-        record.memberId,
-        record.date,
-        record.loginTime,
-        record.logoutTime,
-        record.memberName,
-      ]),
-    ];
-    const csvContent = `data:text/csv;charset=utf-8,${csvData
-      .map((e) => e.join(","))
-      .join("\n")}`;
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "employee_attendance.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <Button
-          
-          variant="contained"
-          sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6 }}
-        >
-          Mark Attendance
-        </Button>
+        variant="contained"
+        sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: 2 }}
+        onClick={() => setOpenModal(true)}
+      >
+        Mark Attendance
+      </Button>
       <Box sx={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-      
         <Typography
           variant="h5"
           gutterBottom
@@ -127,7 +204,7 @@ const EmployeeAttendance: React.FC = () => {
               <TableCell>DATE</TableCell>
               <TableCell>LOGIN TIME</TableCell>
               <TableCell>LOG-OUT TIME</TableCell>
-              
+              <TableCell>ACTIONS</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -135,16 +212,29 @@ const EmployeeAttendance: React.FC = () => {
               filteredRecords.slice(0, entriesPerPage).map((record, index) => (
                 <TableRow key={index}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{record.memberId}</TableCell>
+                  <TableCell>{record.emp_id}</TableCell>
+                  <TableCell>{record.member_name}</TableCell>
                   <TableCell>{record.date}</TableCell>
-                  <TableCell>{record.loginTime}</TableCell>
-                  <TableCell>{record.logoutTime}</TableCell>
-                  <TableCell>{record.memberName}</TableCell>
+                  <TableCell>{record.login_time}</TableCell>
+                  <TableCell>{record.logout_time}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={(e) => handleActionClick(e, record)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && selectedRecord?.sno === record.sno}
+                      onClose={handleMenuClose}
+                    >
+                      <DropdownMenuItem onClick={() => setOpenModal(true)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDeleteRecord}>Delete</DropdownMenuItem>
+                    </Menu>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   No data available in table
                 </TableCell>
               </TableRow>
@@ -154,15 +244,117 @@ const EmployeeAttendance: React.FC = () => {
       </TableContainer>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <Typography>Showing 0 of 0 entries</Typography>
-        <Button
-          onClick={handleExport}
-          variant="contained"
-          sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px" }}
-        >
-          Export Data
-        </Button>
+        <Typography>Showing {filteredRecords.length} of {attendanceRecords.length} entries</Typography>
       </Box>
+
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "white",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6">{selectedRecord ? "Edit Attendance" : "Mark Attendance"}</Typography>
+            <IconButton onClick={() => setOpenModal(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <TextField
+            fullWidth
+            label="Employee ID"
+            variant="outlined"
+            value={selectedRecord ? selectedRecord.emp_id : newRecord.emp_id}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (selectedRecord) {
+                setSelectedRecord({ ...selectedRecord, emp_id: value });
+              } else {
+                setNewRecord({ ...newRecord, emp_id: value });
+              }
+            }}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Employee Name"
+            variant="outlined"
+            value={selectedRecord ? selectedRecord.member_name : newRecord.member_name}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (selectedRecord) {
+                setSelectedRecord({ ...selectedRecord, member_name: value });
+              } else {
+                setNewRecord({ ...newRecord, member_name: value });
+              }
+            }}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={selectedRecord ? selectedRecord.date : newRecord.date}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (selectedRecord) {
+                setSelectedRecord({ ...selectedRecord, date: value });
+              } else {
+                setNewRecord({ ...newRecord, date: value });
+              }
+            }}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Login Time"
+            type="time"
+            InputLabelProps={{ shrink: true }}
+            value={selectedRecord ? selectedRecord.login_time : newRecord.login_time}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (selectedRecord) {
+                setSelectedRecord({ ...selectedRecord, login_time: value });
+              } else {
+                setNewRecord({ ...newRecord, login_time: value });
+              }
+            }}
+            sx={{ marginBottom: "15px" }}
+          />
+          <TextField
+            fullWidth
+            label="Logout Time"
+            type="time"
+            InputLabelProps={{ shrink: true }}
+            value={selectedRecord ? selectedRecord.logout_time : newRecord.logout_time}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (selectedRecord) {
+                setSelectedRecord({ ...selectedRecord, logout_time: value });
+              } else {
+                setNewRecord({ ...newRecord, logout_time: value });
+              }
+            }}
+            sx={{ marginBottom: "15px" }}
+          />
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={selectedRecord ? handleEditRecord : handleAddRecord}
+            sx={{ backgroundColor: "#2485bd", color: "white" }}
+          >
+            {selectedRecord ? "Save Changes" : "Add Record"}
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   );
 };
