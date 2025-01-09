@@ -52,6 +52,7 @@ import Login from './pages/login';
 import Ratings from './pages/Ratings';
 import Leads from './pages/Leads';
 import Admin from './pages/Admin';
+import Reports from './pages/Reports';
 import EmployeeAttendance from './pages/EmployeeAttendance';
 import { createClient } from '@supabase/supabase-js';
 
@@ -142,6 +143,7 @@ const App: React.FC = () => {
                     <Route path="/dietdetails" element={<DietDetailsPage />} />
                     <Route path="/members" element={<Members />} />
                     <Route path="/staff-members" element={<StaffDetails />} />
+                    <Route path="/reports" element={<Reports />} />
                     <Route path="/bookings" element={<BookingDetails />} />
                     <Route path="/message" element={<Message />} />
                     <Route path="/messagedetails" element={<MessageDetails />} />

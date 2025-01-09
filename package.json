@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@types/recharts": "^1.8.29",
     "@types/xlsx": "^0.0.35",
     "file-saver": "^2.0.5",
+    "recharts": "^2.15.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
