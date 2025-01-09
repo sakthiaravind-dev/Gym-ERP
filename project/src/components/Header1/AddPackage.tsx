@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface PackageData {
   packageName: string;
-  packageDescription: string;
+  packageAddedby: string;
   packageAmount: string;
   packageDuration: string;
   packageService: string;
@@ -27,7 +27,7 @@ interface PackageData {
 const AddPackage: React.FC = () => {
   const [packageData, setPackageData] = useState<PackageData>({
     packageName: "",
-    packageDescription: "",
+    packageAddedby: "",
     packageAmount: "",
     packageDuration: "",
     packageService: "",
@@ -57,7 +57,7 @@ const AddPackage: React.FC = () => {
         .insert([{
           package_name: packageData.packageName,
           package_duration: packageData.packageDuration,
-          package_description: packageData.packageDescription,
+          package_description: packageData.packageAddedby,
           package_service: packageData.packageService,
           package_amount: packageData.packageAmount,
           status: packageData.status,
@@ -72,7 +72,7 @@ const AddPackage: React.FC = () => {
       toast.success("Package added successfully!");
       setPackageData({
         packageName: "",
-        packageDescription: "",
+        packageAddedby: "",
         packageAmount: "",
         packageDuration: "",
         packageService: "",
@@ -132,14 +132,14 @@ const AddPackage: React.FC = () => {
 
           <div>
             <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: 13, color: "#71045f" }}>
-              Package description
+              Added By
             </label>
             <input
               type="text"
-              name="packageDescription"
-              value={packageData.packageDescription}
+              name="packageAddedby"
+              value={packageData.packageAddedby}
               onChange={handleChange}
-              placeholder="Package description"
+              placeholder="Package Added by"
               style={inputStyle}
             />
           </div>

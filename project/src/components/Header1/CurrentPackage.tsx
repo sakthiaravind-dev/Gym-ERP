@@ -15,28 +15,59 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Menu,
 } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useNavigate } from "react-router-dom";
+
+interface Package {
+  id: number;
+  name: string;
+  duration: number;
+  status: string;
+  amount: number;
+  addedby: string;
+}
 
 const CurrentPackage: React.FC = () => {
-  const mockPackages = [
-    { id: 2, name: "quarterly", duration: 4, status: "active", amount: 7500, addedBy: "focus7" },
-    { id: 3, name: "half yearly", duration: 6, status: "active", amount: 12000, addedBy: "focus7" },
-    { id: 14, name: "2 months", duration: 2, status: "active", amount: 5000, addedBy: "focus7" },
-    { id: 16, name: "4 months", duration: 4, status: "active", amount: 7500, addedBy: "focus7" },
-    { id: 17, name: "Annual", duration: 12, status: "active", amount: 18000, addedBy: "focus7" },
-    { id: 18, name: "BLACK FRIDAY", duration: 13, status: "active", amount: 9199, addedBy: "focus7" },
+  const mockPackages: Package[] = [
+    { id: 2, name: "quarterly", duration: 4, status: "active", amount: 7500, addedby: "focus7" },
+    { id: 3, name: "half yearly", duration: 6, status: "active", amount: 12000, addedby: "focus7" },
+    { id: 14, name: "2 months", duration: 2, status: "active", amount: 5000, addedby: "focus7" },
+    { id: 16, name: "4 months", duration: 4, status: "active", amount: 7500, addedby: "focus7" },
+    { id: 17, name: "Annual", duration: 12, status: "active", amount: 18000, addedby: "focus7" },
+    { id: 18, name: "BLACK FRIDAY", duration: 13, status: "active", amount: 9199, addedby: "focus7" },
   ];
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const navigate = useNavigate();
 
-  const filteredPackages = mockPackages.filter(
-    (pkg) =>
-      pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(pkg.id).includes(searchTerm) ||
-      String(pkg.amount).includes(searchTerm) ||
-      pkg.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleActionClick = (event: React.MouseEvent<HTMLElement>, packageId: number) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPackageId(packageId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPackageId(null);
+  };
+
+  const handleEditClick = () => {
+    console.log(`Edit clicked for package ID: ${selectedPackageId}`);
+    handleMenuClose();
+  };
+
+  const handleDeleteClick = () => {
+    console.log(`Delete clicked for package ID: ${selectedPackageId}`);
+    handleMenuClose();
+  };
+
+  const handleAddPackage = () => {
+    navigate("/addpackage");
+  };
 
   const handleExport = () => {
     const csvData = [
@@ -47,7 +78,7 @@ const CurrentPackage: React.FC = () => {
         pkg.duration,
         pkg.status,
         pkg.amount,
-        pkg.addedBy,
+        pkg.addedby,
       ]),
     ];
     const csvContent = `data:text/csv;charset=utf-8,${csvData
@@ -61,6 +92,14 @@ const CurrentPackage: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const filteredPackages = mockPackages.filter(
+    (pkg) =>
+      pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(pkg.id).includes(searchTerm) ||
+      String(pkg.amount).includes(searchTerm) ||
+      pkg.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Box sx={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <Box
@@ -73,6 +112,7 @@ const CurrentPackage: React.FC = () => {
       >
         <Button
           variant="contained"
+          onClick={handleAddPackage}
           sx={{
             backgroundColor: "#2485bd",
             color: "white",
@@ -136,11 +176,25 @@ const CurrentPackage: React.FC = () => {
                 <TableCell>{pkg.duration}</TableCell>
                 <TableCell>{pkg.status}</TableCell>
                 <TableCell>{pkg.amount}</TableCell>
-                <TableCell>{pkg.addedBy}</TableCell>
+                <TableCell>{pkg.addedby}</TableCell>
                 <TableCell>
-                  <Button variant="contained" size="small" style={{ backgroundColor: "#2485bd" }}>
+                  <Button
+                    variant="outlined"
+                    endIcon={<KeyboardArrowDownIcon />}
+                    onClick={(e) => handleActionClick(e, pkg.id)}
+                    sx={{ backgroundColor: "#2485bd",
+                      color: "#fff", }}
+                  >
                     Actions
                   </Button>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl) && selectedPackageId === pkg.id}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+                    <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
+                  </Menu>
                 </TableCell>
               </TableRow>
             ))}
@@ -149,7 +203,10 @@ const CurrentPackage: React.FC = () => {
       </TableContainer>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <Typography>Showing 1 to {Math.min(entriesPerPage, filteredPackages.length)} of {filteredPackages.length} entries</Typography>
+        <Typography>
+          Showing 1 to {Math.min(entriesPerPage, filteredPackages.length)} of{" "}
+          {filteredPackages.length} entries
+        </Typography>
         <Button
           onClick={handleExport}
           variant="contained"

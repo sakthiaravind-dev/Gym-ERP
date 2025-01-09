@@ -64,7 +64,7 @@ const HeaderIcons: React.FC = () => {
       Icon: StyleIcon,
       label: 'Offers & Events',
       subMenu: [
-        { Icon: StyleIcon, label: 'Package', path: '/addpackage' },
+        { Icon: StyleIcon, label: 'Package', path: '/currentpackage' },
         { Icon: StyleIcon, label: 'Events', path: '/event' },
         { Icon: StyleIcon, label: 'Offers', path: '/offer' },
         { Icon: StyleIcon, label: 'Booking Slot', path: '/addbooking' },

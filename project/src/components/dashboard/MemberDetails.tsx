@@ -153,12 +153,10 @@ const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, ne
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={() => handleAction("Pay Bill")}>Pay Bill</MenuItem>
-        <MenuItem onClick={() => handleAction("View")}>View</MenuItem>
+        
         <MenuItem onClick={() => handleAction("Edit")}>Edit</MenuItem>
         <MenuItem onClick={() => handleAction("Delete")}>Delete</MenuItem>
-        <MenuItem onClick={() => handleAction("Diet")}>Diet</MenuItem>
-        <MenuItem onClick={() => handleAction("Work-out")}>Work-out</MenuItem>
+       
       </Menu>
 
       <TablePagination
