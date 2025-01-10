@@ -202,7 +202,7 @@ const Members = () => {
       </Box>
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
         <Typography variant="h5" style={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold" }}>
-          Member Details
+          Member Detaqils
         </Typography>
 
         <Grid container spacing={2} justifyContent="center">
