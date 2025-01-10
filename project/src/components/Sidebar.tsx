@@ -26,7 +26,7 @@ const menuItems = [
   { icon: Star, label: 'Ratings', path: '/ratings' },
   { icon: Settings, label: 'Admin', path: '/admin' },
   { icon: UserPlus, label: 'Leads', path: '/leads' },
-  { icon: ClipboardList, label: 'Attendance', path: '/attendance' },
+  { icon: ClipboardList, label: 'Attendance', path: '/today/attendance' },
   { icon: Clock, label: 'Employee Attendance', path: '/employee-attendance' }
 ];
 

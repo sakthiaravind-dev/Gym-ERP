@@ -54,6 +54,7 @@ import Leads from './pages/Leads';
 import Admin from './pages/Admin';
 import Reports from './pages/Reports';
 import EmployeeAttendance from './pages/EmployeeAttendance';
+import AddAttendance from './components/Header1/AddAttendance';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -156,6 +157,7 @@ const App: React.FC = () => {
                     <Route path="/offer" element={<Offers />} />
                     <Route path="/event" element={<Events />} />
                     <Route path="/service" element={<AddService />} />
+                    <Route path="/addattendance" element={<AddAttendance />} />
                     <Route path="/currentworkout" element={<CurrentWorkouts />} />
                     <Route path="/addworkout" element={<AddWorkout />} />
                     <Route path="/diet" element={<DietManagement />} />
@@ -164,6 +166,7 @@ const App: React.FC = () => {
                     <Route path="/leads" element={<Leads />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+                   
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </main>

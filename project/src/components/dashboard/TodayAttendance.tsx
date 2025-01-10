@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -11,149 +11,188 @@ import {
   Paper,
   Box,
   Typography,
+  Menu,
+  MenuItem,
 } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { createClient } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom"; 
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+interface AttendanceRecord {
+  id: string;
+  loginTime: string;
+  logoutTime: string;
+  name: string;
+  date: string;
+}
 
 const MemberAttendance: React.FC = () => {
-  const [id, setId] = useState("");
-  const handleFilter = () => {
-    console.log("Filter clicked!");
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedAttendanceId, setSelectedAttendanceId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const handleAddAttendance = () => {
+    navigate("/addattendance")
+  }
+
+  // Fetch attendance data
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from("attendance").select("*");
+        if (error) throw error;
+        setAttendanceData(data);
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAttendanceData();
+  }, []);
+
+  // Handle Actions menu
+  const handleActionClick = (event: React.MouseEvent<HTMLElement>, attendanceId: string) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedAttendanceId(attendanceId);
   };
 
-  const mockData = [
-    {
-      id: "M001",
-      loginTime: "09:00 AM",
-      logoutTime: "05:00 PM",
-      name: "John Doe",
-      expiringDate: "2024-12-31",
-      pendingAmount: "$50",
-      daysLeft: 10,
-    },
-    {
-      id: "M002",
-      loginTime: "10:00 AM",
-      logoutTime: "06:00 PM",
-      name: "Jane Smith",
-      expiringDate: "2025-01-15",
-      pendingAmount: "$75",
-      daysLeft: 25,
-    },
-    {
-      id: "M003",
-      loginTime: "08:30 AM",
-      logoutTime: "04:30 PM",
-      name: "Alex Johnson",
-      expiringDate: "2024-11-20",
-      pendingAmount: "$20",
-      daysLeft: 5,
-    },
-    {
-      id: "M004",
-      loginTime: "07:45 AM",
-      logoutTime: "03:45 PM",
-      name: "Emily Davis",
-      expiringDate: "2025-02-01",
-      pendingAmount: "$0",
-      daysLeft: 45,
-    },
-    {
-      id: "M005",
-      loginTime: "11:00 AM",
-      logoutTime: "07:00 PM",
-      name: "Michael Brown",
-      expiringDate: "2024-12-10",
-      pendingAmount: "$30",
-      daysLeft: 20,
-    },
-  ];
-  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedAttendanceId(null);
+  };
+
+  const handleMarkPresent = () => {
+    console.log(`Mark Present clicked for ID: ${selectedAttendanceId}`);
+    handleMenuClose();
+  };
+
+  const handleMarkAbsent = () => {
+    console.log(`Mark Absent clicked for ID: ${selectedAttendanceId}`);
+    handleMenuClose();
+  };
+
+  const handleEditAttendance = () => {
+    console.log(`Edit Attendance clicked for ID: ${selectedAttendanceId}`);
+    handleMenuClose();
+  };
+
+  const filteredData = attendanceData.filter(
+    (record) =>
+      record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.date.includes(searchTerm)
+  );
 
   return (
     <Box sx={{ padding: 3, backgroundColor: "#e9f7fc", minHeight: "100vh" }}>
-      {/* Filter Buttons */}
-      <Box sx={{ marginBottom: 3, display: "flex", gap: 2 }}>
-        <Button variant="contained" color="success" onClick={handleFilter}>
-          Hide Filter
+      {/* Top Section: Button, Heading, Search */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 3,
+        }}
+      >
+        {/* Left: Mark Attendance Button */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddAttendance}
+          sx={{ backgroundColor: "#2485bd", color: "white" }}
+        >
+          Mark Attendance
         </Button>
-        <Button variant="contained" color="primary">
-          Show Filter
-        </Button>
-        <Button variant="contained">Morning</Button>
-        <Button variant="contained">Evening</Button>
-        <Button variant="contained" color="info">
-          Refresh Data
-        </Button>
-      </Box>
 
-      {/* ID Input */}
-      <Box sx={{ marginBottom: 3, display: "flex", alignItems: "center", gap: 2 }}>
-        <Typography>ID:</Typography>
-        <TextField
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          variant="outlined"
-          size="small"
-        />
-        <Button variant="contained" color="primary">
-          Go
-        </Button>
-      </Box>
-
-      {/* Member Attendance Table */}
-      <Box sx={{ marginTop: 3, backgroundColor: 'white', padding: '20px' }}>
+        {/* Center: Heading */}
         <Typography
           variant="h5"
           align="center"
-          gutterBottom
-          sx={{ marginBottom: "20px", color: "#71045F", fontWeight: "bold"  }}
+          sx={{ fontWeight: "bold", color: "#71045F" }}
         >
           Member Attendance Details
         </Typography>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{backgroundColor: '#F7EEF9'}}>
-                <TableCell>S.NO</TableCell>
-                <TableCell>MEMBER ID</TableCell>
-                <TableCell>LOGIN TIME</TableCell>
-                <TableCell>LOGOUT TIME</TableCell>
-                <TableCell>MEMBER NAME</TableCell>
-                <TableCell>MEMBERSHIP EXPIRING DATE</TableCell>
-                <TableCell>PENDING AMOUNT</TableCell>
-                <TableCell>DAYS LEFT</TableCell>
-                <TableCell>ACTIONS</TableCell>
+
+        {/* Right: Search Bar */}
+        <TextField
+          label="Search"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ backgroundColor: "white" }}
+        />
+      </Box>
+
+      {/* Attendance Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#F7EEF9" }}>
+              <TableCell>S.NO</TableCell>
+              <TableCell>MEMBER ID</TableCell>
+              <TableCell>MEMBER NAME</TableCell>
+              <TableCell>DATE</TableCell>
+              <TableCell>LOGIN TIME</TableCell>
+              <TableCell>LOGOUT TIME</TableCell>
+              <TableCell>ACTIONS</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  Loading...
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {mockData.length > 0 ? (
-                mockData.map((row, index) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.loginTime}</TableCell>
-                    <TableCell>{row.logoutTime}</TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>{row.expiringDate}</TableCell>
-                    <TableCell>{row.pendingAmount}</TableCell>
-                    <TableCell>{row.daysLeft}</TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="primary" size="small">
-                        Action
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={9} align="center">
-                    No Data Available
+            ) : filteredData.length > 0 ? (
+              filteredData.map((row, index) => (
+                <TableRow key={row.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.date}</TableCell>
+                  <TableCell>{row.loginTime}</TableCell>
+                  <TableCell>{row.logoutTime}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      endIcon={<KeyboardArrowDownIcon />}
+                      onClick={(e) => handleActionClick(e, row.id)}
+                      sx={{ color: "#2485bd" }}
+                    >
+                      Actions
+                    </Button>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && selectedAttendanceId === row.id}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem onClick={handleMarkPresent}>Mark Present</MenuItem>
+                      <MenuItem onClick={handleMarkAbsent}>Mark Absent</MenuItem>
+                      <MenuItem onClick={handleEditAttendance}>Edit Attendance</MenuItem>
+                    </Menu>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No Data Available
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };

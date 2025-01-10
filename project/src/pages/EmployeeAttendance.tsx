@@ -146,7 +146,7 @@ const EmployeeAttendance: React.FC = () => {
       <ToastContainer />
       <Button
         variant="contained"
-        sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: 2 }}
+        sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6}}
         onClick={() => setOpenModal(true)}
       >
         Mark Attendance
@@ -155,7 +155,7 @@ const EmployeeAttendance: React.FC = () => {
         <Typography
           variant="h5"
           gutterBottom
-          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F" }}
+          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F",  }}
         >
           Employee Attendance Details
         </Typography>
@@ -351,7 +351,7 @@ const EmployeeAttendance: React.FC = () => {
             onClick={selectedRecord ? handleEditRecord : handleAddRecord}
             sx={{ backgroundColor: "#2485bd", color: "white" }}
           >
-            {selectedRecord ? "Save Changes" : "Add Record"}
+            {selectedRecord ? "Save Changes" : "Mark Present"}
           </Button>
         </Box>
       </Modal>

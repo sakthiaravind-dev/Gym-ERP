@@ -181,6 +181,9 @@ const StaffDetails = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+  const handleEmployeeAttendance = () => {
+    navigate("/employee-attendance");
+  }
   
   const handleAddStaff = () => {
     navigate("/addstaff");
@@ -200,7 +203,7 @@ const StaffDetails = () => {
         <Button variant="contained" color="primary" onClick={handleExport}>
           Export Data
         </Button>
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleEmployeeAttendance}>
           Employee Attendance
         </Button>
       </Box>
