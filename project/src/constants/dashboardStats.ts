@@ -32,13 +32,14 @@ const fetchData = async (table: string, column: string, filter?: string) => {
   return data.length > 0 ? data.length : "NILL";
 };
 
-const fetchSum = async (table: string, column: string, castType?: string) => {
+const fetchSum = async (table: string, column: string, castType?: string): Promise<string> => {
   const { data, error } = await supabase.from(table).select(column);
   if (error) {
     console.error(`Error fetching ${column} from ${table}:`, error);
     return "NILL";
   }
-  const sum = data.reduce((acc, row) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sum = data.reduce((acc, row: { [key: string]: any }) => {
     const value = castType ? parseFloat(row[column]) : parseFloat(row[column]);
     return acc + (isNaN(value) ? 0 : value);
   }, 0);
