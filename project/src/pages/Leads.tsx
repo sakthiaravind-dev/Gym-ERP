@@ -23,14 +23,14 @@ import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CloseIcon from "@mui/icons-material/Close";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 /// <reference types="vite/client" />
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or anon key');
+  throw new Error("Missing Supabase URL or anon key");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -74,8 +74,7 @@ const Leads: React.FC = () => {
   };
 
   const handleAddLead = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, error } = await supabase.from("leads").insert([newLead]);
+    const { error } = await supabase.from("leads").insert([newLead]);
     if (error) {
       toast.error("Failed to add lead: " + error.message);
     } else {
@@ -94,8 +93,7 @@ const Leads: React.FC = () => {
 
   const handleEditLead = async () => {
     if (currentLead) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("leads")
         .update(currentLead)
         .eq("id", currentLead.id);
@@ -238,37 +236,48 @@ const Leads: React.FC = () => {
                 <TableCell>{lead.status}</TableCell>
                 <TableCell>{lead.comment}</TableCell>
                 <TableCell>
-                  <IconButton
-                    aria-controls="simple-menu"
-                    aria-haspopup="true"
-                    onClick={(e) => handleMenuClick(e, lead)}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                  <Menu
-                    id="simple-menu"
-                    anchorEl={anchorEl}
-                    keepMounted
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem
-                      onClick={() => {
-                        setOpenEditModal(true);
-                        handleMenuClose();
+                  <Box>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "#2485bd",
+                        color: "white",
+                        
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        ":hover": { backgroundColor: "#2485bd" },
+                      }}
+                      onClick={(e) => handleMenuClick(e, lead)}
+                      endIcon={<ArrowDropDownIcon />}
+                    >
+                      Action
+                    </Button>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && currentLead?.id === lead.id}
+                      onClose={handleMenuClose}
+                      PaperProps={{
+                        style: { minWidth: "150px" },
                       }}
                     >
-                      Edit
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleDeleteLead(lead.id);
-                        handleMenuClose();
-                      }}
-                    >
-                      Delete
-                    </MenuItem>
-                  </Menu>
+                      <MenuItem
+                        onClick={() => {
+                          setOpenEditModal(true);
+                          handleMenuClose();
+                        }}
+                      >
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          handleDeleteLead(lead.id);
+                          handleMenuClose();
+                        }}
+                      >
+                        Delete
+                      </MenuItem>
+                    </Menu>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

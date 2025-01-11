@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },
-  { icon: LineChart, label: 'Reports', path: '/reports' },
+  { icon: LineChart, label: 'Reports', path: '/memberstats' },
   { icon: DollarSign, label: 'Transactions', path: '/transaction/all' },
   { icon: Banknote, label: 'Expense', path: '/expense' },
   { icon: Users, label: 'Members', path: '/members' },

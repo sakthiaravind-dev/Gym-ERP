@@ -23,14 +23,13 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or anon key');
+  throw new Error("Missing Supabase URL or anon key");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -103,6 +102,7 @@ const EmployeeAttendance: React.FC = () => {
       fetchAttendanceRecords();
       setAnchorEl(null);
       setSelectedRecord(null);
+      setOpenModal(false);
     }
   };
 
@@ -146,8 +146,11 @@ const EmployeeAttendance: React.FC = () => {
       <ToastContainer />
       <Button
         variant="contained"
-        sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6}}
-        onClick={() => setOpenModal(true)}
+        sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6 }}
+        onClick={() => {
+          setOpenModal(true);
+          setSelectedRecord(null); // Clear selected record when adding a new one
+        }}
       >
         Mark Attendance
       </Button>
@@ -155,7 +158,7 @@ const EmployeeAttendance: React.FC = () => {
         <Typography
           variant="h5"
           gutterBottom
-          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F",  }}
+          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F" }}
         >
           Employee Attendance Details
         </Typography>
@@ -218,16 +221,28 @@ const EmployeeAttendance: React.FC = () => {
                   <TableCell>{record.login_time}</TableCell>
                   <TableCell>{record.logout_time}</TableCell>
                   <TableCell>
-                    <IconButton onClick={(e) => handleActionClick(e, record)}>
-                      <MoreVertIcon />
-                    </IconButton>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={(e) => handleActionClick(e, record)}
+                    >
+                      Action
+                    </Button>
                     <Menu
                       anchorEl={anchorEl}
                       open={Boolean(anchorEl) && selectedRecord?.sno === record.sno}
                       onClose={handleMenuClose}
                     >
-                      <DropdownMenuItem onClick={() => setOpenModal(true)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleDeleteRecord}>Delete</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setOpenModal(true);
+                        }}
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDeleteRecord}>
+                        Delete
+                      </DropdownMenuItem>
                     </Menu>
                   </TableCell>
                 </TableRow>
@@ -244,7 +259,9 @@ const EmployeeAttendance: React.FC = () => {
       </TableContainer>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <Typography>Showing {filteredRecords.length} of {attendanceRecords.length} entries</Typography>
+        <Typography>
+          Showing {filteredRecords.slice(0, entriesPerPage).length} of {attendanceRecords.length} entries
+        </Typography>
       </Box>
 
       <Modal open={openModal} onClose={() => setOpenModal(false)}>

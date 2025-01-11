@@ -15,7 +15,7 @@ import {
 export const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CalendarCheck, label: 'Bookings', path: '/bookings' },
-  { icon: LineChart, label: 'Reports', path: '/reports' },
+  { icon: LineChart, label: 'Reports', path: '/memberstats' },
   { icon: DollarSign, label: 'Transactions', path: '/transactions' },
   { icon: Users, label: 'Members', path: '/members' },
   { icon: UserCog, label: 'Staff', path: '/staff' },

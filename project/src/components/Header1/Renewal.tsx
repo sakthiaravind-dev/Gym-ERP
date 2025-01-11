@@ -6,7 +6,7 @@ const Renewal: React.FC = () => {
   const navigate = useNavigate();
 
   const handleAddRenewal = () => {
-    navigate("/renewalform");
+    navigate("/addrenewal");
   };
 
   return (

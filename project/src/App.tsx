@@ -26,7 +26,7 @@ import AddLead from './components/Header1/AddLead';
 import AbsentDetails from './components/dashboard/AbsentDetails';
 import MembershipRenewal from './components/dashboard/Renewal';
 import PTFeePending from './components/dashboard/PTFeeDetails';
-import RenewalForm from './components/Header1/RenewalForm';
+import AddRenewal from './components/Header1/AddRenewal';
 import Renewal from './components/Header1/Renewal';
 import TaxCalculator from './components/Header1/TaxCalculator';
 import SupplementBill from './components/Header1/SupplementBill';
@@ -53,6 +53,7 @@ import Ratings from './pages/Ratings';
 import Leads from './pages/Leads';
 import Admin from './pages/Admin';
 import Reports from './pages/Reports';
+import MemberStas from './pages/MemberStats';
 import EmployeeAttendance from './pages/EmployeeAttendance';
 import AddAttendance from './components/Header1/AddAttendance';
 import { createClient } from '@supabase/supabase-js';
@@ -136,7 +137,7 @@ const App: React.FC = () => {
                     <Route path="/addstaff" element={<AddStaff />} />
                     <Route path="/addlead" element={<AddLead />} />
                     <Route path="/renewal" element={<Renewal />} />
-                    <Route path="/renewalform" element={<RenewalForm />} />
+                    <Route path="/addrenewal" element={<AddRenewal />} />
                     <Route path="/taxcalculator" element={<TaxCalculator />} />
                     <Route path="/supplementbill" element={<SupplementBill />} />
                     <Route path="/addbill" element={<BillData />} />
@@ -146,6 +147,7 @@ const App: React.FC = () => {
                     <Route path="/staff-members" element={<StaffDetails />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/bookings" element={<BookingDetails />} />
+                    <Route path="/memberstats" element={<MemberStas/>} />
                     <Route path="/message" element={<Message />} />
                     <Route path="/messagedetails" element={<MessageDetails />} />
                     <Route path="/currentpackage" element={<CurrentPackage />} />

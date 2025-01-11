@@ -15,11 +15,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   Menu,
   MenuItem,
 } from "@mui/material";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -213,18 +211,16 @@ const DietManagement: React.FC = () => {
                     <TableCell align="center">{diet.diet_name}</TableCell>
                     <TableCell align="center">{diet.diet_description}</TableCell>
                     <TableCell align="center">
-                      <IconButton
-                        aria-controls="simple-menu"
-                        aria-haspopup="true"
+                      <Button
+                        variant="contained"
+                        color="primary"
                         onClick={(event) => handleMenuClick(event, diet)}
                       >
-                        <MoreVertIcon />
-                      </IconButton>
+                        Action
+                      </Button>
                       <Menu
-                        id="simple-menu"
                         anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(anchorEl)}
+                        open={Boolean(anchorEl) && selectedDiet?.diet_id === diet.diet_id}
                         onClose={handleMenuClose}
                       >
                         <MenuItem onClick={handleEdit}>Edit</MenuItem>
