@@ -66,7 +66,7 @@ const Members = () => {
     if (error) {
       console.error("Error fetching members:", error);
     } else {
-      setMemberData(data);
+      setMemberData(data || []);
     }
   };
 
@@ -134,6 +134,18 @@ const Members = () => {
     );
   };
 
+  // Export to Excel
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(memberData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "members.xlsx");
+    toast.success("Members exported successfully!");
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <Typography
@@ -142,6 +154,23 @@ const Members = () => {
       >
         Member Details
       </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 2,
+        }}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleExport}
+          sx={{ backgroundColor: "#2485bd", color: "#fff", marginTop: -6 }}
+        >
+          Export Data
+        </Button>
+      </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -185,7 +214,7 @@ const Members = () => {
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
         <DialogTitle>Edit Member</DialogTitle>
         <DialogContent>
-        <TextField
+          <TextField
             name="member_id"
             label="Member ID"
             fullWidth

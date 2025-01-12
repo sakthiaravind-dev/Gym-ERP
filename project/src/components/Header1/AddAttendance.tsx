@@ -69,7 +69,9 @@ const AddAttendance: React.FC = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      
       <ToastContainer />
+      
       <h2 style={{ textAlign: "center", padding: 10, marginBottom: "30px", fontWeight: "bold", fontSize: 18, borderBottom: "1px solid #ccc" }}>
         Add Attendance
       </h2>

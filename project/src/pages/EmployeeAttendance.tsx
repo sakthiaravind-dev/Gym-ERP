@@ -46,6 +46,7 @@ interface AttendanceRecord {
 const EmployeeAttendance: React.FC = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [search, setSearch] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState<number>(5);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [newRecord, setNewRecord] = useState<AttendanceRecord>({
@@ -57,6 +58,30 @@ const EmployeeAttendance: React.FC = () => {
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
+  const filteredBookings = attendanceRecords.filter((attendanceRecords) =>
+    Object.values(attendanceRecords).some((value) =>
+      value.toString().toLowerCase().includes(search.toLowerCase())
+    )
+  );
+  const handleExport = () => {
+    const csvData = filteredBookings.map((attendanceRecords) =>
+      [
+        attendanceRecords.emp_id,
+        attendanceRecords.date,
+        attendanceRecords.login_time,
+        attendanceRecords.logout_time,
+        attendanceRecords.member_name,
+        
+      ].join(",")
+    );
+    const csvContent = "data:text/csv;charset=utf-8," + csvData.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "employeeAttendance.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
 
   useEffect(() => {
     fetchAttendanceRecords();
@@ -154,6 +179,9 @@ const EmployeeAttendance: React.FC = () => {
       >
         Mark Attendance
       </Button>
+       <Button variant="contained" sx={{backgroundColor: "#2485bd", color: "white", padding: "5px 15px", marginBottom: -6, marginLeft: 1}} onClick={handleExport}>
+                Export Data
+              </Button>
       <Box sx={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
         <Typography
           variant="h5"
