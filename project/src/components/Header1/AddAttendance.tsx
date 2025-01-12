@@ -10,7 +10,6 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface AttendanceData {
-  sno: string;
   mem_id: string;
   mem_name: string;
   date: string;
@@ -20,7 +19,6 @@ interface AttendanceData {
 
 const AddAttendance: React.FC = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceData>({
-    sno: "",
     mem_id: "",
     mem_name: "",
     date: "",
@@ -40,13 +38,13 @@ const AddAttendance: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { sno, mem_id, mem_name, date, login_time, logout_time } = attendanceData;
+    const { mem_id, mem_name, date, login_time, logout_time } = attendanceData;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await supabase
       .from("attendance")
       .insert([
         {
-          sno,
           mem_id,
           mem_name,
           date,
@@ -60,7 +58,6 @@ const AddAttendance: React.FC = () => {
     } else {
       toast.success("Attendance added successfully!");
       setAttendanceData({
-        sno: "",
         mem_id: "",
         mem_name: "",
         date: "",
@@ -84,7 +81,6 @@ const AddAttendance: React.FC = () => {
             gap: "20px",
           }}
         >
-          
           <div>
             <label style={labelStyle}>Member ID*</label>
             <input
