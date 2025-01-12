@@ -1,12 +1,44 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase URL or anon key");
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Renewal: React.FC = () => {
   const [id, setId] = useState("");
   const navigate = useNavigate();
 
-  const handleAddRenewal = () => {
-    navigate("/addrenewal");
+  const handleAddRenewal = async () => {
+    const { data, error } = await supabase
+      .from("members")
+      .select("member_id")
+      .eq("member_id", id)
+      .single();
+
+    if (error || !data) {
+      alert("Member ID not found");
+      return;
+    }
+
+    // Add the member ID to the verifier column of the renewals table
+    const { error: upsertError } = await supabase
+      .from("renewals")
+      .upsert({ verifier: id }, { onConflict: "verifier" });
+
+    if (upsertError) {
+      console.error("Error adding verifier to renewals:", upsertError);
+      alert("Error adding verifier to renewals");
+      return;
+    }
+
+    navigate(`/addrenewal?verifier=${id}`);
   };
 
   return (
@@ -21,7 +53,9 @@ const Renewal: React.FC = () => {
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <h2 style={{ color: "purple", marginBottom: "20px", fontWeight: "bold" }}>Enter ID For Payment</h2>
+      <h2 style={{ color: "purple", marginBottom: "20px", fontWeight: "bold" }}>
+        Enter ID For Payment
+      </h2>
       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <input
           type="text"
@@ -45,7 +79,6 @@ const Renewal: React.FC = () => {
             borderRadius: "4px",
             fontSize: "14px",
             cursor: "pointer",
-            transition: "all 0.3s ease-in-out",
           }}
           onClick={handleAddRenewal}
         >

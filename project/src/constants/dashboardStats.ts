@@ -82,6 +82,6 @@ export const financialStats = [
 
 export const pendingStats = [
   { title: "CONTINUOUS ABSENT", value: await fetchData("attendance", "continuous_absent"), Icon: Users, path:"/absent" },
-  { title: "TODAYS RENEWAL", value: await fetchData("renewals", "date", new Date().toISOString().split('T')[0]), Icon: Users, path:"/membership-renewal" },
+  { title: "TODAYS RENEWAL", value: await fetchData("renewals", "start_date", new Date().toISOString().split('T')[0]), Icon: Users, path:"/membership-renewal" },
   { title: "PT PENDING DETAILS", value: await fetchData("pt_pending", "details_count"), Icon: Users, path:"/pt/pending" },
 ];
