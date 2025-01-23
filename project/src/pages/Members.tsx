@@ -35,6 +35,7 @@ const tableHeaders = [
   "MEMBER NAME",
   "MEMBER PHONE NUMBER",
   "MEMBER TYPE",
+  "MEMBER STATUS",
   "REFERRED BY",
   "END ON",
   "ACTIONS",
@@ -45,6 +46,7 @@ interface Member {
   member_name: string;
   member_phone_number: string;
   member_type: string;
+  member_status: string;
   referred_by: string;
   bill_date: string;
 }
@@ -104,6 +106,7 @@ const Members = () => {
         member_name: selectedMember.member_name,
         member_phone_number: selectedMember.member_phone_number,
         member_type: selectedMember.member_type,
+        member_status: selectedMember.member_status,
         referred_by: selectedMember.referred_by,
         bill_date: selectedMember.bill_date,
       };
@@ -189,6 +192,7 @@ const Members = () => {
                 <TableCell align="center">{member.member_name}</TableCell>
                 <TableCell align="center">{member.member_phone_number}</TableCell>
                 <TableCell align="center">{member.member_type}</TableCell>
+                <TableCell align="center">{member.member_status}</TableCell>
                 <TableCell align="center">{member.referred_by}</TableCell>
                 <TableCell align="center">{member.bill_date}</TableCell>
                 <TableCell align="center">
@@ -243,6 +247,14 @@ const Members = () => {
             label="Member Type"
             fullWidth
             value={selectedMember?.member_type || ""}
+            onChange={handleEditChange}
+            sx={{ marginBottom: 2 }}
+          />
+          <TextField
+            name="member_status"
+            label="Member Status"
+            fullWidth
+            value={selectedMember?.member_status || ""}
             onChange={handleEditChange}
             sx={{ marginBottom: 2 }}
           />

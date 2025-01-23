@@ -39,12 +39,13 @@ interface Transaction {
   start_date: string;
   emp_id: string;
   member_name: string;
-  member_type: string;
-  phone: string;
-  total_paid: string;
+  month_paid: string;
+  pending: string;
+  discount: string;
+  state: string;
   total_amount_received: string;
   payment_mode: string;
-  received_by: string;
+  renewal_date: string;
 }
 
 const TransactionComponent = () => {
@@ -60,12 +61,13 @@ const TransactionComponent = () => {
     start_date: "",
     emp_id: "",
     member_name: "",
-    member_type: "",
-    phone: "",
-    total_paid: "",
+    month_paid: "",
+    pending: "",
+    discount: "",
+    state: "",
     total_amount_received: "",
     payment_mode: "",
-    received_by: "",
+    renewal_date: "",
   });
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -118,15 +120,16 @@ const TransactionComponent = () => {
       setOpenModal(false);
       setNewTransaction({
         bill_date: "",
-        start_date: "",
-        emp_id: "",
-        member_name: "",
-        member_type: "",
-        phone: "",
-        total_paid: "",
-        total_amount_received: "",
-        payment_mode: "",
-        received_by: "",
+    start_date: "",
+    emp_id: "",
+    member_name: "",
+    month_paid: "",
+    pending: "",
+    discount: "",
+    state: "",
+    total_amount_received: "",
+    payment_mode: "",
+    renewal_date: "",
       });
     }
   };
@@ -215,15 +218,16 @@ const TransactionComponent = () => {
             <TableRow>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>SNO</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>BILL DATE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>START DATE</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>MEMBER ID</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>MEMBER NAME</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>MEMBER TYPE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>PHONE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>TOTAL MONTH PAID</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>MONTH PAID</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>PENDING</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>DISCOUNT</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>STATE</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>TOTAL AMOUNT RECEIVED</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>PAYMENT MODE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>RECEIVED BY</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>START DATE</TableCell>
+              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>RENEWAL DATE</TableCell>
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: '700' }}>ACTIONS</TableCell>
             </TableRow>
           </TableHead>
@@ -233,15 +237,16 @@ const TransactionComponent = () => {
                 <TableRow key={transaction.sno}>
                   <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                   <TableCell>{transaction.bill_date}</TableCell>
-                  <TableCell>{transaction.start_date}</TableCell>
                   <TableCell>{transaction.emp_id}</TableCell>
                   <TableCell>{transaction.member_name}</TableCell>
-                  <TableCell>{transaction.member_type}</TableCell>
-                  <TableCell>{transaction.phone}</TableCell>
-                  <TableCell>{transaction.total_paid}</TableCell>
+                  <TableCell>{transaction.month_paid}</TableCell>
+                  <TableCell>{transaction.pending}</TableCell>
+                  <TableCell>{transaction.discount}</TableCell>
+                  <TableCell>{transaction.state}</TableCell>
                   <TableCell>{transaction.total_amount_received}</TableCell>
                   <TableCell>{transaction.payment_mode}</TableCell>
-                  <TableCell>{transaction.received_by}</TableCell>
+                  <TableCell>{transaction.start_date}</TableCell>
+                  <TableCell>{transaction.renewal_date}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
@@ -353,28 +358,37 @@ const TransactionComponent = () => {
             />
             <TextField
               fullWidth
-              label="Member Type"
-              value={newTransaction.member_type}
+              label="Month paid"
+              value={newTransaction.month_paid}
               onChange={(e) =>
-                setNewTransaction({ ...newTransaction, member_type: e.target.value })
+                setNewTransaction({ ...newTransaction, month_paid: e.target.value })
               }
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
-              label="Phone"
-              value={newTransaction.phone}
+              label="Pending"
+              value={newTransaction.pending}
               onChange={(e) =>
-                setNewTransaction({ ...newTransaction, phone: e.target.value })
+                setNewTransaction({ ...newTransaction, pending: e.target.value })
               }
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
               label="Total Paid"
-              value={newTransaction.total_paid}
+              value={newTransaction.discount}
               onChange={(e) =>
-                setNewTransaction({ ...newTransaction, total_paid: e.target.value })
+                setNewTransaction({ ...newTransaction, discount: e.target.value })
+              }
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="State"
+              value={newTransaction.state}
+              onChange={(e) =>
+                setNewTransaction({ ...newTransaction, state: e.target.value })
               }
               sx={{ mb: 2 }}
             />
@@ -401,10 +415,19 @@ const TransactionComponent = () => {
             />
             <TextField
               fullWidth
-              label="Received By"
-              value={newTransaction.received_by}
+              label="Start date"
+              value={newTransaction.start_date}
               onChange={(e) =>
-                setNewTransaction({ ...newTransaction, received_by: e.target.value })
+                setNewTransaction({ ...newTransaction, start_date: e.target.value })
+              }
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Renewal date"
+              value={newTransaction.renewal_date}
+              onChange={(e) =>
+                setNewTransaction({ ...newTransaction, renewal_date: e.target.value })
               }
               sx={{ mb: 2 }}
             />
