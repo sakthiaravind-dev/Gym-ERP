@@ -95,7 +95,7 @@ const TodayAttendance: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSelectedRecord((prev) => prev ? { ...prev, [name]: value } : null);
+    setSelectedRecord((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
   const handleSaveChanges = async () => {
@@ -113,11 +113,16 @@ const TodayAttendance: React.FC = () => {
     if (error) {
       console.error("Error updating attendance record:", error);
     } else {
-      setAttendanceData(attendanceData.map((record) => (record.sno === selectedRecord.sno ? selectedRecord : record)));
+      setAttendanceData(
+        attendanceData.map((record) =>
+          record.sno === selectedRecord.sno ? selectedRecord : record
+        )
+      );
       setOpenModal(false);
     }
   };
 
+  // Filter records based on search term
   const filteredData = attendanceData.filter(
     (record) =>
       record.mem_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -125,9 +130,34 @@ const TodayAttendance: React.FC = () => {
       record.date?.includes(searchTerm)
   );
 
+  // Handle Export to CSV
+  const handleExport = () => {
+    const csvRows = [
+      ["S.NO", "MEMBER ID", "MEMBER NAME", "DATE", "LOGIN TIME", "LOGOUT TIME"], // Header row
+      ...filteredData.map((record, index) => [
+        index + 1,
+        record.mem_id,
+        record.mem_name,
+        record.date,
+        record.login_time,
+        record.logout_time,
+      ]),
+    ];
+
+    const csvContent = csvRows.map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "attendance_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Box sx={{ padding: 3, backgroundColor: "#e9f7fc", minHeight: "100vh" }}>
-      {/* Top Section: Button, Heading, Search */}
+      {/* Top Section: Buttons, Heading, Search */}
       <Box
         sx={{
           display: "flex",
@@ -136,7 +166,6 @@ const TodayAttendance: React.FC = () => {
           marginBottom: 3,
         }}
       >
-        {/* Left: Mark Attendance Button */}
         <Button
           variant="contained"
           color="primary"
@@ -145,8 +174,6 @@ const TodayAttendance: React.FC = () => {
         >
           Mark Attendance
         </Button>
-
-        {/* Center: Heading */}
         <Typography
           variant="h5"
           align="center"
@@ -154,8 +181,6 @@ const TodayAttendance: React.FC = () => {
         >
           Member Attendance Details
         </Typography>
-
-        {/* Right: Search Bar */}
         <TextField
           label="Search"
           variant="outlined"
@@ -164,6 +189,16 @@ const TodayAttendance: React.FC = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ backgroundColor: "white" }}
         />
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", marginBottom: 3 }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleExport}
+          sx={{ backgroundColor: "#2485bd", color: "white" }}
+        >
+          Export Data
+        </Button>
       </Box>
 
       {/* Attendance Table */}
@@ -201,7 +236,7 @@ const TodayAttendance: React.FC = () => {
                       variant="outlined"
                       endIcon={<KeyboardArrowDownIcon />}
                       onClick={(e) => handleActionClick(e, row)}
-                      sx={{ color: "#2485bd" }}
+                      sx={{ color: "#fff", backgroundColor: "#2485bd" }}
                     >
                       Actions
                     </Button>
