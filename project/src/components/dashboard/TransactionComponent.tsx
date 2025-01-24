@@ -19,7 +19,7 @@ import {
   IconButton,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -28,7 +28,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or anon key');
+  throw new Error("Missing Supabase URL or anon key");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -70,6 +70,7 @@ const TransactionComponent = () => {
     renewal_date: "",
   });
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Added search query state
 
   useEffect(() => {
     fetchTransactions();
@@ -77,7 +78,7 @@ const TransactionComponent = () => {
 
   useEffect(() => {
     filterTransactions();
-  }, [period, transactions]);
+  }, [period, transactions, searchQuery]); // Include searchQuery in the dependency array
 
   const fetchTransactions = async () => {
     const { data, error } = await supabase.from("transactions").select("*");
@@ -96,17 +97,30 @@ const TransactionComponent = () => {
       const transactionMonth = transactionDate.getMonth();
       const transactionDay = transactionDate.getDate();
 
+      // Filter by period first (yearly, monthly, today)
+      let isPeriodMatch = true;
       switch (period) {
         case "yearly":
-          return transactionYear === today.getFullYear();
+          isPeriodMatch = transactionYear === today.getFullYear();
+          break;
         case "monthly":
-          return transactionYear === today.getFullYear() && transactionMonth === today.getMonth();
+          isPeriodMatch = transactionYear === today.getFullYear() && transactionMonth === today.getMonth();
+          break;
         case "today":
-          return transactionYear === today.getFullYear() && transactionMonth === today.getMonth() && transactionDay === today.getDate();
+          isPeriodMatch = transactionYear === today.getFullYear() && transactionMonth === today.getMonth() && transactionDay === today.getDate();
+          break;
         default:
-          return true; 
+          break;
       }
+
+      // Filter by search query (member name or member ID)
+      const isSearchMatch =
+        transaction.member_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.emp_id.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return isPeriodMatch && isSearchMatch;
     });
+
     setFilteredTransactions(filtered);
   };
 
@@ -209,6 +223,10 @@ const TransactionComponent = () => {
           label="Search"
           variant="outlined"
           sx={{ width: "25%" }}
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+          }}
         />
       </Box>
 
@@ -263,7 +281,7 @@ const TransactionComponent = () => {
                       open={Boolean(anchorEl) && selectedTransaction?.sno === transaction.sno}
                       onClose={handleMenuClose}
                     >
-                      <MenuItem onClick={() => setOpenModal(true)}>Edit</MenuItem>
+                      <MenuItem onClick={handleEditTransaction}>Edit</MenuItem>
                       <MenuItem onClick={handleDeleteTransaction}>Delete</MenuItem>
                     </Menu>
                   </TableCell>
@@ -271,9 +289,7 @@ const TransactionComponent = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={12} align="center">
-                  No data available in table
-                </TableCell>
+                <TableCell colSpan={12} align="center">No transactions found</TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -281,14 +297,16 @@ const TransactionComponent = () => {
       </TableContainer>
 
       <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={filteredTransactions.length}
+        rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
 
+      {/* Add Transaction Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{
@@ -296,163 +314,52 @@ const TransactionComponent = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: 500,
+            width: 400,
             bgcolor: "white",
+            borderRadius: 4,
+            padding: 4,
             boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-            maxHeight: "90vh",
-            overflowY: "auto",
           }}
         >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">
-              {selectedTransaction ? "Edit Transaction" : "Add Transaction"}
-            </Typography>
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Add Transaction
+          </Typography>
+          <TextField
+            label="Bill Date"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newTransaction.bill_date}
+            onChange={(e) => setNewTransaction({ ...newTransaction, bill_date: e.target.value })}
+          />
+          <TextField
+            label="Member Name"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newTransaction.member_name}
+            onChange={(e) => setNewTransaction({ ...newTransaction, member_name: e.target.value })}
+          />
+          <TextField
+            label="Total Amount Received"
+            variant="outlined"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+            value={newTransaction.total_amount_received}
+            onChange={(e) => setNewTransaction({ ...newTransaction, total_amount_received: e.target.value })}
+          />
+          <Box display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#2485bd", color: "white" }}
+              onClick={handleAddTransaction}
+            >
+              Add
+            </Button>
             <IconButton onClick={() => setOpenModal(false)}>
               <CloseIcon />
             </IconButton>
           </Box>
-
-          <form>
-            <TextField
-              fullWidth
-              label="Bill Date"
-              type="date"
-              value={newTransaction.bill_date}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, bill_date: e.target.value })
-              }
-              sx={{ mb: 2 }}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth
-              label="Start Date"
-              type="date"
-              value={newTransaction.start_date}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, start_date: e.target.value })
-              }
-              sx={{ mb: 2 }}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth
-              label="Employee ID"
-              value={newTransaction.emp_id}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, emp_id: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Member Name"
-              value={newTransaction.member_name}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, member_name: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Month Paid"
-              value={newTransaction.month_paid}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, month_paid: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Pending"
-              value={newTransaction.pending}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, pending: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Discount"
-              value={newTransaction.discount}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, discount: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="State"
-              value={newTransaction.state}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, state: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Total Amount Received"
-              value={newTransaction.total_amount_received}
-              onChange={(e) =>
-                setNewTransaction({
-                  ...newTransaction,
-                  total_amount_received: e.target.value,
-                })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Payment Mode"
-              value={newTransaction.payment_mode}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, payment_mode: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Start Date"
-              type="date"
-              value={newTransaction.start_date}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, start_date: e.target.value })
-              }
-              sx={{ mb: 2 }}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth
-              label="Renewal Date"
-              type="date"
-              value={newTransaction.renewal_date}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, renewal_date: e.target.value })
-              }
-              sx={{ mb: 2 }}
-              InputLabelProps={{ shrink: true }}
-            />
-
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                sx={{ mr: 2 }}
-                onClick={() => setOpenModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={selectedTransaction ? handleEditTransaction : handleAddTransaction}
-              >
-                {selectedTransaction ? "Update" : "Add"}
-              </Button>
-            </Box>
-          </form>
         </Box>
       </Modal>
     </Box>

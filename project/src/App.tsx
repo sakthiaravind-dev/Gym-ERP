@@ -15,7 +15,7 @@ import MemberPage from './components/dashboard/gender';
 import TransactionComponent from './components/dashboard/TransactionComponent';
 import Expense from './components/dashboard/Expense';
 import FeePending from './components/dashboard/FeePending';
-import MembershipFollowUp from './components/dashboard/MembershipFollowUp';
+import MembershipFollowUp from './components/dashboard/MembershipExpiring';
 import MemberAPTDetails from './components/dashboard/MemberAPTDetails';
 import ActivePT from './components/dashboard/ActivePT';
 import ProfilePage from './components/Header1/ProfilePage';
@@ -55,6 +55,7 @@ import Admin from './pages/Admin';
 import Reports from './pages/Reports';
 import MemberStas from './pages/MemberStats';
 import EmployeeAttendance from './pages/EmployeeAttendance';
+import MembershipExpiring from './components/dashboard/MembershipExpiring';
 import AddAttendance from './components/Header1/AddAttendance';
 import { createClient } from '@supabase/supabase-js';
 
@@ -135,6 +136,7 @@ const App: React.FC = () => {
                     <Route path="/addmember" element={<AddMember />} />
                     <Route path="/transaction" element={<AddTranscation />} />
                     <Route path="/addstaff" element={<AddStaff />} />
+                    <Route path="/membershipexpiring" element={<MembershipExpiring />} />
                     <Route path="/addlead" element={<AddLead />} />
                     <Route path="/renewal" element={<Renewal />} />
                     <Route path="/addrenewal" element={<AddRenewal />} />

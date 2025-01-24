@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import {
   Typography,
@@ -31,6 +30,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const tableHeaders = [
+  "S.NO",
   "MEMBER ID",
   "MEMBER NAME",
   "MEMBER PHONE NUMBER",
@@ -53,6 +53,8 @@ interface Member {
 
 const Members = () => {
   const [memberData, setMemberData] = useState<Member[]>([]);
+  const [filteredData, setFilteredData] = useState<Member[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -69,7 +71,20 @@ const Members = () => {
       console.error("Error fetching members:", error);
     } else {
       setMemberData(data || []);
+      setFilteredData(data || []); // Initially set filtered data to full data
     }
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = memberData.filter((member) =>
+      Object.values(member).some((value) =>
+        String(value).toLowerCase().includes(query)
+      )
+    );
+    setFilteredData(filtered);
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>, member: Member) => {
@@ -165,11 +180,18 @@ const Members = () => {
           marginBottom: 2,
         }}
       >
+        <TextField
+          placeholder="Search Members"
+          variant="outlined"
+          value={searchQuery}
+          onChange={handleSearch}
+          sx={{ marginRight: 2, width: "300px" }}
+        />
         <Button
           variant="contained"
           color="primary"
           onClick={handleExport}
-          sx={{ backgroundColor: "#2485bd", color: "#fff", marginTop: -6 }}
+          sx={{ backgroundColor: "#2485bd", color: "#fff" }}
         >
           Export Data
         </Button>
@@ -186,8 +208,9 @@ const Members = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {memberData.map((member, index) => (
+            {filteredData.map((member, index) => (
               <TableRow key={index}>
+                <TableCell align="center">{index + 1}</TableCell>
                 <TableCell align="center">{member.member_id}</TableCell>
                 <TableCell align="center">{member.member_name}</TableCell>
                 <TableCell align="center">{member.member_phone_number}</TableCell>
