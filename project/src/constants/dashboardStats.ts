@@ -53,16 +53,16 @@ const fetchTotalAmountCollected = async () => {
 };
 
 export const membershipStats = [
-  { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/total-members" },
-  { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/details/yearly" },
-  { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half_yearly"), Icon: UserCheck, path:"/details/half-yearly" },
-  { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/details/quarterly" },
+  { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/members" },
+  { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members" },
+  { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half_yearly"), Icon: UserCheck, path:"/members" },
+  { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members" },
 ];
 
 export const activityStats = [
-  { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/details/monthly" },
-  { title: "ACTIVE MEMBERS", value: await fetchData("members", "status", "active"), Icon: UserCheck, path:"/members/active" },
-  { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "status", "inactive"), Icon: User, path:"/members/inactive" },
+  { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members" },
+  { title: "ACTIVE MEMBERS", value: await fetchData("members", "status", "active"), Icon: UserCheck, path:"/members" },
+  { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "status", "inactive"), Icon: User, path:"/members" },
   { title: "TODAY ATTENDANCE", value: await fetchData("attendance", "date", new Date().toISOString().split('T')[0]), Icon: Clock, path:"/today/attendance" },
 ];
 

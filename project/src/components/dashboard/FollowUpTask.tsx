@@ -15,7 +15,16 @@ const FollowUpTask: React.FC = () => {
   useEffect(() => {
     const getData = async () => {
       const data = await fetchFollowUpData();
-      setFollowUpData(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const normalizedData = data.map((task: any) => ({
+        ...task,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items: task.items.map((item: any) => ({
+          name: item.name || item.member_name,
+          id: item.id || item.emp_id || item.member_id,
+        })),
+      }));
+      setFollowUpData(normalizedData);
     };
 
     getData();
@@ -27,9 +36,10 @@ const FollowUpTask: React.FC = () => {
       <div className="grid grid-cols-4 gap-4">
         {followUpData.map((task, index) => (
           <TaskItem 
-            key={index}
-            {...task}
-          />
+            onViewMore={function (): void {
+              throw new Error('Function not implemented.');
+            } } key={index}
+            {...task}          />
         ))}
       </div>
     </div>

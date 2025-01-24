@@ -60,7 +60,17 @@ const FollowUpTask = () => {
   useEffect(() => {
     const getData = async () => {
       const data = await fetchFollowUpData();
-      setFollowUpData(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transformedData = data.map((item: any) => ({
+        title: item.title,
+        count: item.count,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items: item.items.map((subItem: any) => ({
+          name: subItem.name || subItem.member_name,
+          id: subItem.id || subItem.emp_id || subItem.member_id,
+        })),
+      }));
+      setFollowUpData(transformedData);
     };
 
     getData();
