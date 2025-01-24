@@ -120,16 +120,16 @@ const TransactionComponent = () => {
       setOpenModal(false);
       setNewTransaction({
         bill_date: "",
-    start_date: "",
-    emp_id: "",
-    member_name: "",
-    month_paid: "",
-    pending: "",
-    discount: "",
-    state: "",
-    total_amount_received: "",
-    payment_mode: "",
-    renewal_date: "",
+        start_date: "",
+        emp_id: "",
+        member_name: "",
+        month_paid: "",
+        pending: "",
+        discount: "",
+        state: "",
+        total_amount_received: "",
+        payment_mode: "",
+        renewal_date: "",
       });
     }
   };
@@ -307,7 +307,7 @@ const TransactionComponent = () => {
           }}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">
+            <Typography variant="h6">
               {selectedTransaction ? "Edit Transaction" : "Add Transaction"}
             </Typography>
             <IconButton onClick={() => setOpenModal(false)}>
@@ -358,7 +358,7 @@ const TransactionComponent = () => {
             />
             <TextField
               fullWidth
-              label="Month paid"
+              label="Month Paid"
               value={newTransaction.month_paid}
               onChange={(e) =>
                 setNewTransaction({ ...newTransaction, month_paid: e.target.value })
@@ -376,7 +376,7 @@ const TransactionComponent = () => {
             />
             <TextField
               fullWidth
-              label="Total Paid"
+              label="Discount"
               value={newTransaction.discount}
               onChange={(e) =>
                 setNewTransaction({ ...newTransaction, discount: e.target.value })
@@ -415,21 +415,25 @@ const TransactionComponent = () => {
             />
             <TextField
               fullWidth
-              label="Start date"
+              label="Start Date"
+              type="date"
               value={newTransaction.start_date}
               onChange={(e) =>
                 setNewTransaction({ ...newTransaction, start_date: e.target.value })
               }
               sx={{ mb: 2 }}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
-              label="Renewal date"
+              label="Renewal Date"
+              type="date"
               value={newTransaction.renewal_date}
               onChange={(e) =>
                 setNewTransaction({ ...newTransaction, renewal_date: e.target.value })
               }
               sx={{ mb: 2 }}
+              InputLabelProps={{ shrink: true }}
             />
 
             <Box mt={2} display="flex" justifyContent="flex-end">

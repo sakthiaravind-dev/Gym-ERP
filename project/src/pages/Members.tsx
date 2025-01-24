@@ -48,7 +48,7 @@ interface Member {
   member_type: string;
   member_status: string;
   referred_by: string;
-  bill_date: string;
+  member_end_date: string;
 }
 
 const Members = () => {
@@ -64,7 +64,7 @@ const Members = () => {
   const fetchMembers = async () => {
     const { data, error } = await supabase
       .from("members")
-      .select("member_id, member_name, member_phone_number, member_type, referred_by, bill_date");
+      .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date");
     if (error) {
       console.error("Error fetching members:", error);
     } else {
@@ -108,7 +108,7 @@ const Members = () => {
         member_type: selectedMember.member_type,
         member_status: selectedMember.member_status,
         referred_by: selectedMember.referred_by,
-        bill_date: selectedMember.bill_date,
+        member_end_date: selectedMember.member_end_date,
       };
 
       const { error } = await supabase
@@ -194,7 +194,7 @@ const Members = () => {
                 <TableCell align="center">{member.member_type}</TableCell>
                 <TableCell align="center">{member.member_status}</TableCell>
                 <TableCell align="center">{member.referred_by}</TableCell>
-                <TableCell align="center">{member.bill_date}</TableCell>
+                <TableCell align="center">{member.member_end_date}</TableCell>
                 <TableCell align="center">
                   <Button
                     variant="contained"
@@ -267,12 +267,14 @@ const Members = () => {
             sx={{ marginBottom: 2 }}
           />
           <TextField
-            name="bill_date"
+            name="member_end_date"
             label="End On"
+            type="date"
             fullWidth
-            value={selectedMember?.bill_date || ""}
+            value={selectedMember?.member_end_date || ""}
             onChange={handleEditChange}
             sx={{ marginBottom: 2 }}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>

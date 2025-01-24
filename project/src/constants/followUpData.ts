@@ -8,24 +8,27 @@ export const fetchFollowUpData = async () => {
   const fetchFeesPending = async () => {
     const { data, error } = await supabase
       .from('transactions')
-      .select('name, id')
-      .eq('status', 'pending');
+      .select('member_name, emp_id')
+      .eq('state', 'pending');
     if (error) {
       console.error('Error fetching fees pending:', error);
       return [];
     }
+    console.log('Fees Pending:', data); // Debugging log
     return data;
   };
 
   const fetchMembershipExpiring = async () => {
+    const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
       .from('members')
-      .select('name, id')
-      .lte('member_end_date', new Date().toISOString().split('T')[0]);
+      .select('member_id, member_name')
+      .lte('member_end_date', today);
     if (error) {
       console.error('Error fetching membership expiring:', error);
       return [];
     }
+    console.log('Membership Expiring:', data); // Debugging log
     return data;
   };
 
