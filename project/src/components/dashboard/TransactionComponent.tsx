@@ -308,59 +308,126 @@ const TransactionComponent = () => {
 
       {/* Add Transaction Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "white",
-            borderRadius: 4,
-            padding: 4,
-            boxShadow: 24,
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Add Transaction
-          </Typography>
-          <TextField
-            label="Bill Date"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={newTransaction.bill_date}
-            onChange={(e) => setNewTransaction({ ...newTransaction, bill_date: e.target.value })}
-          />
-          <TextField
-            label="Member Name"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={newTransaction.member_name}
-            onChange={(e) => setNewTransaction({ ...newTransaction, member_name: e.target.value })}
-          />
-          <TextField
-            label="Total Amount Received"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={newTransaction.total_amount_received}
-            onChange={(e) => setNewTransaction({ ...newTransaction, total_amount_received: e.target.value })}
-          />
-          <Box display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#2485bd", color: "white" }}
-              onClick={handleAddTransaction}
-            >
-              Add
-            </Button>
-            <IconButton onClick={() => setOpenModal(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </Box>
+      <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: 400,
+      bgcolor: "white",
+      borderRadius: 4,
+      padding: 4,
+      boxShadow: 24,
+      maxHeight: "80vh", // Added max height for the modal
+      overflowY: "auto", // Enable scrolling when content overflows
+    }}
+  >
+    <Typography variant="h6" sx={{ marginBottom: 2 }}>
+      Add Transaction
+    </Typography>
+    <TextField
+      label="Bill Date"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.bill_date}
+      onChange={(e) => setNewTransaction({ ...newTransaction, bill_date: e.target.value })}
+    />
+    <TextField
+      label="Member ID"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.emp_id}
+      onChange={(e) => setNewTransaction({ ...newTransaction, emp_id: e.target.value })}
+    />
+    <TextField
+      label="Member Name"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.member_name}
+      onChange={(e) => setNewTransaction({ ...newTransaction, member_name: e.target.value })}
+    />
+    <TextField
+      label="Month Paid"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.month_paid}
+      onChange={(e) => setNewTransaction({ ...newTransaction, month_paid: e.target.value })}
+    />
+    <TextField
+      label="Pending"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.pending}
+      onChange={(e) => setNewTransaction({ ...newTransaction, pending: e.target.value })}
+    />
+    <TextField
+      label="Discount"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.discount}
+      onChange={(e) => setNewTransaction({ ...newTransaction, discount: e.target.value })}
+    />
+    <TextField
+      label="State"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.state}
+      onChange={(e) => setNewTransaction({ ...newTransaction, state: e.target.value })}
+    />
+    <TextField
+      label="Total Amount Received"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.total_amount_received}
+      onChange={(e) => setNewTransaction({ ...newTransaction, total_amount_received: e.target.value })}
+    />
+    <TextField
+      label="Payment Mode"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.payment_mode}
+      onChange={(e) => setNewTransaction({ ...newTransaction, payment_mode: e.target.value })}
+    />
+    <TextField
+      label="Start Date"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.start_date}
+      onChange={(e) => setNewTransaction({ ...newTransaction, start_date: e.target.value })}
+    />
+    <TextField
+      label="Renewal Date"
+      variant="outlined"
+      fullWidth
+      sx={{ marginBottom: 2 }}
+      value={newTransaction.renewal_date}
+      onChange={(e) => setNewTransaction({ ...newTransaction, renewal_date: e.target.value })}
+    />
+    <Box display="flex" justifyContent="space-between">
+      <Button
+        variant="contained"
+        sx={{ backgroundColor: "#2485bd", color: "white" }}
+        onClick={handleAddTransaction}
+      >
+        Add Transaction
+      </Button>
+      <IconButton onClick={() => setOpenModal(false)}>
+        <CloseIcon />
+      </IconButton>
+    </Box>
+  </Box>
+
       </Modal>
     </Box>
   );
