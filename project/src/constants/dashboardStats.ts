@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prefer-const */
 import { 
   Users, 
   Clock, 
@@ -20,16 +22,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const fetchData = async (table: string, column: string, filter?: string) => {
-  let query = supabase.from(table).select(column);
+  let query = supabase.from(table).select(column).limit(1000);
   if (filter) {
     query = query.eq(column, filter);
   }
-  const { data, error } = await query;
+  let { data, error, count } = await query;
   if (error) {
     console.error(`Error fetching ${column} from ${table}:`, error);
     return "NILL";
   }
-  return data.length > 0 ? data.length : "NILL";
+  let allData: unknown[] = data || [];
+  while (data && data.length === 1000) {
+    const from = allData ? allData.length : 0;
+    ({ data, error } = await query.range(from, from + 999));
+    if (error) {
+      console.error(`Error fetching ${column} from ${table}:`, error);
+      return "NILL";
+    }
+    allData = allData.concat(data);
+  }
+  return allData.length > 0 ? allData.length : "NILL";
 };
 
 const fetchSum = async (table: string, column: string, castType?: string): Promise<string> => {
@@ -82,6 +94,12 @@ export const financialStats = [
 
 export const pendingStats = [
   { title: "CONTINUOUS ABSENT", value: await fetchData("attendance", "continuous_absent"), Icon: Users, path:"/absent" },
-  { title: "TODAYS RENEWAL", value: await fetchData("renewals", "start_date", new Date().toISOString().split('T')[0]), Icon: Users, path:"/membership-renewal" },
+  { 
+    title: "TODAYS RENEWAL", 
+    value: await fetchData("transactions", "start_date", new Date().toISOString().split('T')[0]), 
+    Icon: Users, 
+    path:"/membership-renewal",
+    filter: `start_date <= '${new Date().toISOString().split('T')[0]}'`
+  },
   { title: "PT PENDING DETAILS", value: await fetchData("pt_pending", "details_count"), Icon: Users, path:"/pt/pending" },
 ];
