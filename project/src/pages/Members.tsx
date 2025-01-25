@@ -64,15 +64,34 @@ const Members = () => {
   }, []);
 
   const fetchMembers = async () => {
-    const { data, error } = await supabase
-      .from("members")
-      .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date");
-    if (error) {
-      console.error("Error fetching members:", error);
-    } else {
-      setMemberData(data || []);
-      setFilteredData(data || []); // Initially set filtered data to full data
+    let allMembers: Member[] = [];
+    let from = 0;
+    const step = 1000;
+    let to = step - 1;
+    let fetchMore = true;
+
+    while (fetchMore) {
+      const { data, error } = await supabase
+        .from("members")
+        .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date")
+        .range(from, to);
+
+      if (error) {
+        console.error("Error fetching members:", error);
+        fetchMore = false;
+      } else {
+        if (data.length > 0) {
+          allMembers = [...allMembers, ...data];
+          from += step;
+          to += step;
+        } else {
+          fetchMore = false;
+        }
+      }
     }
+
+    setMemberData(allMembers);
+    setFilteredData(allMembers); // Initially set filtered data to full data
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
