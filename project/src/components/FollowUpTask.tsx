@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchFollowUpData } from '../constants/followUpData';
+import { useNavigate } from 'react-router-dom';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -21,9 +22,10 @@ interface TaskItemProps {
   count: number;
   items: Array<{ name: string; id: string }>;
   onViewMore: () => void;
+  onRedirect: () => void;
 }
 
-const TaskItem = ({ title, count, items, onViewMore }: TaskItemProps) => {
+const TaskItem = ({ title, count, items, onViewMore, onRedirect }: TaskItemProps) => {
   return (
     <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-4">
@@ -41,6 +43,7 @@ const TaskItem = ({ title, count, items, onViewMore }: TaskItemProps) => {
         <p className="text-gray-500 text-center py-4">No {title.toLowerCase()} left today</p>
       )}
       <button className="text-purple-600 text-sm mt-4" onClick={onViewMore}>View More</button>
+      <button className="text-purple-600 text-sm mt-4" onClick={onRedirect}>Go to {title}</button>
     </div>
   );
 };
@@ -56,6 +59,7 @@ const FollowUpTask = () => {
   const [openModal, setOpenModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalItems, setModalItems] = useState<{ name: string; id: string }[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getData = async () => {
@@ -86,6 +90,10 @@ const FollowUpTask = () => {
     setOpenModal(false);
   };
 
+  const handleRedirect = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Follow-up Task</h2>
@@ -97,6 +105,13 @@ const FollowUpTask = () => {
             count={task.count}
             items={task.items.slice(0, 5)}
             onViewMore={() => handleViewMore(task.title, task.items)}
+            onRedirect={() => {
+              if (task.title === "Fees Pending") {
+                handleRedirect("/pt/pending");
+              } else if (task.title === "Membership Expiring") {
+                handleRedirect("/followup");
+              }
+            }}
           />
         ))}
       </div>
