@@ -29,7 +29,7 @@ const HeaderIcons: React.FC = () => {
       Icon: PersonAddIcon,
       label: 'Add Member',
       subMenu: [
-        { Icon: PersonAddIcon, label: 'Add Member', path: '/addmember' },
+        { Icon: PersonAddIcon, label: 'Add Member', path: '/memberform' },
         { Icon: PersonAddIcon, label: 'Add Staff', path: '/addstaff' },
         { Icon: PersonAddIcon, label: 'Add Enquiry', path: '/addlead' },
       ],

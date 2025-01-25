@@ -22,7 +22,7 @@ import StatGroup from './StatGroup';
 
 
 const cardConfig = [
-    { title: "ACTIVE PT MEMBERS", value: "0", Icon: Users, path: "/apt/active" },
+    { title: "ACTIVE PT MEMBERS", value: "0", Icon: Users, path: "/apt/:status" },
     { title: "IN-ACTIVE PT MEMBERS", value: "30", Icon: Users, path: "/apt/inactive" },
   ];
 
