@@ -58,6 +58,7 @@ import EmployeeAttendance from './pages/EmployeeAttendance';
 import MembershipExpiring from './components/dashboard/MembershipExpiring';
 import AddAttendance from './components/Header1/AddAttendance';
 import MemberForm from './components/Header1/MemberForm';
+import PendingBill from './components/dashboard/PendingBill';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -172,6 +173,7 @@ const App: React.FC = () => {
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/employee-attendance" element={<EmployeeAttendance />} />
                     <Route path="/memberform" element={<MemberForm />} />
+                    <Route path="/pendingbill" element={<PendingBill />} />
                    
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -15,13 +15,15 @@ import {
   MenuItem,
   Button,
   TablePagination,
-  Modal,
-  IconButton,
+  Card,
+  CardContent,
+  Grid,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import CloseIcon from "@mui/icons-material/Close";
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "react-toastify/dist/ReactToastify.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -54,23 +56,16 @@ const TransactionComponent = () => {
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [openModal, setOpenModal] = useState<boolean>(false);
-  const [newTransaction, setNewTransaction] = useState<Transaction>({
-    bill_date: "",
-    start_date: "",
-    emp_id: "",
-    member_name: "",
-    month_paid: "",
-    pending: "",
-    discount: "",
-    state: "",
-    total_amount_received: "",
-    payment_mode: "",
-    renewal_date: "",
-  });
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [amountCollected, setAmountCollected] = useState<number>(0);
+  const [amountPending, setAmountPending] = useState<number>(0);
+  const [collectedToday, setCollectedToday] = useState<number>(0);
+  const [transactionCount, setTransactionCount] = useState<number>(0);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
+
+  
 
   useEffect(() => {
     fetchTransactions();
@@ -78,6 +73,7 @@ const TransactionComponent = () => {
 
   useEffect(() => {
     filterTransactions();
+    calculateStatusCards();
   }, [period, transactions, searchQuery]);
 
   const fetchTransactions = async () => {
@@ -145,74 +141,67 @@ const TransactionComponent = () => {
 
     setFilteredTransactions(filtered);
   };
-
-  const handleAddTransaction = async () => {
-    const transactionCopy = { ...newTransaction };
-    delete transactionCopy.sno;
-
-    const { error } = await supabase.from("transactions").insert([transactionCopy]);
-    if (error) {
-      toast.error("Failed to add transaction: " + error.message);
-    } else {
-      toast.success("Transaction added successfully!");
-      fetchTransactions();
-      setOpenModal(false);
-      setNewTransaction({
-        bill_date: "",
-        start_date: "",
-        emp_id: "",
-        member_name: "",
-        month_paid: "",
-        pending: "",
-        discount: "",
-        state: "",
-        total_amount_received: "",
-        payment_mode: "",
-        renewal_date: "",
-      });
-    }
-  };
-
-  const handleEditTransaction = async () => {
-    if (!selectedTransaction) return;
-    const { error } = await supabase
-      .from("transactions")
-      .update(selectedTransaction)
-      .eq("sno", selectedTransaction.sno);
-    if (error) {
-      toast.error("Failed to update transaction: " + error.message);
-    } else {
-      toast.success("Transaction updated successfully!");
-      fetchTransactions();
-      setAnchorEl(null);
-      setSelectedTransaction(null);
-    }
-  };
-
-  const handleDeleteTransaction = async () => {
-    if (!selectedTransaction) return;
-    const { error } = await supabase
-      .from("transactions")
-      .delete()
-      .eq("sno", selectedTransaction.sno);
-    if (error) {
-      toast.error("Failed to delete transaction: " + error.message);
-    } else {
-      toast.success("Transaction deleted successfully!");
-      fetchTransactions();
-      setAnchorEl(null);
-      setSelectedTransaction(null);
-    }
-  };
-
-  const handleActionClick = (event: React.MouseEvent<HTMLElement>, transaction: Transaction) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>, transaction: Transaction) => {
     setAnchorEl(event.currentTarget);
     setSelectedTransaction(transaction);
   };
 
-  const handleMenuClose = () => {
+  const handleClose = () => {
     setAnchorEl(null);
     setSelectedTransaction(null);
+  };
+
+  const handleEdit = () => {
+    toast.info(`Editing transaction for ${selectedTransaction?.member_name}`);
+    handleClose();
+  };
+
+  const handleDelete = () => {
+    toast.error(`Deleting transaction for ${selectedTransaction?.member_name}`);
+    handleClose();
+  };
+ 
+const navigate = useNavigate();
+const handleBill = () => {
+  navigate("/pendingbill");
+};
+const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(transactions);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "transactions.xlsx");
+    toast.success("Transactions exported successfully!");
+  };
+
+  const calculateStatusCards = () => {
+    const today = new Date();
+    let collected = 0;
+    let pending = 0;
+    let todayCollected = 0;
+    let todayTransactions = 0;
+
+    transactions.forEach((transaction) => {
+      collected += parseFloat(transaction.total_amount_received || "0");
+      pending += parseFloat(transaction.pending || "0");
+
+      const transactionDate = new Date(transaction.bill_date);
+      if (
+        transactionDate.getFullYear() === today.getFullYear() &&
+        transactionDate.getMonth() === today.getMonth() &&
+        transactionDate.getDate() === today.getDate()
+      ) {
+        todayCollected += parseFloat(transaction.total_amount_received || "0");
+        todayTransactions += 1;
+      }
+    });
+
+    setAmountCollected(collected);
+    setAmountPending(pending);
+    setCollectedToday(todayCollected);
+    setTransactionCount(todayTransactions);
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -228,35 +217,73 @@ const TransactionComponent = () => {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
-
+  
   return (
     <Box p={4}>
       <ToastContainer />
 
+      {/* Status Cards */}
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" color="textSecondary">
+                Amount Collected This Month
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                ₹{amountCollected.toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" color="textSecondary">
+                Total Amount Pending
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                ₹{amountPending.toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" color="textSecondary">
+                Total Amount Collected Today
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                ₹{collectedToday.toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" color="textSecondary">
+                Total Transactions Today
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                {transactionCount}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Table */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: "#2485bd", color: "white", padding: "5px 15px" }}
-          onClick={() => {
-            setSelectedTransaction(null);
-            setNewTransaction({
-              bill_date: "",
-              start_date: "",
-              emp_id: "",
-              member_name: "",
-              month_paid: "",
-              pending: "",
-              discount: "",
-              state: "",
-              total_amount_received: "",
-              payment_mode: "",
-              renewal_date: "",
-            });
-            setOpenModal(true);
-          }}
-        >
-          Add Transaction
-        </Button>
+      <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleExport}
+                  sx={{ backgroundColor: "#2485bd", color: "#fff" }}
+                >
+                  Export Data
+                </Button>
         <Typography
           variant="h5"
           sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F", flexGrow: 1 }}
@@ -272,6 +299,7 @@ const TransactionComponent = () => {
             setSearchQuery(e.target.value);
           }}
         />
+        
       </Box>
 
       <TableContainer component={Paper}>
@@ -314,31 +342,14 @@ const TransactionComponent = () => {
                   <TableCell>{transaction.start_date}</TableCell>
                   <TableCell>{transaction.renewal_date}</TableCell>
                   <TableCell>
-                    <Button
+                  <Button
                       variant="contained"
-                      aria-controls={anchorEl ? "actions-menu" : undefined}
-                      aria-haspopup="true"
-                      onClick={(e) => handleActionClick(e, transaction)}
+                      onClick={(event) => handleClick(event, transaction)}
                       endIcon={<ArrowDropDownIcon />}
                     >
                       Actions
                     </Button>
-                    <Menu
-                      id="actions-menu"
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl) && selectedTransaction?.sno === transaction.sno}
-                      onClose={handleMenuClose}
-                    >
-                      <MenuItem
-                        onClick={() => {
-                          setSelectedTransaction(transaction);
-                          setOpenModal(true);
-                        }}
-                      >
-                        Edit
-                      </MenuItem>
-                      <MenuItem onClick={handleDeleteTransaction}>Delete</MenuItem>
-                    </Menu>
+
                   </TableCell>
                 </TableRow>
               ))
@@ -352,6 +363,13 @@ const TransactionComponent = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+        <MenuItem onClick={handleBill}>Pay Bill</MenuItem>
+      </Menu>
+
+      
 
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
@@ -362,179 +380,6 @@ const TransactionComponent = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: 500,
-            bgcolor: "white",
-            borderRadius: 4,
-            padding: 4,
-            boxShadow: 24,
-            maxHeight: "90vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            {selectedTransaction ? "Edit Transaction" : "Add Transaction"}
-          </Typography>
-          <TextField
-            label="Bill Date"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.bill_date : newTransaction.bill_date}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, bill_date: e.target.value })
-                : setNewTransaction({ ...newTransaction, bill_date: e.target.value })
-            }
-          />
-          <TextField
-            label="Start Date"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.start_date : newTransaction.start_date}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, start_date: e.target.value })
-                : setNewTransaction({ ...newTransaction, start_date: e.target.value })
-            }
-          />
-          <TextField
-            label="Member ID"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.emp_id : newTransaction.emp_id}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, emp_id: e.target.value })
-                : setNewTransaction({ ...newTransaction, emp_id: e.target.value })
-            }
-          />
-          <TextField
-            label="Member Name"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.member_name : newTransaction.member_name}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, member_name: e.target.value })
-                : setNewTransaction({ ...newTransaction, member_name: e.target.value })
-            }
-          />
-          <TextField
-            label="Month Paid"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.month_paid : newTransaction.month_paid}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, month_paid: e.target.value })
-                : setNewTransaction({ ...newTransaction, month_paid: e.target.value })
-            }
-          />
-          <TextField
-            label="Pending"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.pending : newTransaction.pending}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, pending: e.target.value })
-                : setNewTransaction({ ...newTransaction, pending: e.target.value })
-            }
-          />
-          <TextField
-            label="Discount"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.discount : newTransaction.discount}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, discount: e.target.value })
-                : setNewTransaction({ ...newTransaction, discount: e.target.value })
-            }
-          />
-          <TextField
-            label="State"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.state : newTransaction.state}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, state: e.target.value })
-                : setNewTransaction({ ...newTransaction, state: e.target.value })
-            }
-          />
-          <TextField
-            label="Total Amount Received"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={
-              selectedTransaction
-                ? selectedTransaction.total_amount_received
-                : newTransaction.total_amount_received
-            }
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, total_amount_received: e.target.value })
-                : setNewTransaction({ ...newTransaction, total_amount_received: e.target.value })
-            }
-          />
-          <TextField
-            label="Payment Mode"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={selectedTransaction ? selectedTransaction.payment_mode : newTransaction.payment_mode}
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, payment_mode: e.target.value })
-                : setNewTransaction({ ...newTransaction, payment_mode: e.target.value })
-            }
-          />
-          <TextField
-            label="Renewal Date"
-            variant="outlined"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-            value={
-              selectedTransaction ? selectedTransaction.renewal_date : newTransaction.renewal_date
-            }
-            onChange={(e) =>
-              selectedTransaction
-                ? setSelectedTransaction({ ...selectedTransaction, renewal_date: e.target.value })
-                : setNewTransaction({ ...newTransaction, renewal_date: e.target.value })
-            }
-          />
-          <Box display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#2485bd", color: "white" }}
-              onClick={selectedTransaction ? handleEditTransaction : handleAddTransaction}
-            >
-              {selectedTransaction ? "Save" : "Add"}
-            </Button>
-            <IconButton onClick={() => setOpenModal(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </Box>
-      </Modal>
     </Box>
   );
 };
