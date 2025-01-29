@@ -4,9 +4,11 @@
     "@types/xlsx": "^0.0.35",
     "file-saver": "^2.0.5",
     "recharts": "^2.15.0",
+    "uuid": "^11.0.5",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/file-saver": "^2.0.7"
+    "@types/file-saver": "^2.0.7",
+    "@types/uuid": "^10.0.0"
   }
 }
