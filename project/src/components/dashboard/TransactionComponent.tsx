@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -25,7 +26,6 @@ interface Transaction {
 }
 
 const TransactionComponent = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { period } = useParams<{ period?: string }>();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -56,10 +56,11 @@ const TransactionComponent = () => {
 
   const filterTransactions = () => {
     setFiltered(transactions.filter(t =>
-      t.member_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.emp_id.toLowerCase().includes(searchQuery.toLowerCase())
+      (t.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.emp_id?.toLowerCase().includes(searchQuery.toLowerCase()))
     ));
   };
+
   const calculateStatusCards = () => {
     const today = new Date(); let collected = 0, pending = 0, todayCollected = 0, todayTrans = 0;
     transactions.forEach(t => {
@@ -86,7 +87,6 @@ const TransactionComponent = () => {
       setIsSubmitting(true);
       const { error } = await supabase.from("transactions").delete().eq("sno", selectedTransaction.sno);
       if (error) throw error; toast.success("Transaction deleted!"); await fetchTransactions();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) { toast.error("Failed to delete transaction"); }
     finally { setIsSubmitting(false); handleClose(); }
   };
@@ -123,7 +123,6 @@ const TransactionComponent = () => {
         renewal_date: selectedTransaction.renewal_date
       }).eq("sno", selectedTransaction.sno);
       if (error) throw error; toast.success("Transaction updated!"); await fetchTransactions();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) { toast.error("Failed to update transaction"); }
     finally { setIsSubmitting(false); setOpenEdit(false); setSelectedTransaction(null); }
   };
