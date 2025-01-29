@@ -126,6 +126,7 @@ const App: React.FC = () => {
                     <Route path="/member/:gender" element={<MemberPage />} />
                     <Route path="/period/:gender/:period" element={<MemberPage />} />
                     <Route path="/transaction/:period" element={<TransactionComponent />} />
+                    <Route path="/pendingbill/:emp_id/:sno" element={<PendingBill />} />
                     <Route path="/expense" element={<Expense />} />
                     <Route path="/pending" element={<FeePending />} />
                     <Route path="/followup" element={<MembershipFollowUp />} />

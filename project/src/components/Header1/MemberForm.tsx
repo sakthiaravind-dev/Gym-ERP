@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseAnonKey) throw new Error("Missing Supabase URL or anon key");
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const MemberForm = () => {
   const [formData, setFormData] = useState({
@@ -34,12 +42,95 @@ const MemberForm = () => {
     emergencyPhoneNumber: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, files } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const files = (e.target as HTMLInputElement).files;
     setFormData({
       ...formData,
       [name]: files ? files[0] : value,
     });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const memberId = formData.memberId;
+
+      // Insert into members table
+      const { error: memberError } = await supabase
+        .from("members")
+        .insert({
+          member_id: memberId,
+          member_name: formData.memberName,
+          dob: formData.memberDob,
+          member_email: formData.memberEmail,
+          identity_document_type: formData.identityDocumentType,
+          address: formData.memberAddress,
+          referred_by: formData.referredBy,
+          gender: formData.gender,
+          document_id_number: formData.documentIdNumber,
+          payment_mode: formData.paymentMode,
+          member_type: formData.memberPack,
+          trainer: formData.selectTrainer,
+        });
+
+      if (memberError) throw memberError;
+
+      // Insert into transactions table
+      const { error: transactionError } = await supabase
+        .from("transactions")
+        .insert({
+          sno: memberId,
+          emp_id: memberId,
+          bill_date: formData.billDate,
+          start_date: formData.memberJoiningDate,
+          phone: formData.memberPhoneNumber,
+          payment_mode: formData.paymentMode,
+          member_type: formData.memberPack,
+          pending: formData.pendingAmount,
+          total_amount_received: formData.totalAmount,
+          renewal_date: formData.pendingDate,
+        });
+
+      if (transactionError) throw transactionError;
+
+      toast.success("Member and transaction added successfully!");
+      setFormData({
+        memberId: "",
+        memberName: "",
+        billDate: "",
+        memberJoiningDate: "",
+        memberDob: "",
+        memberPhoneNumber: "",
+        memberEmail: "",
+        gender: "",
+        identityDocumentType: "",
+        documentIdNumber: "",
+        memberAddress: "",
+        paymentMode: "",
+        referredBy: "",
+        selectImage: null,
+        memberPack: "",
+        packAmount: "",
+        discountAmount: "0",
+        pendingAmount: "0",
+        pendingDate: "",
+        selectTrainer: "",
+        bloodGroup: "",
+        weight: "",
+        totalMonthPaid: "",
+        billingAmount: "",
+        registrationFee: "0",
+        totalAmount: "",
+        tax: "0",
+        selectDiet: "",
+        height: "",
+        emergencyPhoneNumber: "",
+      });
+    } catch (error) {
+      const errorMessage = (error as Error).message;
+      toast.error("Failed to add member and transaction: " + errorMessage);
+    }
   };
 
   const inputStyle = {
@@ -59,6 +150,7 @@ const MemberForm = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <ToastContainer />
       <h2
         style={{
           textAlign: "center",
@@ -71,7 +163,7 @@ const MemberForm = () => {
       >
         Member & Transaction Details
       </h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
           {/* Column 1 */}
           <div>
@@ -113,7 +205,7 @@ const MemberForm = () => {
               placeholder="Enter Email"
               style={inputStyle}
             />
-             <label style={labelStyle}>Identity document type</label>
+            <label style={labelStyle}>Identity document type</label>
             <select
               name="identityDocumentType"
               value={formData.identityDocumentType}
@@ -121,11 +213,11 @@ const MemberForm = () => {
               style={inputStyle}
             >
               <option value="">----</option>
-              <option value="Male">Aadhar card</option>
-              <option value="Female">PAN card</option>
-              <option value="Other">Electoral Photo Identity card</option>
-              <option value="Female">Indian Passport</option>
-              <option value="Female">Driving license</option>
+              <option value="Aadhar card">Aadhar card</option>
+              <option value="PAN card">PAN card</option>
+              <option value="Electoral Photo Identity card">Electoral Photo Identity card</option>
+              <option value="Indian Passport">Indian Passport</option>
+              <option value="Driving license">Driving license</option>
             </select>
             <label style={labelStyle}>Member Address</label>
             <textarea
@@ -211,11 +303,11 @@ const MemberForm = () => {
               <option value="">----</option>
               <option value="Cash">Cash</option>
               <option value="Card">Card</option>
-              <option value="Online">POS</option>
-              <option value="Card">Gpay</option>
-              <option value="Card">Paytm</option>
-              <option value="Card">Amazon Pay</option>
-              <option value="Card">Netbanking</option>
+              <option value="POS">POS</option>
+              <option value="Gpay">Gpay</option>
+              <option value="Paytm">Paytm</option>
+              <option value="Amazon Pay">Amazon Pay</option>
+              <option value="Netbanking">Netbanking</option>
             </select>
 
             <label style={labelStyle}>Blood Group</label>
@@ -231,7 +323,7 @@ const MemberForm = () => {
 
           {/* Column 3 */}
           <div>
-          <label style={labelStyle}>Member Pack*</label>
+            <label style={labelStyle}>Member Pack*</label>
             <select
               name="memberPack"
               value={formData.memberPack}
@@ -241,15 +333,14 @@ const MemberForm = () => {
             >
               <option value="">----</option>
               <option value="Quaterly">Quaterly</option>
-              <option value="Half">Half-yearly</option>
-              <option value="monthly">Monthly</option>
-              <option value="annual">Annual</option>
-              <option value="two">2 Months</option>
-              <option value="four">4 Months</option>
-              <option value="fourteen">12 + 2 Months</option>
-              <option value="seven">6 + 1 Month</option>
+              <option value="Half-yearly">Half-yearly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Annual">Annual</option>
+              <option value="2 Months">2 Months</option>
+              <option value="4 Months">4 Months</option>
+              <option value="12 + 2 Months">12 + 2 Months</option>
+              <option value="6 + 1 Month">6 + 1 Month</option>
             </select>
-            
             <label style={labelStyle}>Pack Amount*</label>
             <input
               type="number"

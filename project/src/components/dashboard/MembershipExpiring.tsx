@@ -15,13 +15,20 @@ import {
   MenuItem,
   Modal,
   IconButton,
+  TablePagination,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { createClient } from "@supabase/supabase-js";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase credentials");
+}
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -45,49 +52,77 @@ interface Member {
 }
 
 const MembershipExpiring = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<Member[]>([]);
-  const [filteredData, setFilteredData] = useState<Member[]>([]);
+  const [displayData, setDisplayData] = useState<Member[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchMembers();
   }, []);
 
+  useEffect(() => {
+    handleDataFiltering();
+  }, [searchQuery, data]);
+
   const fetchMembers = async () => {
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-    const todayDate = today.toISOString().split('T')[0];
+    try {
+      setIsLoading(true);
+      const today = new Date();
+      const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const todayDate = today.toISOString().split('T')[0];
 
-    const { data, error } = await supabase
-      .from("members")
-      .select("sno, member_end_date, member_id, member_name, member_phone_number, member_type")
-      .gte('member_end_date', firstDayOfMonth)
-      .lte('member_end_date', todayDate);
+      const { data: fetchedData, error } = await supabase
+        .from("members")
+        .select("sno, member_end_date, member_id, member_name, member_phone_number, member_type")
+        .gte('member_end_date', twoWeeksAgo)
+        .lte('member_end_date', todayDate)
+        .order('member_end_date', { ascending: true });
 
-    if (error) {
+      if (error) throw error;
+
+      setData(fetchedData || []);
+      setDisplayData(fetchedData || []);
+    } catch (error) {
       console.error("Error fetching members:", error);
-    } else {
-      setData(data || []);
-      setFilteredData(data || []);
+      toast.error("Failed to fetch members");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDataFiltering = () => {
+    try {
+      if (!searchQuery.trim()) {
+        setDisplayData(data);
+        return;
+      }
+
+      const query = searchQuery.toLowerCase();
+      const filtered = data.filter((item) => {
+        return (
+          (item.member_id?.toLowerCase() || "").includes(query) ||
+          (item.member_name?.toLowerCase() || "").includes(query) ||
+          (item.member_phone_number?.toLowerCase() || "").includes(query) ||
+          (item.member_type?.toLowerCase() || "").includes(query)
+        );
+      });
+
+      setDisplayData(filtered);
+      setPage(0);
+    } catch (error) {
+      console.error("Error filtering data:", error);
+      setDisplayData(data);
     }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value.toLowerCase();
-    setSearchQuery(query);
-
-    const filtered = data.filter(
-      (item) =>
-        item.member_id.toLowerCase().includes(query) ||
-        item.member_name.toLowerCase().includes(query) ||
-        item.member_phone_number.toLowerCase().includes(query) ||
-        item.member_type.toLowerCase().includes(query)
-    );
-
-    setFilteredData(filtered);
+    setSearchQuery(event.target.value);
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, member: Member) => {
@@ -105,20 +140,29 @@ const MembershipExpiring = () => {
   };
 
   const handleDelete = async () => {
-    if (selectedMember) {
-      const { error } = await supabase.from("members").delete().eq("sno", selectedMember.sno);
-      if (error) {
-        toast.error("Failed to delete member: " + error.message);
-      } else {
-        toast.success("Member deleted successfully!");
-        fetchMembers();
-      }
+    if (!selectedMember) return;
+
+    try {
+      const { error } = await supabase
+        .from("members")
+        .delete()
+        .eq("sno", selectedMember.sno);
+
+      if (error) throw error;
+
+      toast.success("Member deleted successfully!");
+      await fetchMembers();
+    } catch (error) {
+      console.error("Error deleting member:", error);
+      toast.error("Failed to delete member");
     }
     handleMenuClose();
   };
 
   const handleEditSubmit = async () => {
-    if (selectedMember) {
+    if (!selectedMember) return;
+
+    try {
       const { error } = await supabase
         .from("members")
         .update({
@@ -129,30 +173,48 @@ const MembershipExpiring = () => {
           member_end_date: selectedMember.member_end_date,
         })
         .eq("sno", selectedMember.sno);
-      if (error) {
-        toast.error("Failed to update member: " + error.message);
-      } else {
-        toast.success("Member updated successfully!");
-        fetchMembers();
-      }
+
+      if (error) throw error;
+
+      toast.success("Member updated successfully!");
+      await fetchMembers();
+      setOpenEditModal(false);
+    } catch (error) {
+      console.error("Error updating member:", error);
+      toast.error("Failed to update member");
     }
-    setOpenEditModal(false);
   };
 
   const handleEditChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setSelectedMember((prevData) =>
-      prevData
-        ? {
-            ...prevData,
-            [name]: value,
-          }
-        : null
-    );
+    setSelectedMember((prev) => prev ? { ...prev, [name]: value } : null);
   };
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedData = displayData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div style={{ padding: "20px" }}>
+      <ToastContainer />
       <Box sx={{ marginBottom: 3, display: "flex", gap: 1 }}>
         <Button variant="contained" color="primary">
           Show Filter
@@ -197,10 +259,10 @@ const MembershipExpiring = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredData.length > 0 ? (
-                filteredData.map((row, index) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row, index) => (
                   <TableRow key={row.sno}>
-                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
                     <TableCell align="center">{row.member_end_date}</TableCell>
                     <TableCell align="center">{row.member_id}</TableCell>
                     <TableCell align="center">{row.member_name}</TableCell>
@@ -215,45 +277,56 @@ const MembershipExpiring = () => {
                       >
                         Actions
                       </Button>
-                      <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleMenuClose}
-                        PaperProps={{
-                          elevation: 0,
-                          sx: {
-                            overflow: 'visible',
-                            filter: 'none',
-                            mt: 1.5,
-                            '& .MuiAvatar-root': {
-                              width: 32,
-                              height: 32,
-                              ml: -0.5,
-                              mr: 1,
-                            },
-                            '&:before': {
-                              display: 'none',
-                            },
-                          },
-                        }}
-                      >
-                        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-                        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-                      </Menu>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    No data available in table
+                    No members found
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
+
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 20]}
+          component="div"
+          count={displayData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </div>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            overflow: 'visible',
+            filter: 'none',
+            mt: 1.5,
+            '& .MuiAvatar-root': {
+              width: 32,
+              height: 32,
+              ml: -0.5,
+              mr: 1,
+            },
+            '&:before': {
+              display: 'none',
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+      </Menu>
 
       <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
         <Box

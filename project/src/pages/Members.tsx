@@ -17,6 +17,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  TablePagination,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { createClient } from "@supabase/supabase-js";
@@ -58,40 +59,30 @@ const Members = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    fetchMembers();
+    fetchAllMembers();
   }, []);
 
-  const fetchMembers = async () => {
-    let allMembers: Member[] = [];
-    let from = 0;
-    const step = 1000;
-    let to = step - 1;
-    let fetchMore = true;
+  useEffect(() => {
+    setFilteredData(memberData.slice(page * rowsPerPage, (page + 1) * rowsPerPage));
+  }, [page, rowsPerPage, memberData]);
 
-    while (fetchMore) {
-      const { data, error } = await supabase
-        .from("members")
-        .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date")
-        .range(from, to);
+  const fetchAllMembers = async () => {
+    const { data, error } = await supabase
+      .from("members")
+      .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date");
 
-      if (error) {
-        console.error("Error fetching members:", error);
-        fetchMore = false;
-      } else {
-        if (data.length > 0) {
-          allMembers = [...allMembers, ...data];
-          from += step;
-          to += step;
-        } else {
-          fetchMore = false;
-        }
-      }
+    if (error) {
+      console.error("Error fetching members:", error);
+    } else {
+      setMemberData(data);
+      setFilteredData(data.slice(0, rowsPerPage)); // Initially set filtered data to the first page
+      setTotalCount(data.length);
     }
-
-    setMemberData(allMembers);
-    setFilteredData(allMembers); // Initially set filtered data to full data
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +94,9 @@ const Members = () => {
         String(value).toLowerCase().includes(query)
       )
     );
-    setFilteredData(filtered);
+    setFilteredData(filtered.slice(0, rowsPerPage));
+    setTotalCount(filtered.length);
+    setPage(0);
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>, member: Member) => {
@@ -127,7 +120,7 @@ const Members = () => {
         toast.error("Failed to delete member: " + error.message);
       } else {
         toast.success("Member deleted successfully!");
-        fetchMembers();
+        fetchAllMembers();
       }
     }
     handleClose();
@@ -153,7 +146,7 @@ const Members = () => {
         toast.error("Failed to update member: " + error.message);
       } else {
         toast.success("Member updated successfully!");
-        fetchMembers();
+        fetchAllMembers();
       }
     }
     setOpenEditDialog(false);
@@ -181,6 +174,15 @@ const Members = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "members.xlsx");
     toast.success("Members exported successfully!");
+  };
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -229,7 +231,7 @@ const Members = () => {
           <TableBody>
             {filteredData.map((member, index) => (
               <TableRow key={index}>
-                <TableCell align="center">{index + 1}</TableCell>
+                <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell align="center">{member.member_id}</TableCell>
                 <TableCell align="center">{member.member_name}</TableCell>
                 <TableCell align="center">{member.member_phone_number}</TableCell>
@@ -251,6 +253,16 @@ const Members = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[10, 50, 100]}
+        component="div"
+        count={totalCount}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEdit}>Edit</MenuItem>
