@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -51,6 +51,83 @@ const MemberForm = () => {
     });
   };
 
+  useEffect(() => {
+    const calculateBillingDetails = () => {
+      let totalMonthsPaid = 0;
+      let billingAmount = 0;
+      let packAmount = 0;
+  
+      switch (formData.memberPack) {
+        case "Quaterly":
+          totalMonthsPaid = 3;
+          billingAmount = 7500;
+          packAmount = 7500;
+          break;
+        case "Half-yearly":
+          totalMonthsPaid = 6;
+          billingAmount = 12000;
+          packAmount = 12000;
+          break;
+        case "Monthly":
+          totalMonthsPaid = 1;
+          billingAmount = 3500;
+          packAmount = 3500;
+          break;
+        case "Annual":
+          totalMonthsPaid = 12;
+          billingAmount = 18000;
+          packAmount = 18000;
+          break;
+        case "2 Months":
+          totalMonthsPaid = 2;
+          billingAmount = 5000;
+          packAmount = 5000;
+          break;
+        case "4 Months":
+          totalMonthsPaid = 4;
+          billingAmount = 7800;
+          packAmount = 7800;
+          break;
+        case "12 + 2 Months":
+          totalMonthsPaid = 14;
+          billingAmount = 18000;
+          packAmount = 18000;
+          break;
+        case "6 + 1 Month":
+          totalMonthsPaid = 7;
+          billingAmount = 9000;
+          packAmount = 9000;
+          break;
+        default:
+          totalMonthsPaid = 0;
+          billingAmount = 0;
+          packAmount = 0;
+      }
+  
+      let totalAmount = billingAmount;
+  
+      if (parseFloat(formData.discountAmount) > 1) {
+        totalAmount -= parseFloat(formData.discountAmount);
+      }
+  
+      if (parseFloat(formData.tax) > 1) {
+        const taxed = (parseFloat(formData.tax) / 100) * totalAmount;
+        totalAmount += taxed;  // Corrected tax addition
+      }
+  
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        totalMonthPaid: totalMonthsPaid.toString(),
+        billingAmount: billingAmount.toString(),
+        packAmount: packAmount.toString(),
+        totalAmount: totalAmount.toFixed(2),
+      }));
+    };
+  
+    calculateBillingDetails();
+  }, [formData.memberPack, formData.discountAmount, formData.tax]);
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -70,6 +147,10 @@ const MemberForm = () => {
           gender: formData.gender,
           document_id_number: formData.documentIdNumber,
           payment_mode: formData.paymentMode,
+          member_joining_date: formData.memberJoiningDate,
+          bill_date : formData.billDate,
+          member_address: formData.memberAddress,
+          member_phone_number: formData.memberPhoneNumber,
           member_type: formData.memberPack,
           trainer: formData.selectTrainer,
         });
@@ -82,6 +163,7 @@ const MemberForm = () => {
         .insert({
           sno: memberId,
           emp_id: memberId,
+          member_name: formData.memberName,
           bill_date: formData.billDate,
           start_date: formData.memberJoiningDate,
           phone: formData.memberPhoneNumber,
@@ -89,7 +171,9 @@ const MemberForm = () => {
           member_type: formData.memberPack,
           pending: formData.pendingAmount,
           total_amount_received: formData.totalAmount,
+          total_paid: (parseFloat(formData.totalAmount) - parseFloat(formData.pendingAmount)).toFixed(2),
           renewal_date: formData.pendingDate,
+          month_paid: formData.totalMonthPaid,
         });
 
       if (transactionError) throw transactionError;
