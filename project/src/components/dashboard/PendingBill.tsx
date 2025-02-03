@@ -163,14 +163,21 @@ const PendingBill: React.FC = () => {
         .select("*")
         .eq("emp_id", empId)
         .eq("sno", sNo)
-        .single();
+        .maybeSingle();
+
       if (error) throw error;
+      if (!data) {
+        toast.error("No transaction found");
+        setLoading(false);
+        return;
+      }
 
       const { data: memberData, error: memberError } = await supabase
         .from("members")
         .select("member_type")
         .eq("member_name", data.member_name)
-        .single();
+        .maybeSingle();
+
       if (memberError) throw memberError;
 
       setFormData({
@@ -187,7 +194,7 @@ const PendingBill: React.FC = () => {
         renewal_date: data.renewal_date || "",
         totalAmount: data.total_amount_received || "0",
         tax: "0",
-        memberPack: memberData.member_type || "",
+        memberPack: memberData?.member_type || "",
         billingAmount: "0",
         packAmount: "0",
         totalMonthPaid: "0",
@@ -281,24 +288,9 @@ const PendingBill: React.FC = () => {
       </Typography>
 
       <Box display="flex" justifyContent="space-between" mb={3}>
-        <Box>
-          <Typography sx={{ fontWeight: "bold" }}>Expired Date:</Typography>
-          <Typography variant="h6" color="primary">
-            {formData.renewal_date}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography sx={{ fontWeight: "bold" }}>Pending Amount:</Typography>
-          <Typography variant="h6" color="secondary">
-            ₹{formData.pending}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography sx={{ fontWeight: "bold" }}>Member ID:</Typography>
-          <Typography variant="h6" color="primary">
-            {formData.emp_id}
-          </Typography>
-        </Box>
+        <Box></Box>
+        <Box></Box>
+        <Box></Box>
       </Box>
 
       <Box display="flex" justifyContent="space-between" flexWrap="wrap">

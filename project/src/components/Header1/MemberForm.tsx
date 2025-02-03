@@ -138,6 +138,7 @@ const MemberForm = () => {
         .from("members")
         .insert({
           member_id: memberId,
+          sno : memberId,
           member_name: formData.memberName,
           dob: formData.memberDob,
           member_email: formData.memberEmail,
@@ -169,6 +170,7 @@ const MemberForm = () => {
           phone: formData.memberPhoneNumber,
           payment_mode: formData.paymentMode,
           member_type: formData.memberPack,
+          discount: formData.discountAmount,
           pending: formData.pendingAmount,
           total_amount_received: formData.totalAmount,
           total_paid: (parseFloat(formData.totalAmount) - parseFloat(formData.pendingAmount)).toFixed(2),
