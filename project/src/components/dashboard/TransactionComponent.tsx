@@ -54,6 +54,7 @@ interface Transaction {
 const TransactionComponent = () => {
   const { period } = useParams<{ period?: string }>();
   const navigate = useNavigate();
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filtered, setFiltered] = useState<Transaction[]>([]);
   const [page, setPage] = useState(0);
@@ -68,14 +69,17 @@ const TransactionComponent = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Added for sorting by SNO:
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   useEffect(() => {
-    filterTransactions();
+    filterAndSortTransactions();
     calculateStatusCards();
-  }, [transactions, searchQuery]);
+  }, [transactions, searchQuery, sortDirection]);
 
   const fetchTransactions = async () => {
     let all: Transaction[] = [];
@@ -106,14 +110,23 @@ const TransactionComponent = () => {
     setTransactions(all);
   };
 
-  const filterTransactions = () => {
-    setFiltered(
-      transactions.filter(
-        (t) =>
-          t.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          t.emp_id?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  const filterAndSortTransactions = () => {
+    // Filter by search query
+    // eslint-disable-next-line prefer-const
+    let result = transactions.filter(
+      (t) =>
+        t.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.emp_id?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Sort by sno
+    if (sortDirection === "asc") {
+      result.sort((a, b) => a.sno - b.sno);
+    } else {
+      result.sort((a, b) => b.sno - a.sno);
+    }
+
+    setFiltered(result);
   };
 
   const calculateStatusCards = () => {
@@ -154,7 +167,6 @@ const TransactionComponent = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
-    // Don't nullify selectedTransaction here, so the modal can show the data
   };
 
   const handleEdit = () => {
@@ -201,6 +213,11 @@ const TransactionComponent = () => {
   const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(+e.target.value);
     setPage(0);
+  };
+
+  // Toggle sort direction by SNO
+  const handleSortBySno = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -299,20 +316,31 @@ const TransactionComponent = () => {
       </Grid>
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleExport}
-          sx={{ backgroundColor: "#2485bd" }}
-        >
-          Export Data
-        </Button>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExport}
+            sx={{ backgroundColor: "#2485bd" }}
+          >
+            Export Data
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSortBySno}
+            sx={{ backgroundColor: "#bd243f" }}
+          >
+            Sort by SNO ({sortDirection.toUpperCase()})
+          </Button>
+        </Box>
+
         <Typography
           variant="h5"
           sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F", flexGrow: 1 }}
         >
           Transaction Details
         </Typography>
+
         <TextField
           label="Search"
           variant="outlined"
@@ -343,9 +371,9 @@ const TransactionComponent = () => {
           </TableHead>
           <TableBody>
             {paginated.length ? (
-              paginated.map((t, i) => (
+              paginated.map((t) => (
                 <TableRow key={t.sno}>
-                  <TableCell>{page * rowsPerPage + i + 1}</TableCell>
+                  <TableCell>{t.sno}</TableCell>
                   <TableCell>{t.bill_date}</TableCell>
                   <TableCell>{t.emp_id}</TableCell>
                   <TableCell>{t.member_name}</TableCell>

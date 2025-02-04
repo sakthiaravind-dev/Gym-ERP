@@ -41,7 +41,7 @@ const fetchData = async (table: string, column: string, filter?: string) => {
     }
     allData = allData.concat(data);
   }
-  return allData.length > 0 ? allData.length : "NILL";
+  return allData.length > 0 ? allData.length.toString() : "NILL";
 };
 
 const fetchSum = async (table: string, column: string, castType?: string): Promise<string> => {
@@ -64,42 +64,48 @@ const fetchTotalAmountCollected = async () => {
   return (parseFloat(expensesSum) + parseFloat(supplementsSum)).toFixed(2);
 };
 
-export const membershipStats = [
-  { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/members" },
-  { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members" },
-  { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half_yearly"), Icon: UserCheck, path:"/members" },
-  { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members" },
-];
+const getStats = async () => {
+  const membershipStats = [
+    { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/members" },
+    { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members" },
+    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half_yearly"), Icon: UserCheck, path:"/members" },
+    { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members" },
+  ];
 
-export const activityStats = [
-  { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members" },
-  { title: "ACTIVE MEMBERS", value: await fetchData("members", "status", "active"), Icon: UserCheck, path:"/members" },
-  { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "status", "inactive"), Icon: User, path:"/members" },
-  { title: "TODAY ATTENDANCE", value: await fetchData("attendance", "date", new Date().toISOString().split('T')[0]), Icon: Clock, path:"/today/attendance" },
-];
+  const activityStats = [
+    { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members" },
+    { title: "ACTIVE MEMBERS", value: await fetchData("members", "status", "active"), Icon: UserCheck, path:"/members" },
+    { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "status", "inactive"), Icon: User, path:"/members" },
+    { title: "TODAY ATTENDANCE", value: await fetchData("attendance", "date", new Date().toISOString().split('T')[0]), Icon: Clock, path:"/today/attendance" },
+  ];
 
-export const demographicStats = [
-  { title: "MALE MEMBERS", value: await fetchData("members", "gender", "male"), Icon: UserCircle2, path:"/member/male" },
-  { title: "TRANSGENDER MEMBERS", value: await fetchData("members", "gender", "transgender"), Icon: UserCog2, path:"/member/transgender" },
-  { title: "FEMALE MEMBERS", value: await fetchData("members", "gender", "female"), Icon: UserCircle2, path:"/member/female" },
-  { title: "AMOUNT COLLECTED", value: await fetchTotalAmountCollected(), Icon: DollarSign, path:"/transaction/all" },
-];
+  const demographicStats = [
+    { title: "MALE MEMBERS", value: await fetchData("members", "gender", "male"), Icon: UserCircle2, path:"/member/male" },
+    { title: "TRANSGENDER MEMBERS", value: await fetchData("members", "gender", "transgender"), Icon: UserCog2, path:"/member/transgender" },
+    { title: "FEMALE MEMBERS", value: await fetchData("members", "gender", "female"), Icon: UserCircle2, path:"/member/female" },
+    { title: "AMOUNT COLLECTED", value: await fetchTotalAmountCollected(), Icon: DollarSign, path:"/transaction/all" },
+  ];
 
-export const financialStats = [
-  { title: "AMOUNT SPENT", value: await fetchSum("expenses", "amount"), Icon: DollarSign, path:"/expense" },
-  { title: "TOTAL AMOUNT PENDING", value: await fetchSum("pending", "total_amount_pending"), Icon: Users2, path:"/pending" },
-  { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: await fetchData("followup", "membership_expiring"), Icon: Users, path:"/followup" },
-  { title: "MEMBER WITH ADDON / PT", value: await fetchData("members", "addon_pt_count"), Icon: Users, path:"/apt" },
-];
+  const financialStats = [
+    { title: "AMOUNT SPENT", value: await fetchSum("expenses", "amount"), Icon: DollarSign, path:"/expense" },
+    { title: "TOTAL AMOUNT PENDING", value: await fetchSum("pending", "total_amount_pending"), Icon: Users2, path:"/pending" },
+    { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: await fetchData("followup", "membership_expiring"), Icon: Users, path:"/followup" },
+    { title: "MEMBER WITH ADDON / PT", value: await fetchData("members", "addon_pt_count"), Icon: Users, path:"/apt" },
+  ];
 
-export const pendingStats = [
-  { title: "CONTINUOUS ABSENT", value: await fetchData("attendance", "continuous_absent"), Icon: Users, path:"/absent" },
-  { 
-    title: "TODAYS RENEWAL", 
-    value: await fetchData("transactions", "start_date", new Date().toISOString().split('T')[0]), 
-    Icon: Users, 
-    path:"/membership-renewal",
-    filter: `start_date <= '${new Date().toISOString().split('T')[0]}'`
-  },
-  { title: "PT PENDING DETAILS", value: await fetchData("pt_pending", "details_count"), Icon: Users, path:"/pt/pending" },
-];
+  const pendingStats = [
+    { title: "CONTINUOUS ABSENT", value: await fetchData("attendance", "continuous_absent"), Icon: Users, path:"/absent" },
+    { 
+      title: "TODAYS RENEWAL", 
+      value: await fetchData("transactions", "start_date", new Date().toISOString().split('T')[0]), 
+      Icon: Users, 
+      path:"/membership-renewal",
+      filter: `start_date <= '${new Date().toISOString().split('T')[0]}'`
+    },
+    { title: "PT PENDING DETAILS", value: await fetchData("pt_pending", "details_count"), Icon: Users, path:"/pt/pending" },
+  ];
+
+  return { membershipStats, activityStats, demographicStats, financialStats, pendingStats };
+};
+
+export default getStats;

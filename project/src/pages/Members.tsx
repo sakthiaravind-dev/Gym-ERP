@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import {
   Typography,
@@ -50,6 +51,7 @@ interface Member {
   member_status: string;
   referred_by: string;
   member_end_date: string;
+  sno: number; // Added for sorting
 }
 
 const Members = () => {
@@ -63,13 +65,16 @@ const Members = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Added sort direction for sno
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
   useEffect(() => {
     fetchAllMembers();
   }, []);
 
   useEffect(() => {
-    setFilteredData(memberData.slice(page * rowsPerPage, (page + 1) * rowsPerPage));
-  }, [page, rowsPerPage, memberData]);
+    applyFiltersAndSorting();
+  }, [page, rowsPerPage, memberData, searchQuery, sortDirection]);
 
   const fetchAllMembers = async () => {
     const { data, error } = await supabase
@@ -78,25 +83,48 @@ const Members = () => {
 
     if (error) {
       console.error("Error fetching members:", error);
-    } else {
-      setMemberData(data);
-      setFilteredData(data.slice(0, rowsPerPage)); // Initially set filtered data to the first page
-      setTotalCount(data.length);
+    } else if (data) {
+      // Assign a sno to each record for sorting
+      const withSno = data.map((member, index) => ({
+        ...member,
+        sno: index + 1,
+      }));
+      setMemberData(withSno);
+      setTotalCount(withSno.length);
     }
   };
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value.toLowerCase();
-    setSearchQuery(query);
-
-    const filtered = memberData.filter((member) =>
-      Object.values(member).some((value) =>
-        String(value).toLowerCase().includes(query)
-      )
+  const applyFiltersAndSorting = () => {
+    // First filter by search query
+    const queried = memberData.filter((member) =>
+      Object.values(member).some((value) => String(value).toLowerCase().includes(searchQuery.toLowerCase()))
     );
-    setFilteredData(filtered.slice(0, rowsPerPage));
-    setTotalCount(filtered.length);
+
+    // Sort by sno
+    if (sortDirection === "asc") {
+      queried.sort((a, b) => a.sno - b.sno);
+    } else {
+      queried.sort((a, b) => b.sno - a.sno);
+    }
+
+    setTotalCount(queried.length);
+    setFilteredData(queried.slice(page * rowsPerPage, (page + 1) * rowsPerPage));
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
     setPage(0);
+  };
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(memberData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "members.xlsx");
+    toast.success("Members exported successfully!");
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>, member: Member) => {
@@ -115,7 +143,10 @@ const Members = () => {
 
   const handleDelete = async () => {
     if (selectedMember) {
-      const { error } = await supabase.from("members").delete().eq("member_id", selectedMember.member_id);
+      const { error } = await supabase
+        .from("members")
+        .delete()
+        .eq("member_id", selectedMember.member_id);
       if (error) {
         toast.error("Failed to delete member: " + error.message);
       } else {
@@ -164,18 +195,6 @@ const Members = () => {
     );
   };
 
-  // Export to Excel
-  const handleExport = () => {
-    const worksheet = XLSX.utils.json_to_sheet(memberData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
-
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "members.xlsx");
-    toast.success("Members exported successfully!");
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -183,6 +202,11 @@ const Members = () => {
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  // Toggle sort direction by sno
+  const handleSortBySno = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   return (
@@ -193,6 +217,7 @@ const Members = () => {
       >
         Member Details
       </Typography>
+
       <Box
         sx={{
           display: "flex",
@@ -208,21 +233,35 @@ const Members = () => {
           onChange={handleSearch}
           sx={{ marginRight: 2, width: "300px" }}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleExport}
-          sx={{ backgroundColor: "#2485bd", color: "#fff" }}
-        >
-          Export Data
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExport}
+            sx={{ backgroundColor: "#2485bd", color: "#fff" }}
+          >
+            Export Data
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSortBySno}
+            sx={{ backgroundColor: "#bd243f", color: "#fff" }}
+          >
+            Sort by S.NO ({sortDirection.toUpperCase()})
+          </Button>
+        </Box>
       </Box>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               {tableHeaders.map((header, index) => (
-                <TableCell key={index} align="center" sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}>
+                <TableCell
+                  key={index}
+                  align="center"
+                  sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+                >
                   {header}
                 </TableCell>
               ))}
@@ -230,8 +269,8 @@ const Members = () => {
           </TableHead>
           <TableBody>
             {filteredData.map((member, index) => (
-              <TableRow key={index}>
-                <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
+              <TableRow key={member.member_id}>
+                <TableCell align="center">{member.sno}</TableCell>
                 <TableCell align="center">{member.member_id}</TableCell>
                 <TableCell align="center">{member.member_name}</TableCell>
                 <TableCell align="center">{member.member_phone_number}</TableCell>
