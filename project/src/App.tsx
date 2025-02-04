@@ -11,7 +11,6 @@ import MemberDetails from './components/dashboard/MemberDetails';
 import YearlyQuaterlyDetails from './components/dashboard/YearlyQuaterlyDetails';
 import ActiveMembers from './components/dashboard/ActiveInactive';
 import MemberAttendance from './components/dashboard/TodayAttendance';
-import MemberPage from './components/dashboard/gender';
 import TransactionComponent from './components/dashboard/TransactionComponent';
 import Expense from './components/dashboard/Expense';
 import FeePending from './components/dashboard/FeePending';
@@ -123,8 +122,6 @@ const App: React.FC = () => {
                     <Route path="/details/:members" element={<YearlyQuaterlyDetails />} />
                     <Route path="/members/:status" element={<ActiveMembers />} />
                     <Route path="/today/attendance" element={<MemberAttendance />} />
-                    <Route path="/member/:gender" element={<MemberPage />} />
-                    <Route path="/period/:gender/:period" element={<MemberPage />} />
                     <Route path="/transaction/:period" element={<TransactionComponent />} />
                     <Route path="/pendingbill/:emp_id/:sno" element={<PendingBill />} />
                     <Route path="/expense" element={<Expense />} />
