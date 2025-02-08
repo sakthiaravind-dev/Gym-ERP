@@ -64,18 +64,23 @@ const fetchTotalAmountCollected = async () => {
   return (parseFloat(expensesSum) + parseFloat(supplementsSum)).toFixed(2);
 };
 
+const fetchTotalAmountPending = async () => {
+  const feependingSum = await fetchSum("fee_pending", "pending_amount");
+  return (parseFloat(feependingSum).toFixed(2));
+};
+
 const getStats = async () => {
   const membershipStats = [
     { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/members" },
     { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members" },
-    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half_yearly"), Icon: UserCheck, path:"/members" },
+    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: UserCheck, path:"/members" },
     { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members" },
   ];
 
   const activityStats = [
     { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members" },
-    { title: "ACTIVE MEMBERS", value: await fetchData("members", "status", "active"), Icon: UserCheck, path:"/members" },
-    { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "status", "inactive"), Icon: User, path:"/members" },
+    { title: "ACTIVE MEMBERS", value: await fetchData("members", "member_status", "active"), Icon: UserCheck, path:"/members" },
+    { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "member_status", "Not-active"), Icon: User, path:"/members" },
     { title: "TODAY ATTENDANCE", value: await fetchData("attendance", "date", new Date().toISOString().split('T')[0]), Icon: Clock, path:"/today/attendance" },
   ];
 
@@ -88,7 +93,7 @@ const getStats = async () => {
 
   const financialStats = [
     { title: "AMOUNT SPENT", value: await fetchSum("expenses", "amount"), Icon: DollarSign, path:"/expense" },
-    { title: "TOTAL AMOUNT PENDING", value: await fetchSum("pending", "total_amount_pending"), Icon: Users2, path:"/pending" },
+    { title: "TOTAL AMOUNT PENDING", value: await fetchTotalAmountPending(), Icon: Users2, path:"/pending" },
     { title: "MEMBERSHIP EXPIRING FOLLOW UP", value: await fetchData("followup", "membership_expiring"), Icon: Users, path:"/followup" },
     { title: "MEMBER WITH ADDON / PT", value: await fetchData("members", "addon_pt_count"), Icon: Users, path:"/apt" },
   ];
