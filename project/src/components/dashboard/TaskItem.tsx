@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Edit } from 'lucide-react';
 import {
-  Modal,
   Box,
   Typography,
   IconButton,
-  Button,
+  Button,Modal,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -14,10 +13,11 @@ interface TaskItemProps {
   count: number;
   items: Array<{ name: string; id: string }>;
   onViewMore: () => void;
+  onRedirect: () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const TaskItem: React.FC<TaskItemProps> = ({ title, count, items, onViewMore }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ title, count, items, onViewMore, onRedirect }) => {
   const [openModal, setOpenModal] = useState(false);
   const [modalItems, setModalItems] = useState<{ name: string; id: string }[]>([]);
 
@@ -45,6 +45,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ title, count, items, onViewMore }) 
         <p className="text-gray-500 text-center py-4">No {title.toLowerCase()} left today</p>
       )}
       <button className="text-purple-600 text-sm mt-4" onClick={handleViewMore}>View More</button>
+      <button className="text-purple-600 text-sm mt-4" onClick={onRedirect}>Go to {title}</button>
 
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
