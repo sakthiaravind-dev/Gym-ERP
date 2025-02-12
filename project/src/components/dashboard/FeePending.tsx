@@ -233,23 +233,24 @@ const FeePending = () => {
           Fee Pending Details
         </Typography>
 
-        <Box display="flex" alignItems="center" justifyContent="center" width="100%" marginBottom={2}>
-          <TextField
-            label="Search"
-            variant="outlined"
-            margin="normal"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <IconButton onClick={handleSearch} aria-label="search">
-            <SearchIcon />
-          </IconButton>
-        </Box>
-
-        <Button variant="contained" onClick={handleSort} style={{ marginBottom: "20px" }}>
-          Sort by S.NO ({sortDirection === "asc" ? "Ascending" : "Descending"})
-        </Button>
-
+        <Box display="flex" justifyContent="space-between" width="100%" marginBottom={2}>
+  <Button variant="contained" onClick={handleSort} sx={{ backgroundColor: '#2485bd', color: '#fff', width: '130px', height: '50px' }}>
+    Sort ({sortDirection === "asc" ? "Ascending" : "Descending"})
+  </Button>
+  <Box display="flex" alignItems="center" ml="auto">
+    <TextField
+      label="Search"
+      variant="outlined"
+      margin="normal"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      sx={{ width: "300px" }}
+    />
+    <IconButton onClick={handleSearch} aria-label="search">
+      <SearchIcon />
+    </IconButton>
+  </Box>
+</Box>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
