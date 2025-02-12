@@ -25,6 +25,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -68,18 +69,33 @@ const Members = () => {
   // Added sort direction for sno
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  const location = useLocation();
+
   useEffect(() => {
     fetchAllMembers();
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     applyFiltersAndSorting();
   }, [page, rowsPerPage, memberData, searchQuery, sortDirection]);
 
   const fetchAllMembers = async () => {
-    const { data, error } = await supabase
+    const queryParams = new URLSearchParams(location.search);
+    const type = queryParams.get("type");
+
+    let query = supabase
       .from("members")
       .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date");
+
+    if (type) {
+      if (type === "active" || type === "inactive") {
+        query = query.eq("member_status", type === "active" ? "active" : "Not-active");
+      } else {
+        query = query.eq("member_type", type);
+      }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching members:", error);

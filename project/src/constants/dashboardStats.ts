@@ -72,15 +72,15 @@ const fetchTotalAmountPending = async () => {
 const getStats = async () => {
   const membershipStats = [
     { title: "TOTAL MEMBERS", value: await fetchData("members", "member_id"), Icon: Users, path:"/members" },
-    { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members" },
-    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: UserCheck, path:"/members" },
-    { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members" },
+    { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Clock, path:"/members?type=yearly" },
+    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: UserCheck, path:"/members?type=half-yearly" },
+    { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: User, path:"/members?type=quarterly" },
   ];
 
   const activityStats = [
-    { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members" },
-    { title: "ACTIVE MEMBERS", value: await fetchData("members", "member_status", "active"), Icon: UserCheck, path:"/members" },
-    { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "member_status", "Not-active"), Icon: User, path:"/members" },
+    { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path:"/members?type=monthly" },
+    { title: "ACTIVE MEMBERS", value: await fetchData("members", "member_status", "active"), Icon: UserCheck, path:"/members?type=active" },
+    { title: "IN-ACTIVE MEMBERS", value: await fetchData("members", "member_status", "Not-active"), Icon: User, path:"/members?type=inactive" },
     { title: "TODAY ATTENDANCE", value: await fetchData("attendance", "date", new Date().toISOString().split('T')[0]), Icon: Clock, path:"/today/attendance" },
   ];
 
