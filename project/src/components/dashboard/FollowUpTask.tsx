@@ -1,34 +1,45 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import TaskItem from './TaskItem';
+import { createClient } from '@supabase/supabase-js';
 import { fetchFollowUpData } from '../../constants/followUpData';
+import { useNavigate } from 'react-router-dom';
+import TaskItem from '../dashboard/TaskItem';
 
-const FollowUpTask: React.FC = () => {
-  interface Task {
-    title: string;
-    count: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    items: { name: any; id: any; }[];
-  }
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const [followUpData, setFollowUpData] = useState<Task[]>([]);
+interface FollowUpItem {
+  title: string;
+  count: number;
+  items: { name: string; id: string }[];
+}
+
+const FollowUpTask = () => {
+  const [followUpData, setFollowUpData] = useState<FollowUpItem[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getData = async () => {
       const data = await fetchFollowUpData();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const normalizedData = data.map((task: any) => ({
-        ...task,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items: task.items.map((item: any) => ({
-          name: item.name || item.member_name,
-          id: item.id || item.emp_id || item.member_id,
+      const transformedData = data.map((item: any) => ({
+        title: item.title,
+        count: item.count,
+        items: item.items.map((subItem: any) => ({
+          name: subItem.name || subItem.member_name,
+          id: subItem.id || subItem.emp_id || subItem.member_id,
         })),
       }));
-      setFollowUpData(normalizedData);
+      setFollowUpData(transformedData);
     };
 
     getData();
   }, []);
+
+  const handleRedirect = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <div className="mt-8">
@@ -36,10 +47,25 @@ const FollowUpTask: React.FC = () => {
       <div className="grid grid-cols-4 gap-4">
         {followUpData.map((task, index) => (
           <TaskItem 
-            onViewMore={function (): void {
-              throw new Error('Function not implemented.');
-            } } key={index}
-            {...task}          />
+            key={index}
+            title={task.title}
+            count={task.count}
+            items={task.items.slice(0, 5)}
+            onViewMore={() => {
+              if (task.title === "Fees Pending") {
+                handleRedirect("/pending");
+              } else if (task.title === "Membership Expiring") {
+                handleRedirect("/followup");
+              }
+            }}
+            onRedirect={() => {
+              if (task.title === "Fees Pending") {
+                handleRedirect("/pending");
+              } else if (task.title === "Membership Expiring") {
+                handleRedirect("/followup");
+              }
+            }}
+          />
         ))}
       </div>
     </div>
