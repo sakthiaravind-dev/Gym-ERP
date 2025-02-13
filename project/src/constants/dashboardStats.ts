@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prefer-const */
+
 import { 
   Users, 
   Clock, 
@@ -26,7 +25,7 @@ const fetchData = async (table: string, column: string, filter?: string) => {
   if (filter) {
     query = query.eq(column, filter);
   }
-  let { data, error, count } = await query;
+  let { data, error } = await query;
   if (error) {
     console.error(`Error fetching ${column} from ${table}:`, error);
     return "NILL";

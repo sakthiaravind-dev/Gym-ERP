@@ -15,6 +15,7 @@ import {
   TextField,
   Button,
   Dialog,
+  TableSortLabel,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -25,25 +26,33 @@ import { createClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import StatGroup from "../components/dashboard/StatGroup";
 import { useLocation } from "react-router-dom";
+import { LucideIcon,Users } from "lucide-react";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const tableHeaders = [
-  "S.NO",
-  "MEMBER ID",
-  "MEMBER NAME",
-  "MEMBER PHONE NUMBER",
-  "MEMBER TYPE",
-  "MEMBER STATUS",
-  "REFERRED BY",
-  "END ON",
-  "ACTIONS",
-];
+interface CardConfig {
+  title: string;
+  value: string;
+  Icon: LucideIcon;
+  path: string;
+}
 
+const tableHeaders = [
+  { id: "sno", label: "S.No" },
+  { id: "member_id", label: "Member ID" },
+  { id: "member_name", label: "Name" },
+  { id: "member_phone_number", label: "Phone" },
+  { id: "member_type", label: "Type" },
+  { id: "member_status", label: "Status" },
+  { id: "referred_by", label: "Referred By" },
+  { id: "member_end_date", label: "End Date" },
+  { id: "actions", label: "Actions", disableSorting: true },
+];
 interface Member {
   member_id: string;
   member_name: string;
@@ -65,7 +74,11 @@ const Members = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-
+  const [cardConfig, setCardConfig] = useState<CardConfig[]>([]);
+    const [order, setOrder] = useState<"asc" | "desc">("asc");
+  
+    const [orderBy, setOrderBy] = useState("");
+  
   // Added sort direction for sno
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -224,9 +237,69 @@ const Members = () => {
   const handleSortBySno = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
+  const fetchData = async (table: string, column: string, filter?: string) => {
+    let query = supabase.from(table).select(column).limit(1000);
+    if (filter) {
+      query = query.eq(column, filter);
+    }
+    let { data, error } = await query;
+    if (error) {
+      console.error(`Error fetching ${column} from ${table}:`, error);
+      return "NILL";
+    }
+    let allData: unknown[] = data || [];
+    while (data && data.length === 1000) {
+      const from = allData ? allData.length : 0;
+      ({ data, error } = await query.range(from, from + 999));
+      if (error) {
+        console.error(`Error fetching ${column} from ${table}:`, error);
+        return "NILL";
+      }
+      allData = allData.concat(data);
+    }
+    return allData.length > 0 ? allData.length.toString() : "NILL";
+  };
+
+const fetchCardConfig = async () => {
+  return [
+    { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Users, path: "/members?type=yearly" },
+    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: Users, path: "/members?type=half-yearly" },
+    { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: Users, path: "/members?type=quarterly" },
+    { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path: "/members?type=monthly" },
+  ];
+};
+
+useEffect(() => {
+  const loadCardConfig = async () => {
+    const config = await fetchCardConfig();
+    setCardConfig(config);
+  };
+
+  loadCardConfig();
+}, []);
+
+
+const handleSort = (property: keyof Member) => {
+  setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  setOrderBy(property);
+};
+
+
+const sortedData = [...filteredData].sort((a, b) => {
+  const valueA = a[orderBy as keyof Member];
+  const valueB = b[orderBy as keyof Member];
+
+  if (valueA < valueB) return order === "asc" ? -1 : 1;
+  if (valueA > valueB) return order === "asc" ? 1 : -1;
+  return 0;
+});
+
 
   return (
     <div style={{ padding: "20px" }}>
+      <div>
+        <StatGroup stats={cardConfig} />
+      </div>
       <Typography
         variant="h5"
         sx={{ marginBottom: 2, textAlign: "center", color: "#71045F", fontWeight: "bold" }}
@@ -258,56 +331,59 @@ const Members = () => {
           >
             Export Data
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleSortBySno}
-            sx={{ backgroundColor: "#bd243f", color: "#fff" }}
-          >
-            Sort by S.NO ({sortDirection.toUpperCase()})
-          </Button>
         </Box>
       </Box>
 
       <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {tableHeaders.map((header, index) => (
-                <TableCell
-                  key={index}
-                  align="center"
-                  sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
-                >
-                  {header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredData.map((member, index) => (
-              <TableRow key={member.member_id}>
-                <TableCell align="center">{member.sno}</TableCell>
-                <TableCell align="center">{member.member_id}</TableCell>
-                <TableCell align="center">{member.member_name}</TableCell>
-                <TableCell align="center">{member.member_phone_number}</TableCell>
-                <TableCell align="center">{member.member_type}</TableCell>
-                <TableCell align="center">{member.member_status}</TableCell>
-                <TableCell align="center">{member.referred_by}</TableCell>
-                <TableCell align="center">{member.member_end_date}</TableCell>
-                <TableCell align="center">
-                  <Button
-                    variant="contained"
-                    onClick={(event) => handleClick(event, member)}
-                    endIcon={<ArrowDropDownIcon />}
+      <Table>
+        <TableHead>
+          <TableRow>
+            {tableHeaders.map((header) => (
+              <TableCell
+                key={header.id}
+                align="center"
+                sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+              >
+                {header.disableSorting ? (
+                  header.label
+                ) : (
+                  <TableSortLabel
+                    active={orderBy === header.id}
+                    direction={orderBy === header.id ? order : "asc"}
+                    onClick={() => handleSort(header.id as keyof Member)}
                   >
-                    Actions
-                  </Button>
-                </TableCell>
-              </TableRow>
+                    {header.label}
+                  </TableSortLabel>
+                )}
+              </TableCell>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sortedData.map((member) => (
+            <TableRow key={member.member_id}>
+              <TableCell align="center">{member.sno}</TableCell>
+              <TableCell align="center">{member.member_id}</TableCell>
+              <TableCell align="center">{member.member_name}</TableCell>
+              <TableCell align="center">{member.member_phone_number}</TableCell>
+              <TableCell align="center">{member.member_type}</TableCell>
+              <TableCell align="center">{member.member_status}</TableCell>
+              <TableCell align="center">{member.referred_by}</TableCell>
+              <TableCell align="center">{member.member_end_date}</TableCell>
+              <TableCell align="center">
+                <Button
+                  variant="contained"
+                  onClick={(event) => handleClick(event, member)}
+                  endIcon={<ArrowDropDownIcon />}
+                >
+                  Actions
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
 
       <TablePagination
         rowsPerPageOptions={[10, 50, 100]}

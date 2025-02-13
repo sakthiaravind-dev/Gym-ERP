@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import {
   TableHead,
   TableRow,
   Menu,
+  TableSortLabel,
   MenuItem,
   Button,
   TablePagination,
@@ -52,7 +53,7 @@ interface Transaction {
 }
 
 const TransactionComponent = () => {
-  const { period } = useParams<{ period?: string }>();
+
   const navigate = useNavigate();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -68,9 +69,14 @@ const TransactionComponent = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+
+  const [orderBy, setOrderBy] = useState("");
 
   // Added for sorting by SNO:
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+
 
   useEffect(() => {
     fetchTransactions();
@@ -216,9 +222,6 @@ const TransactionComponent = () => {
   };
 
   // Toggle sort direction by SNO
-  const handleSortBySno = () => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-  };
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -252,7 +255,21 @@ const TransactionComponent = () => {
       setSelectedTransaction(null);
     }
   };
-
+  const handleSort = (property: keyof Transaction) => {
+    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    setOrderBy(property);
+  };
+  
+  
+  const sortedData = [...paginated].sort((a, b) => {
+    const valueA = a[orderBy as keyof Transaction];
+    const valueB = b[orderBy as keyof Transaction];
+  
+    if (valueA < valueB) return order === "asc" ? -1 : 1;
+    if (valueA > valueB) return order === "asc" ? 1 : -1;
+    return 0;
+  });
+  
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setSelectedTransaction((prev) => (prev ? { ...prev, [name]: value } : null));
@@ -325,13 +342,6 @@ const TransactionComponent = () => {
           >
             Export Data
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleSortBySno}
-            sx={{ backgroundColor: "#bd243f" }}
-          >
-            Sort by SNO ({sortDirection.toUpperCase()})
-          </Button>
         </Box>
 
         <Typography
@@ -350,28 +360,45 @@ const TransactionComponent = () => {
         />
       </Box>
 
+      <Box sx={{ overflowX: "auto", maxWidth: "90vw" }}>
       <TableContainer component={Paper}>
         <Table>
-          <TableHead>
+          <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, whiteSpace: "nowrap" }}>
             <TableRow>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>SNO</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>BILL DATE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>MEMBER ID</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>MEMBER NAME</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>MONTH PAID</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>PENDING</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>DISCOUNT</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>STATE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>TOTAL</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>PAYMENT MODE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>START DATE</TableCell>
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>RENEWAL DATE</TableCell>
+              {[
+                { id: "sno", label: "SNO" },
+                { id: "bill_date", label: "BILL DATE" },
+                { id: "emp_id", label: "MEMBER ID" },
+                { id: "member_name", label: "MEMBER NAME" },
+                { id: "month_paid", label: "MONTH PAID" },
+                { id: "pending", label: "PENDING" },
+                { id: "discount", label: "DISCOUNT" },
+                { id: "state", label: "STATE" },
+                { id: "total_amount_received", label: "TOTAL" },
+                { id: "payment_mode", label: "PAYMENT MODE" },
+                { id: "start_date", label: "START DATE" },
+                { id: "renewal_date", label: "RENEWAL DATE" }
+              ].map((column) => (
+                <TableCell
+                  key={column.id}
+                  sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}
+                >
+                  <TableSortLabel
+                    active={orderBy === column.id}
+                    direction={orderBy === column.id ? order : "asc"}
+                    onClick={() => handleSort(column.id as keyof Transaction)}
+                  >
+                    {column.label}
+                  </TableSortLabel>
+
+                </TableCell>
+              ))}
               <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>ACTIONS</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.length ? (
-              paginated.map((t) => (
+            {sortedData.length ? (
+              sortedData.map((t) => (
                 <TableRow key={t.sno}>
                   <TableCell>{t.sno}</TableCell>
                   <TableCell>{t.bill_date}</TableCell>
@@ -386,11 +413,7 @@ const TransactionComponent = () => {
                   <TableCell>{t.start_date}</TableCell>
                   <TableCell>{t.renewal_date}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      onClick={(e) => handleClick(e, t)}
-                      endIcon={<ArrowDropDownIcon />}
-                    >
+                    <Button variant="contained" onClick={(e) => handleClick(e, t)} endIcon={<ArrowDropDownIcon />}>
                       Actions
                     </Button>
                   </TableCell>
@@ -406,6 +429,7 @@ const TransactionComponent = () => {
           </TableBody>
         </Table>
       </TableContainer>
+    </Box>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEdit}>Edit</MenuItem>
