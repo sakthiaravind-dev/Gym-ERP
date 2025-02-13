@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -24,6 +25,7 @@ import {
   IconButton,
   CircularProgress
 } from "@mui/material";
+import { ReactNode } from 'react';
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import { createClient } from "@supabase/supabase-js";
@@ -51,6 +53,16 @@ interface Transaction {
   payment_mode: string;
   renewal_date: string;
 }
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  try {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
 
 const TransactionComponent = () => {
 
@@ -259,20 +271,184 @@ const TransactionComponent = () => {
     setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     setOrderBy(property);
   };
-  
-  
+
+
   const sortedData = [...paginated].sort((a, b) => {
     const valueA = a[orderBy as keyof Transaction];
     const valueB = b[orderBy as keyof Transaction];
-  
+
     if (valueA < valueB) return order === "asc" ? -1 : 1;
     if (valueA > valueB) return order === "asc" ? 1 : -1;
     return 0;
   });
-  
+
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setSelectedTransaction((prev) => (prev ? { ...prev, [name]: value } : null));
+  };
+
+  // Add this function at the top with other imports
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
+
+  // Add this custom pagination component
+  const TablePaginationActions = (props: {
+    count: number;
+    page: number;
+    rowsPerPage: number;
+    onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+  }) => {
+    const { count, page, rowsPerPage, onPageChange } = props;
+    const [showInput, setShowInput] = useState(false);
+    const [inputPage, setInputPage] = useState('');
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputPage(e.target.value);
+    };
+
+    const handleInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const pageNumber = parseInt(inputPage, 10);
+      if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= Math.ceil(count / rowsPerPage)) {
+        onPageChange(e as unknown as React.MouseEvent<HTMLButtonElement>, pageNumber - 1);
+      }
+      setShowInput(false);
+      setInputPage('');
+    };
+
+    const renderPageNumbers = () => {
+      const pageNumbers: ReactNode[] = [];
+      const totalPages = Math.ceil(count / rowsPerPage);
+      const currentPage = page + 1;
+
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+      } else {
+        // Always show first page
+        pageNumbers.push(
+          <Button
+            key={1}
+            onClick={(e) => onPageChange(e, 0)}
+            variant={currentPage === 1 ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            1
+          </Button>
+        );
+
+        if (currentPage <= 4) {
+          for (let i = 2; i <= 5; i++) {
+            pageNumbers.push(
+              <Button
+                key={i}
+                onClick={(e) => onPageChange(e, i - 1)}
+                variant={currentPage === i ? "contained" : "outlined"}
+                size="small"
+                sx={{ mx: 0.5, minWidth: '30px' }}
+              >
+                {i}
+              </Button>
+            );
+          }
+          pageNumbers.push(
+            <Button key="dots1" onClick={() => setShowInput(true)}>
+              ...
+            </Button>
+          );
+        } else if (currentPage >= totalPages - 3) {
+          pageNumbers.push(
+            <Button key="dots1" onClick={() => setShowInput(true)}>
+              ...
+            </Button>
+          );
+          for (let i = totalPages - 4; i < totalPages; i++) {
+            pageNumbers.push(
+              <Button
+                key={i}
+                onClick={(e) => onPageChange(e, i - 1)}
+                variant={currentPage === i ? "contained" : "outlined"}
+                size="small"
+                sx={{ mx: 0.5, minWidth: '30px' }}
+              >
+                {i}
+              </Button>
+            );
+          }
+        } else {
+          pageNumbers.push(
+            <Button key="dots1" onClick={() => setShowInput(true)}>
+              ...
+            </Button>
+          );
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pageNumbers.push(
+              <Button
+                key={i}
+                onClick={(e) => onPageChange(e, i - 1)}
+                variant={currentPage === i ? "contained" : "outlined"}
+                size="small"
+                sx={{ mx: 0.5, minWidth: '30px' }}
+              >
+                {i}
+              </Button>
+            );
+          }
+          pageNumbers.push(
+            <Button key="dots2" onClick={() => setShowInput(true)}>
+              ...
+            </Button>
+          );
+        }
+
+        pageNumbers.push(
+          <Button
+            key={totalPages}
+            onClick={(e) => onPageChange(e, totalPages - 1)}
+            variant={currentPage === totalPages ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            {totalPages}
+          </Button>
+        );
+      }
+
+      return pageNumbers;
+    };
+
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {renderPageNumbers()}
+        {showInput && (
+          <form onSubmit={handleInputSubmit}>
+            <TextField
+              size="small"
+              value={inputPage}
+              onChange={handleInputChange}
+              onBlur={() => setShowInput(false)}
+              autoFocus
+              sx={{ width: '50px', mx: 0.5 }}
+            />
+          </form>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -361,92 +537,93 @@ const TransactionComponent = () => {
       </Box>
 
       <Box sx={{ overflowX: "auto", maxWidth: "90vw" }}>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, whiteSpace: "nowrap" }}>
-            <TableRow>
-              {[
-                { id: "sno", label: "SNO" },
-                { id: "bill_date", label: "BILL DATE" },
-                { id: "emp_id", label: "MEMBER ID" },
-                { id: "member_name", label: "MEMBER NAME" },
-                { id: "month_paid", label: "MONTH PAID" },
-                { id: "pending", label: "PENDING" },
-                { id: "discount", label: "DISCOUNT" },
-                { id: "state", label: "STATE" },
-                { id: "total_amount_received", label: "TOTAL" },
-                { id: "payment_mode", label: "PAYMENT MODE" },
-                { id: "start_date", label: "START DATE" },
-                { id: "renewal_date", label: "RENEWAL DATE" }
-              ].map((column) => (
-                <TableCell
-                  key={column.id}
-                  sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}
-                >
-                  <TableSortLabel
-                    active={orderBy === column.id}
-                    direction={orderBy === column.id ? order : "asc"}
-                    onClick={() => handleSort(column.id as keyof Transaction)}
-                  >
-                    {column.label}
-                  </TableSortLabel>
+        <Box display="flex" justifyContent="flex-end" mb={2}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, whiteSpace: "nowrap" }}>
+                <TableRow>
+                  {[
+                    { id: "sno", label: "SNO" },
+                    { id: "bill_date", label: "BILL DATE" },
+                    { id: "emp_id", label: "MEMBER ID" },
+                    { id: "member_name", label: "MEMBER NAME" },
+                    { id: "month_paid", label: "MONTH PAID" },
+                    { id: "pending", label: "PENDING" },
+                    { id: "discount", label: "DISCOUNT" },
+                    { id: "state", label: "STATE" },
+                    { id: "total_amount_received", label: "TOTAL" },
+                    { id: "payment_mode", label: "PAYMENT MODE" },
+                    { id: "start_date", label: "START DATE" },
+                    { id: "renewal_date", label: "RENEWAL DATE" }
+                  ].map((column) => (
+                    <TableCell
+                      key={column.id}
+                      sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}
+                    >
+                      <TableSortLabel
+                        active={orderBy === column.id}
+                        direction={orderBy === column.id ? order : "asc"}
+                        onClick={() => handleSort(column.id as keyof Transaction)}
+                      >
+                        {column.label}
+                      </TableSortLabel>
 
-                </TableCell>
-              ))}
-              <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>ACTIONS</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedData.length ? (
-              sortedData.map((t) => (
-                <TableRow key={t.sno}>
-                  <TableCell>{t.sno}</TableCell>
-                  <TableCell>{t.bill_date}</TableCell>
-                  <TableCell>{t.emp_id}</TableCell>
-                  <TableCell>{t.member_name}</TableCell>
-                  <TableCell>{t.month_paid}</TableCell>
-                  <TableCell>{t.pending}</TableCell>
-                  <TableCell>{t.discount}</TableCell>
-                  <TableCell>{t.state}</TableCell>
-                  <TableCell>{t.total_amount_received}</TableCell>
-                  <TableCell>{t.payment_mode}</TableCell>
-                  <TableCell>{t.start_date}</TableCell>
-                  <TableCell>{t.renewal_date}</TableCell>
-                  <TableCell>
-                    <Button variant="contained" onClick={(e) => handleClick(e, t)} endIcon={<ArrowDropDownIcon />}>
-                      Actions
-                    </Button>
-                  </TableCell>
+                    </TableCell>
+                  ))}
+                  <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>ACTIONS</TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={13} align="center">
-                  No transactions found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+              </TableHead>
+              <TableBody>
+                {sortedData.length ? (
+                  sortedData.map((t) => (
+                    <TableRow key={t.sno}>
+                      <TableCell>{t.sno}</TableCell>
+                      <TableCell>{formatDate(t.bill_date)}</TableCell>
+                      <TableCell>{t.emp_id}</TableCell>
+                      <TableCell>{t.member_name}</TableCell>
+                      <TableCell>{t.month_paid}</TableCell>
+                      <TableCell>{t.pending}</TableCell>
+                      <TableCell>{t.discount}</TableCell>
+                      <TableCell>{t.state}</TableCell>
+                      <TableCell>{t.total_amount_received}</TableCell>
+                      <TableCell>{t.payment_mode}</TableCell>
+                      <TableCell>{formatDate(t.start_date)}</TableCell>
+                      <TableCell>{formatDate(t.renewal_date)}</TableCell>
+                      <TableCell>
+                        <Button variant="contained" onClick={(e) => handleClick(e, t)} endIcon={<ArrowDropDownIcon />}>
+                          Actions
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={13} align="center">
+                      No transactions found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Box>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEdit}>Edit</MenuItem>
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
         <MenuItem onClick={handleBill}>Pay Bill</MenuItem>
       </Menu>
-
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[50, 60, 100]}
         component="div"
         count={filtered.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        ActionsComponent={TablePaginationActions}
       />
-
       <Modal open={openEdit} onClose={() => setOpenEdit(false)}>
         <Box
           sx={{

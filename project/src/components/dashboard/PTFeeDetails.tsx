@@ -16,6 +16,7 @@ import {
   Modal,
   Box,
   IconButton,
+  TableSortLabel,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
@@ -23,6 +24,7 @@ import { createClient } from "@supabase/supabase-js";
 import { toast } from "react-toastify";
 import StatGroup from "./StatGroup";
 import { Users } from "lucide-react";
+import { ReactNode } from 'react';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -30,13 +32,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const tableHeaders = [
-  "S.NO",
-  "MEMBER ID",
-  "MEMBER NAME",
-  "PENDING AMOUNT",
-  "MEMBER PHONE NUMBER",
-  "PENDING EXP DATE",
-  "ACTIONS",
+  { id: "sno", label: "S.NO" },
+  { id: "emp_id", label: "MEMBER ID" },
+  { id: "member_name", label: "MEMBER NAME" },
+  { id: "pending", label: "PENDING AMOUNT" },
+  { id: "phone", label: "MEMBER PHONE NUMBER" },
+  { id: "renewal_date", label: "PENDING EXP DATE" },
+  { id: "actions", label: "ACTIONS", disableSorting: true },
 ];
 
 interface Transaction {
@@ -48,6 +50,173 @@ interface Transaction {
   renewal_date: string;
 }
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  try {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
+// Add this custom pagination component before the main Members component
+const TablePaginationActions = (props: {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}) => {
+  const { count, page, rowsPerPage, onPageChange } = props;
+  const [showInput, setShowInput] = useState(false);
+  const [inputPage, setInputPage] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputPage(e.target.value);
+  };
+
+  const handleInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const pageNumber = parseInt(inputPage, 10);
+    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= Math.ceil(count / rowsPerPage)) {
+      onPageChange(e as unknown as React.MouseEvent<HTMLButtonElement>, pageNumber - 1);
+    }
+    setShowInput(false);
+    setInputPage('');
+  };
+
+  const renderPageNumbers = () => {
+    const pageNumbers: ReactNode[] = [];
+    const totalPages = Math.ceil(count / rowsPerPage);
+    const currentPage = page + 1;
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <Button
+            key={i}
+            onClick={(e) => onPageChange(e, i - 1)}
+            variant={currentPage === i ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            {i}
+          </Button>
+        );
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(
+        <Button
+          key={1}
+          onClick={(e) => onPageChange(e, 0)}
+          variant={currentPage === 1 ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          1
+        </Button>
+      );
+
+      if (currentPage <= 4) {
+        for (let i = 2; i <= 5; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      } else if (currentPage >= totalPages - 3) {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = totalPages - 4; i < totalPages; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+      } else {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots2" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      }
+
+      pageNumbers.push(
+        <Button
+          key={totalPages}
+          onClick={(e) => onPageChange(e, totalPages - 1)}
+          variant={currentPage === totalPages ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {renderPageNumbers()}
+      {showInput && (
+        <form onSubmit={handleInputSubmit}>
+          <TextField
+            size="small"
+            value={inputPage}
+            onChange={handleInputChange}
+            onBlur={() => setShowInput(false)}
+            autoFocus
+            sx={{ width: '50px', mx: 0.5 }}
+          />
+        </form>
+      )}
+    </Box>
+  );
+};
+
 const PTFeePending = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalPendingAmount, setTotalPendingAmount] = useState<number>(0);
@@ -57,6 +226,8 @@ const PTFeePending = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Transaction>("sno");
 
   useEffect(() => {
     fetchTransactions();
@@ -95,11 +266,8 @@ const PTFeePending = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
+    setPage(0);
   };
-
-  const filteredTransactions = transactions.filter((transaction) =>
-    transaction.member_name.toLowerCase().includes(search.toLowerCase())
-  );
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, transaction: Transaction) => {
     setAnchorEl(event.currentTarget);
@@ -173,7 +341,30 @@ const PTFeePending = () => {
     setPage(0);
   };
 
-  const paginatedTransactions = filteredTransactions.slice(
+  const handleSort = (property: keyof Transaction) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const filteredTransactions = transactions.filter((transaction) =>
+    transaction.member_name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => {
+    const valueA = a[orderBy];
+    const valueB = b[orderBy];
+
+    if (valueA < valueB) {
+      return order === "asc" ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return order === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const paginatedTransactions = sortedTransactions.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -205,13 +396,23 @@ const PTFeePending = () => {
           <Table>
             <TableHead>
               <TableRow>
-                {tableHeaders.map((header, index) => (
+                {tableHeaders.map((header) => (
                   <TableCell
-                    key={index}
+                    key={header.id}
                     align="center"
                     sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
                   >
-                    {header}
+                    {header.disableSorting ? (
+                      header.label
+                    ) : (
+                      <TableSortLabel
+                        active={orderBy === header.id}
+                        direction={orderBy === header.id ? order : "asc"}
+                        onClick={() => handleSort(header.id as keyof Transaction)}
+                      >
+                        {header.label}
+                      </TableSortLabel>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -227,7 +428,7 @@ const PTFeePending = () => {
                     <TableCell align="center">{transaction.member_name}</TableCell>
                     <TableCell align="center">{transaction.pending}</TableCell>
                     <TableCell align="center">{transaction.phone}</TableCell>
-                    <TableCell align="center">{transaction.renewal_date}</TableCell>
+                    <TableCell align="center">{formatDate(transaction.renewal_date)}</TableCell>
                     <TableCell align="center">
                       <Button
                         variant="contained"
@@ -238,32 +439,6 @@ const PTFeePending = () => {
                       >
                         Actions
                       </Button>
-                      <Menu
-                        id="actions-menu"
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleMenuClose}
-                        PaperProps={{
-                          elevation: 0,
-                          sx: {
-                            overflow: 'visible',
-                            filter: 'none',
-                            mt: 1.5,
-                            '& .MuiAvatar-root': {
-                              width: 32,
-                              height: 32,
-                              ml: -0.5,
-                              mr: 1,
-                            },
-                            '&:before': {
-                              display: 'none',
-                            },
-                          },
-                        }}
-                      >
-                        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-                        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-                      </Menu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -286,8 +461,18 @@ const PTFeePending = () => {
           page={page}
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleRowsPerPageChange}
+          ActionsComponent={TablePaginationActions}
         />
       </div>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+      </Menu>
 
       <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
         <Box
