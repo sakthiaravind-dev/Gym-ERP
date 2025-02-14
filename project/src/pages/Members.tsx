@@ -28,12 +28,171 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import StatGroup from "../components/dashboard/StatGroup";
 import { useLocation } from "react-router-dom";
-import { LucideIcon,Users } from "lucide-react";
+import { LucideIcon, Users } from "lucide-react";
+import { ReactNode } from 'react';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+
+// Add this custom pagination component before the main Members component
+const TablePaginationActions = (props: {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}) => {
+  const { count, page, rowsPerPage, onPageChange } = props;
+  const [showInput, setShowInput] = useState(false);
+  const [inputPage, setInputPage] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputPage(e.target.value);
+  };
+
+  const handleInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const pageNumber = parseInt(inputPage, 10);
+    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= Math.ceil(count / rowsPerPage)) {
+      onPageChange(e as unknown as React.MouseEvent<HTMLButtonElement>, pageNumber - 1);
+    }
+    setShowInput(false);
+    setInputPage('');
+  };
+
+  const renderPageNumbers = () => {
+    const pageNumbers: ReactNode[] = [];
+    const totalPages = Math.ceil(count / rowsPerPage);
+    const currentPage = page + 1;
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <Button
+            key={i}
+            onClick={(e) => onPageChange(e, i - 1)}
+            variant={currentPage === i ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            {i}
+          </Button>
+        );
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(
+        <Button
+          key={1}
+          onClick={(e) => onPageChange(e, 0)}
+          variant={currentPage === 1 ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          1
+        </Button>
+      );
+
+      if (currentPage <= 4) {
+        for (let i = 2; i <= 5; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      } else if (currentPage >= totalPages - 3) {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = totalPages - 4; i < totalPages; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+      } else {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots2" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      }
+
+      pageNumbers.push(
+        <Button
+          key={totalPages}
+          onClick={(e) => onPageChange(e, totalPages - 1)}
+          variant={currentPage === totalPages ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {renderPageNumbers()}
+      {showInput && (
+        <form onSubmit={handleInputSubmit}>
+          <TextField
+            size="small"
+            value={inputPage}
+            onChange={handleInputChange}
+            onBlur={() => setShowInput(false)}
+            autoFocus
+            sx={{ width: '50px', mx: 0.5 }}
+          />
+        </form>
+      )}
+    </Box>
+  );
+};
 
 interface CardConfig {
   title: string;
@@ -64,6 +223,18 @@ interface Member {
   sno: number; // Added for sorting
 }
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  try {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
+
+
 const Members = () => {
   const [memberData, setMemberData] = useState<Member[]>([]);
   const [filteredData, setFilteredData] = useState<Member[]>([]);
@@ -75,10 +246,10 @@ const Members = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [cardConfig, setCardConfig] = useState<CardConfig[]>([]);
-    const [order, setOrder] = useState<"asc" | "desc">("asc");
-  
-    const [orderBy, setOrderBy] = useState("");
-  
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+
+  const [orderBy, setOrderBy] = useState("");
+
   // Added sort direction for sno
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -217,9 +388,9 @@ const Members = () => {
     setSelectedMember((prevData) =>
       prevData
         ? {
-            ...prevData,
-            [name]: value,
-          }
+          ...prevData,
+          [name]: value,
+        }
         : null
     );
   };
@@ -260,39 +431,39 @@ const Members = () => {
     return allData.length > 0 ? allData.length.toString() : "NILL";
   };
 
-const fetchCardConfig = async () => {
-  return [
-    { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Users, path: "/members?type=yearly" },
-    { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: Users, path: "/members?type=half-yearly" },
-    { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: Users, path: "/members?type=quarterly" },
-    { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path: "/members?type=monthly" },
-  ];
-};
-
-useEffect(() => {
-  const loadCardConfig = async () => {
-    const config = await fetchCardConfig();
-    setCardConfig(config);
+  const fetchCardConfig = async () => {
+    return [
+      { title: "YEARLY MEMBERS", value: await fetchData("members", "member_type", "yearly"), Icon: Users, path: "/members?type=yearly" },
+      { title: "HALF YEARLY MEMBERS", value: await fetchData("members", "member_type", "half-yearly"), Icon: Users, path: "/members?type=half-yearly" },
+      { title: "QUARTERLY MEMBERS", value: await fetchData("members", "member_type", "quarterly"), Icon: Users, path: "/members?type=quarterly" },
+      { title: "MONTHLY MEMBERS", value: await fetchData("members", "member_type", "monthly"), Icon: Users, path: "/members?type=monthly" },
+    ];
   };
 
-  loadCardConfig();
-}, []);
+  useEffect(() => {
+    const loadCardConfig = async () => {
+      const config = await fetchCardConfig();
+      setCardConfig(config);
+    };
+
+    loadCardConfig();
+  }, []);
 
 
-const handleSort = (property: keyof Member) => {
-  setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-  setOrderBy(property);
-};
+  const handleSort = (property: keyof Member) => {
+    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    setOrderBy(property);
+  };
 
 
-const sortedData = [...filteredData].sort((a, b) => {
-  const valueA = a[orderBy as keyof Member];
-  const valueB = b[orderBy as keyof Member];
+  const sortedData = [...filteredData].sort((a, b) => {
+    const valueA = a[orderBy as keyof Member];
+    const valueB = b[orderBy as keyof Member];
 
-  if (valueA < valueB) return order === "asc" ? -1 : 1;
-  if (valueA > valueB) return order === "asc" ? 1 : -1;
-  return 0;
-});
+    if (valueA < valueB) return order === "asc" ? -1 : 1;
+    if (valueA > valueB) return order === "asc" ? 1 : -1;
+    return 0;
+  });
 
 
   return (
@@ -335,64 +506,65 @@ const sortedData = [...filteredData].sort((a, b) => {
       </Box>
 
       <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            {tableHeaders.map((header) => (
-              <TableCell
-                key={header.id}
-                align="center"
-                sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
-              >
-                {header.disableSorting ? (
-                  header.label
-                ) : (
-                  <TableSortLabel
-                    active={orderBy === header.id}
-                    direction={orderBy === header.id ? order : "asc"}
-                    onClick={() => handleSort(header.id as keyof Member)}
-                  >
-                    {header.label}
-                  </TableSortLabel>
-                )}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortedData.map((member) => (
-            <TableRow key={member.member_id}>
-              <TableCell align="center">{member.sno}</TableCell>
-              <TableCell align="center">{member.member_id}</TableCell>
-              <TableCell align="center">{member.member_name}</TableCell>
-              <TableCell align="center">{member.member_phone_number}</TableCell>
-              <TableCell align="center">{member.member_type}</TableCell>
-              <TableCell align="center">{member.member_status}</TableCell>
-              <TableCell align="center">{member.referred_by}</TableCell>
-              <TableCell align="center">{member.member_end_date}</TableCell>
-              <TableCell align="center">
-                <Button
-                  variant="contained"
-                  onClick={(event) => handleClick(event, member)}
-                  endIcon={<ArrowDropDownIcon />}
+        <Table>
+          <TableHead>
+            <TableRow>
+              {tableHeaders.map((header) => (
+                <TableCell
+                  key={header.id}
+                  align="center"
+                  sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
                 >
-                  Actions
-                </Button>
-              </TableCell>
+                  {header.disableSorting ? (
+                    header.label
+                  ) : (
+                    <TableSortLabel
+                      active={orderBy === header.id}
+                      direction={orderBy === header.id ? order : "asc"}
+                      onClick={() => handleSort(header.id as keyof Member)}
+                    >
+                      {header.label}
+                    </TableSortLabel>
+                  )}
+                </TableCell>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {sortedData.map((member) => (
+              <TableRow key={member.member_id}>
+                <TableCell align="center">{member.sno}</TableCell>
+                <TableCell align="center">{member.member_id}</TableCell>
+                <TableCell align="center">{member.member_name}</TableCell>
+                <TableCell align="center">{member.member_phone_number}</TableCell>
+                <TableCell align="center">{member.member_type}</TableCell>
+                <TableCell align="center">{member.member_status}</TableCell>
+                <TableCell align="center">{member.referred_by}</TableCell>
+                <TableCell align="center">{formatDate(member.member_end_date)}</TableCell>
+                <TableCell align="center">
+                  <Button
+                    variant="contained"
+                    onClick={(event) => handleClick(event, member)}
+                    endIcon={<ArrowDropDownIcon />}
+                  >
+                    Actions
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <TablePagination
-        rowsPerPageOptions={[10, 50, 100]}
+        rowsPerPageOptions={[50, 60, 100]}
         component="div"
         count={totalCount}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        ActionsComponent={TablePaginationActions}
       />
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

@@ -115,7 +115,7 @@ const App: React.FC = () => {
               <Sidebar />
               <div className="flex-1">
                 <Header />
-                <main className="p-6">
+                <main className="p-0">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/total-members" element={<MemberDetails />} />

@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TableSortLabel,
 } from "@mui/material";
 import { Search as SearchIcon } from '@mui/icons-material';
 import StatGroup from './StatGroup';
@@ -27,6 +28,7 @@ import { Users } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ReactNode } from 'react';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -46,14 +48,181 @@ interface FeePendingData {
 }
 
 const tableHeaders = [
-  "S.NO",
-  "MEMBER ID",
-  "MEMBER NAME",
-  "PENDING AMOUNT",
-  "MEMBER PHONE NUMBER",
-  "PENDING EXP DATE",
-  "ACTIONS",
+  { id: "sno", label: "S.NO" },
+  { id: "member_id", label: "MEMBER ID" },
+  { id: "member_name", label: "MEMBER NAME" },
+  { id: "pending_amount", label: "PENDING AMOUNT" },
+  { id: "member_phone", label: "MEMBER PHONE NUMBER" },
+  { id: "pending_exp_date", label: "PENDING EXP DATE" },
+  { id: "actions", label: "ACTIONS", disableSorting: true },
 ];
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  try {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
+// Add this custom pagination component before the main Members component
+const TablePaginationActions = (props: {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}) => {
+  const { count, page, rowsPerPage, onPageChange } = props;
+  const [showInput, setShowInput] = useState(false);
+  const [inputPage, setInputPage] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputPage(e.target.value);
+  };
+
+  const handleInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const pageNumber = parseInt(inputPage, 10);
+    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= Math.ceil(count / rowsPerPage)) {
+      onPageChange(e as unknown as React.MouseEvent<HTMLButtonElement>, pageNumber - 1);
+    }
+    setShowInput(false);
+    setInputPage('');
+  };
+
+  const renderPageNumbers = () => {
+    const pageNumbers: ReactNode[] = [];
+    const totalPages = Math.ceil(count / rowsPerPage);
+    const currentPage = page + 1;
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <Button
+            key={i}
+            onClick={(e) => onPageChange(e, i - 1)}
+            variant={currentPage === i ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            {i}
+          </Button>
+        );
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(
+        <Button
+          key={1}
+          onClick={(e) => onPageChange(e, 0)}
+          variant={currentPage === 1 ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          1
+        </Button>
+      );
+
+      if (currentPage <= 4) {
+        for (let i = 2; i <= 5; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      } else if (currentPage >= totalPages - 3) {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = totalPages - 4; i < totalPages; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+      } else {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots2" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      }
+
+      pageNumbers.push(
+        <Button
+          key={totalPages}
+          onClick={(e) => onPageChange(e, totalPages - 1)}
+          variant={currentPage === totalPages ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {renderPageNumbers()}
+      {showInput && (
+        <form onSubmit={handleInputSubmit}>
+          <TextField
+            size="small"
+            value={inputPage}
+            onChange={handleInputChange}
+            onBlur={() => setShowInput(false)}
+            autoFocus
+            sx={{ width: '50px', mx: 0.5 }}
+          />
+        </form>
+      )}
+    </Box>
+  );
+};
 
 const FeePending = () => {
   const [feePendingData, setFeePendingData] = useState<FeePendingData[]>([]);
@@ -62,7 +231,8 @@ const FeePending = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof FeePendingData>("sno");
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FeePendingData | null>(null);
   const [totalPendingAmount, setTotalPendingAmount] = useState<number>(0);
@@ -73,7 +243,7 @@ const FeePending = () => {
 
   useEffect(() => {
     applyFiltersAndSorting();
-  }, [feePendingData, search, sortDirection]);
+  }, [feePendingData, search, orderBy, order]);
 
   const fetchFeePendingData = async () => {
     try {
@@ -114,10 +284,20 @@ const FeePending = () => {
     }
 
     // Apply sorting
-    filtered.sort((a, b) => {
-      const order = sortDirection === "asc" ? 1 : -1;
-      return (a.sno - b.sno) * order;
-    });
+    if (orderBy) {
+      filtered.sort((a, b) => {
+        const valueA = a[orderBy];
+        const valueB = b[orderBy];
+
+        if (valueA < valueB) {
+          return order === "asc" ? -1 : 1;
+        }
+        if (valueA > valueB) {
+          return order === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
 
     setFilteredFeePendingData(filtered);
   };
@@ -126,8 +306,10 @@ const FeePending = () => {
     applyFiltersAndSorting();
   };
 
-  const handleSort = () => {
-    setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
+  const handleSort = (property: keyof FeePendingData) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>, record: FeePendingData) => {
@@ -172,6 +354,7 @@ const FeePending = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
@@ -234,30 +417,41 @@ const FeePending = () => {
         </Typography>
 
         <Box display="flex" justifyContent="space-between" width="100%" marginBottom={2}>
-  <Button variant="contained" onClick={handleSort} sx={{ backgroundColor: '#2485bd', color: '#fff', width: '130px', height: '50px' }}>
-    Sort ({sortDirection === "asc" ? "Ascending" : "Descending"})
-  </Button>
-  <Box display="flex" alignItems="center" ml="auto">
-    <TextField
-      label="Search"
-      variant="outlined"
-      margin="normal"
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      sx={{ width: "300px" }}
-    />
-    <IconButton onClick={handleSearch} aria-label="search">
-      <SearchIcon />
-    </IconButton>
-  </Box>
-</Box>
+          <Box display="flex" alignItems="center" ml="auto">
+            <TextField
+              label="Search"
+              variant="outlined"
+              margin="normal"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ width: "300px" }}
+            />
+            <IconButton onClick={handleSearch} aria-label="search">
+              <SearchIcon />
+            </IconButton>
+          </Box>
+        </Box>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                {tableHeaders.map((header, index) => (
-                  <TableCell key={index} align="center" sx={{ backgroundColor: '#F7EEF9', fontWeight: '700' }}>
-                    {header}
+                {tableHeaders.map((header) => (
+                  <TableCell
+                    key={header.id}
+                    align="center"
+                    sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+                  >
+                    {header.disableSorting ? (
+                      header.label
+                    ) : (
+                      <TableSortLabel
+                        active={orderBy === header.id}
+                        direction={orderBy === header.id ? order : "asc"}
+                        onClick={() => handleSort(header.id as keyof FeePendingData)}
+                      >
+                        {header.label}
+                      </TableSortLabel>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -271,7 +465,7 @@ const FeePending = () => {
                     <TableCell align="center">{member.member_name}</TableCell>
                     <TableCell align="center">{member.pending_amount}</TableCell>
                     <TableCell align="center">{member.member_phone}</TableCell>
-                    <TableCell align="center">{member.pending_exp_date}</TableCell>
+                    <TableCell align="center">{formatDate(member.pending_exp_date)}</TableCell>
                     <TableCell align="center">
                       <Button
                         variant="contained"
@@ -314,6 +508,7 @@ const FeePending = () => {
           page={page}
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleRowsPerPageChange}
+          ActionsComponent={TablePaginationActions}
         />
       </div>
 

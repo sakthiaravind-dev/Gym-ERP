@@ -17,11 +17,13 @@ import {
   IconButton,
   TablePagination,
   CircularProgress,
+  TableSortLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { createClient } from "@supabase/supabase-js";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ReactNode } from 'react';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -33,13 +35,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const tableHeaders = [
-  "S.NO",
-  "END ON",
-  "MEMBER ID",
-  "MEMBER NAME",
-  "PHONE",
-  "PACK",
-  "ACTIONS",
+  { id: "sno", label: "S.NO" },
+  { id: "member_end_date", label: "END ON" },
+  { id: "member_id", label: "MEMBER ID" },
+  { id: "member_name", label: "MEMBER NAME" },
+  { id: "member_phone_number", label: "PHONE" },
+  { id: "member_type", label: "PACK" },
+  { id: "actions", label: "ACTIONS", disableSorting: true },
 ];
 
 interface Member {
@@ -51,6 +53,173 @@ interface Member {
   member_type: string;
 }
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  try {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
+// Add this custom pagination component before the main Members component
+const TablePaginationActions = (props: {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}) => {
+  const { count, page, rowsPerPage, onPageChange } = props;
+  const [showInput, setShowInput] = useState(false);
+  const [inputPage, setInputPage] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputPage(e.target.value);
+  };
+
+  const handleInputSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const pageNumber = parseInt(inputPage, 10);
+    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= Math.ceil(count / rowsPerPage)) {
+      onPageChange(e as unknown as React.MouseEvent<HTMLButtonElement>, pageNumber - 1);
+    }
+    setShowInput(false);
+    setInputPage('');
+  };
+
+  const renderPageNumbers = () => {
+    const pageNumbers: ReactNode[] = [];
+    const totalPages = Math.ceil(count / rowsPerPage);
+    const currentPage = page + 1;
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <Button
+            key={i}
+            onClick={(e) => onPageChange(e, i - 1)}
+            variant={currentPage === i ? "contained" : "outlined"}
+            size="small"
+            sx={{ mx: 0.5, minWidth: '30px' }}
+          >
+            {i}
+          </Button>
+        );
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(
+        <Button
+          key={1}
+          onClick={(e) => onPageChange(e, 0)}
+          variant={currentPage === 1 ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          1
+        </Button>
+      );
+
+      if (currentPage <= 4) {
+        for (let i = 2; i <= 5; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      } else if (currentPage >= totalPages - 3) {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = totalPages - 4; i < totalPages; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+      } else {
+        pageNumbers.push(
+          <Button key="dots1" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(
+            <Button
+              key={i}
+              onClick={(e) => onPageChange(e, i - 1)}
+              variant={currentPage === i ? "contained" : "outlined"}
+              size="small"
+              sx={{ mx: 0.5, minWidth: '30px' }}
+            >
+              {i}
+            </Button>
+          );
+        }
+        pageNumbers.push(
+          <Button key="dots2" onClick={() => setShowInput(true)}>
+            ...
+          </Button>
+        );
+      }
+
+      pageNumbers.push(
+        <Button
+          key={totalPages}
+          onClick={(e) => onPageChange(e, totalPages - 1)}
+          variant={currentPage === totalPages ? "contained" : "outlined"}
+          size="small"
+          sx={{ mx: 0.5, minWidth: '30px' }}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {renderPageNumbers()}
+      {showInput && (
+        <form onSubmit={handleInputSubmit}>
+          <TextField
+            size="small"
+            value={inputPage}
+            onChange={handleInputChange}
+            onBlur={() => setShowInput(false)}
+            autoFocus
+            sx={{ width: '50px', mx: 0.5 }}
+          />
+        </form>
+      )}
+    </Box>
+  );
+};
+
 const MembershipExpiring = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<Member[]>([]);
@@ -61,6 +230,8 @@ const MembershipExpiring = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Member>("member_end_date");
 
   useEffect(() => {
     fetchMembers();
@@ -87,7 +258,6 @@ const MembershipExpiring = () => {
       if (error) throw error;
 
       setData(fetchedData || []);
-      setDisplayData(fetchedData || []);
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Failed to fetch members");
@@ -96,15 +266,59 @@ const MembershipExpiring = () => {
     }
   };
 
+  useEffect(() => {
+    handleSortingAndFiltering();
+  }, [data, searchQuery, orderBy, order, page, rowsPerPage]);
+
+  const handleSortingAndFiltering = () => {
+    let filteredData = [...data];
+
+    // Apply search filter
+    if (searchQuery) {
+      filteredData = filteredData.filter((item) =>
+        Object.values(item).some(
+          (value) =>
+            typeof value === 'string' &&
+            value.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+
+    // Apply sorting
+    if (orderBy) {
+      filteredData.sort((a, b) => {
+        const valueA = a[orderBy];
+        const valueB = b[orderBy];
+
+        if (valueA < valueB) {
+          return order === "asc" ? -1 : 1;
+        }
+        if (valueA > valueB) {
+          return order === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    // Apply pagination
+    const paginatedData = filteredData.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+
+    setDisplayData(paginatedData);
+  };
+
   const handleDataFiltering = () => {
     try {
+      let filtered = [...data];
       if (!searchQuery.trim()) {
         setDisplayData(data);
         return;
       }
 
       const query = searchQuery.toLowerCase();
-      const filtered = data.filter((item) => {
+      filtered = data.filter((item) => {
         return (
           (item.member_id?.toLowerCase() || "").includes(query) ||
           (item.member_name?.toLowerCase() || "").includes(query) ||
@@ -199,10 +413,11 @@ const MembershipExpiring = () => {
     setPage(0);
   };
 
-  const paginatedData = displayData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  const handleSort = (property: keyof Member) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
 
   if (isLoading) {
     return (
@@ -247,23 +462,33 @@ const MembershipExpiring = () => {
           <Table>
             <TableHead>
               <TableRow>
-                {tableHeaders.map((header, index) => (
+                {tableHeaders.map((header) => (
                   <TableCell
-                    key={index}
+                    key={header.id}
                     align="center"
                     sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
                   >
-                    {header}
+                    {header.disableSorting ? (
+                      header.label
+                    ) : (
+                      <TableSortLabel
+                        active={orderBy === header.id}
+                        direction={orderBy === header.id ? order : "asc"}
+                        onClick={() => handleSort(header.id as keyof Member)}
+                      >
+                        {header.label}
+                      </TableSortLabel>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedData.length > 0 ? (
-                paginatedData.map((row, index) => (
+              {displayData.length > 0 ? (
+                displayData.map((row, index) => (
                   <TableRow key={row.sno}>
                     <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
-                    <TableCell align="center">{row.member_end_date}</TableCell>
+                    <TableCell align="center">{formatDate(row.member_end_date)}</TableCell>
                     <TableCell align="center">{row.member_id}</TableCell>
                     <TableCell align="center">{row.member_name}</TableCell>
                     <TableCell align="center">{row.member_phone_number}</TableCell>
@@ -294,11 +519,12 @@ const MembershipExpiring = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 20]}
           component="div"
-          count={displayData.length}
+          count={data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          ActionsComponent={TablePaginationActions}
         />
       </div>
 
