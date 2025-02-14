@@ -14,6 +14,7 @@ import {
   Button,
   TablePagination,
   Box,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   IconButton,
   Dialog,
   DialogTitle,
@@ -35,16 +36,16 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const cardConfig = [
-    { title: "TOTAL AMOUNT PENDING", value: "Loading...", Icon: Users, path: "/pending" },
-  ];
+  { title: "TOTAL AMOUNT PENDING", value: "Loading...", Icon: Users, path: "/pending" },
+];
 
 interface FeePendingData {
-    sno: number;
-    member_id: number;
-    member_name: string;
-    pending_amount: string;
-    member_phone: string;
-    pending_exp_date: string;
+  sno: number;
+  member_id: number;
+  member_name: string;
+  pending_amount: string;
+  member_phone: string;
+  pending_exp_date: string;
 }
 
 const tableHeaders = [
@@ -279,31 +280,45 @@ const FeePending = () => {
     if (search) {
       filtered = feePendingData.filter(item =>
         item.member_name.toLowerCase().includes(search.toLowerCase()) ||
-        item.member_id.toString().includes(search)
+        item.member_id.toString().includes(search) ||
+        item.member_phone.includes(search)
       );
     }
 
     // Apply sorting
-    if (orderBy) {
-      filtered.sort((a, b) => {
+    filtered.sort((a, b) => {
+      if (orderBy === "sno" || orderBy === "member_id") {
         const valueA = a[orderBy];
         const valueB = b[orderBy];
-
-        if (valueA < valueB) {
-          return order === "asc" ? -1 : 1;
-        }
-        if (valueA > valueB) {
-          return order === "asc" ? 1 : -1;
+  
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+          return order === "asc" ? valueA - valueB : valueB - valueA;
         }
         return 0;
-      });
-    }
+      }
+  
+      if (orderBy === "pending_exp_date") {
+        const dateA = new Date(a[orderBy] || "");
+        const dateB = new Date(b[orderBy] || "");
+        return order === "asc"
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      }
+  
+      if (orderBy === "pending_amount") {
+        const numA = parseFloat(a[orderBy] || "0");
+        const numB = parseFloat(b[orderBy] || "0");
+        return order === "asc" ? numA - numB : numB - numA;
+      }
+  
+      const compareA = String(a[orderBy] || "").toLowerCase();
+      const compareB = String(b[orderBy] || "").toLowerCase();
+      return order === "asc"
+        ? compareA.localeCompare(compareB)
+        : compareB.localeCompare(compareA);
+    });
 
     setFilteredFeePendingData(filtered);
-  };
-
-  const handleSearch = () => {
-    applyFiltersAndSorting();
   };
 
   const handleSort = (property: keyof FeePendingData) => {
@@ -311,6 +326,7 @@ const FeePending = () => {
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
+  
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>, record: FeePendingData) => {
     setAnchorEl(event.currentTarget);
@@ -354,7 +370,6 @@ const FeePending = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePageChange = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
@@ -416,19 +431,32 @@ const FeePending = () => {
           Fee Pending Details
         </Typography>
 
-        <Box display="flex" justifyContent="space-between" width="100%" marginBottom={2}>
-          <Box display="flex" alignItems="center" ml="auto">
-            <TextField
-              label="Search"
-              variant="outlined"
-              margin="normal"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: "300px" }}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box sx={{ position: 'relative', width: "300px" }}>
+              <TextField
+                placeholder="Search Members"
+                variant="outlined"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                  ),
+                }}
+              />
+            </Box>
+            <TablePagination
+              rowsPerPageOptions={[50, 60, 100]}
+              component="div"
+              count={filteredFeePendingData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              sx={{ border: 'none', '.MuiTablePagination-toolbar': { pl: 0 } }}
             />
-            <IconButton onClick={handleSearch} aria-label="search">
-              <SearchIcon />
-            </IconButton>
           </Box>
         </Box>
         <TableContainer component={Paper}>
@@ -439,7 +467,11 @@ const FeePending = () => {
                   <TableCell
                     key={header.id}
                     align="center"
-                    sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+                    sx={{
+                      backgroundColor: "#F7EEF9",
+                      fontWeight: "700",
+                      cursor: header.disableSorting ? 'default' : 'pointer'
+                    }}
                   >
                     {header.disableSorting ? (
                       header.label
@@ -448,6 +480,14 @@ const FeePending = () => {
                         active={orderBy === header.id}
                         direction={orderBy === header.id ? order : "asc"}
                         onClick={() => handleSort(header.id as keyof FeePendingData)}
+                        sx={{
+                          '&.MuiTableSortLabel-active': {
+                            color: '#71045F',
+                          },
+                          '&.MuiTableSortLabel-active .MuiTableSortLabel-icon': {
+                            color: '#71045F',
+                          },
+                        }}
                       >
                         {header.label}
                       </TableSortLabel>

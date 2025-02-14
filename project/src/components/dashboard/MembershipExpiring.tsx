@@ -24,6 +24,7 @@ import { createClient } from "@supabase/supabase-js";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ReactNode } from 'react';
+import SearchIcon from '@mui/icons-material/Search';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -238,8 +239,8 @@ const MembershipExpiring = () => {
   }, []);
 
   useEffect(() => {
-    handleDataFiltering();
-  }, [searchQuery, data]);
+    handleSortingAndFiltering();
+  }, [data, searchQuery, orderBy, order, page, rowsPerPage]);
 
   const fetchMembers = async () => {
     try {
@@ -266,10 +267,6 @@ const MembershipExpiring = () => {
     }
   };
 
-  useEffect(() => {
-    handleSortingAndFiltering();
-  }, [data, searchQuery, orderBy, order, page, rowsPerPage]);
-
   const handleSortingAndFiltering = () => {
     let filteredData = [...data];
 
@@ -287,14 +284,20 @@ const MembershipExpiring = () => {
     // Apply sorting
     if (orderBy) {
       filteredData.sort((a, b) => {
-        const valueA = a[orderBy];
-        const valueB = b[orderBy];
-
-        if (valueA < valueB) {
-          return order === "asc" ? -1 : 1;
+        if (orderBy === "sno") {
+          // Handle numeric sorting for sno
+          return order === "asc" ? a.sno - b.sno : b.sno - a.sno;
         }
-        if (valueA > valueB) {
-          return order === "asc" ? 1 : -1;
+        if (orderBy === "member_end_date") {
+          // Handle date sorting for member_end_date
+          const dateA = new Date(a.member_end_date);
+          const dateB = new Date(b.member_end_date);
+          return order === "asc" ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+        }
+        if (typeof a[orderBy] === 'string' && typeof b[orderBy] === 'string') {
+          const valueA = a[orderBy].toLowerCase();
+          const valueB = b[orderBy].toLowerCase();
+          return order === "asc" ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         }
         return 0;
       });
@@ -307,32 +310,6 @@ const MembershipExpiring = () => {
     );
 
     setDisplayData(paginatedData);
-  };
-
-  const handleDataFiltering = () => {
-    try {
-      let filtered = [...data];
-      if (!searchQuery.trim()) {
-        setDisplayData(data);
-        return;
-      }
-
-      const query = searchQuery.toLowerCase();
-      filtered = data.filter((item) => {
-        return (
-          (item.member_id?.toLowerCase() || "").includes(query) ||
-          (item.member_name?.toLowerCase() || "").includes(query) ||
-          (item.member_phone_number?.toLowerCase() || "").includes(query) ||
-          (item.member_type?.toLowerCase() || "").includes(query)
-        );
-      });
-
-      setDisplayData(filtered);
-      setPage(0);
-    } catch (error) {
-      console.error("Error filtering data:", error);
-      setDisplayData(data);
-    }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -430,14 +407,6 @@ const MembershipExpiring = () => {
   return (
     <div style={{ padding: "20px" }}>
       <ToastContainer />
-      <Box sx={{ marginBottom: 3, display: "flex", gap: 1 }}>
-        <Button variant="contained" color="primary">
-          Show Filter
-        </Button>
-        <Button variant="contained" color="primary">
-          Hide Filter
-        </Button>
-      </Box>
 
       <div className="flex-row justify-center text-center bg-white p-6 border-gray-300 border">
         <Typography
@@ -447,16 +416,35 @@ const MembershipExpiring = () => {
           Membership Going to End
         </Typography>
 
-        <div className="w-1/4">
-          <TextField
-            label="Search"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-        </div>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box sx={{ position: 'relative', width: "300px" }}>
+              <TextField
+                label="Search"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={searchQuery}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: (
+                    <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                  ),
+                }}
+              />
+            </Box>
+            <TablePagination
+              rowsPerPageOptions={[50, 60, 100]}
+              component="div"
+              count={data.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{ border: 'none', '.MuiTablePagination-toolbar': { pl: 0 } }}
+            />
+          </Box>
+        </Box>
 
         <TableContainer component={Paper}>
           <Table>
@@ -466,7 +454,11 @@ const MembershipExpiring = () => {
                   <TableCell
                     key={header.id}
                     align="center"
-                    sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+                    sx={{
+                      backgroundColor: "#F7EEF9",
+                      fontWeight: "700",
+                      cursor: header.disableSorting ? 'default' : 'pointer'
+                    }}
                   >
                     {header.disableSorting ? (
                       header.label
@@ -475,6 +467,14 @@ const MembershipExpiring = () => {
                         active={orderBy === header.id}
                         direction={orderBy === header.id ? order : "asc"}
                         onClick={() => handleSort(header.id as keyof Member)}
+                        sx={{
+                          '&.MuiTableSortLabel-active': {
+                            color: '#71045F',
+                          },
+                          '&.MuiTableSortLabel-active .MuiTableSortLabel-icon': {
+                            color: '#71045F',
+                          },
+                        }}
                       >
                         {header.label}
                       </TableSortLabel>
