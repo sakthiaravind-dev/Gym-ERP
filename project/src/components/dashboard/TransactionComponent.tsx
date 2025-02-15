@@ -33,11 +33,12 @@ import { ToastContainer, toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "react-toastify/dist/ReactToastify.css";
-
+import SearchIcon from '@mui/icons-material/Search';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseAnonKey) throw new Error("Missing Supabase URL or anon key");
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 
 interface Transaction {
   sno: number;
@@ -80,10 +81,9 @@ const TransactionComponent = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
-
-  const [orderBy, setOrderBy] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderBy, setOrderBy] = useState<keyof Transaction>("sno");
 
   // Added for sorting by SNO:
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -268,18 +268,39 @@ const TransactionComponent = () => {
     }
   };
   const handleSort = (property: keyof Transaction) => {
-    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-
   const sortedData = [...paginated].sort((a, b) => {
-    const valueA = a[orderBy as keyof Transaction];
-    const valueB = b[orderBy as keyof Transaction];
+    // Handle numeric sorting for sno
+    if (orderBy === "sno") {
+      return order === "asc" ? a.sno - b.sno : b.sno - a.sno;
+    }
 
-    if (valueA < valueB) return order === "asc" ? -1 : 1;
-    if (valueA > valueB) return order === "asc" ? 1 : -1;
-    return 0;
+    // Handle date sorting
+    if (["bill_date", "start_date", "renewal_date"].includes(orderBy)) {
+      const dateA = new Date(a[orderBy] || "");
+      const dateB = new Date(b[orderBy] || "");
+      return order === "asc"
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
+    }
+
+    // Handle numeric string sorting
+    if (["pending", "discount", "total_amount_received"].includes(orderBy)) {
+      const numA = parseFloat(a[orderBy] || "0");
+      const numB = parseFloat(b[orderBy] || "0");
+      return order === "asc" ? numA - numB : numB - numA;
+    }
+
+    // Handle string sorting
+    const valueA = String(a[orderBy] || "").toLowerCase();
+    const valueB = String(b[orderBy] || "").toLowerCase();
+    return order === "asc"
+      ? valueA.localeCompare(valueB)
+      : valueB.localeCompare(valueA);
   });
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -509,245 +530,267 @@ const TransactionComponent = () => {
       </Grid>
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleExport}
-            sx={{ backgroundColor: "#2485bd" }}
-          >
-            Export Data
-          </Button>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ position: 'relative', width: "300px" }}>
+            <TextField
+              placeholder="Search Transactions"
+              variant="outlined"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                ),
+              }}
+            />
+          </Box>
+          <TablePagination
+            rowsPerPageOptions={[50, 60, 100]}
+            component="div"
+            count={filtered.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{ border: 'none', '.MuiTablePagination-toolbar': { pl: 0 } }}
+          />
         </Box>
-
-        <Typography
-          variant="h5"
-          sx={{ textAlign: "center", fontWeight: "bold", color: "#71045F", flexGrow: 1 }}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleExport}
+          sx={{ backgroundColor: "#2485bd", color: "#fff" }}
         >
-          Transaction Details
-        </Typography>
-
-        <TextField
-          label="Search"
-          variant="outlined"
-          sx={{ width: "25%" }}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+          Export Data
+        </Button>
       </Box>
-
-      <Box sx={{ overflowX: "auto", maxWidth: "90vw" }}>
-        <Box display="flex" justifyContent="flex-end" mb={2}>
-          <TableContainer component={Paper}>
-            <Table>
+      
+        <Box sx={{ overflowX: "auto", maxWidth: "90vw" }}>
+          <Box display="flex" justifyContent="flex-end" mb={2}>
+            <TableContainer component={Paper}>
+              <Table>
               <TableHead sx={{ position: "sticky", top: 0, zIndex: 1, whiteSpace: "nowrap" }}>
-                <TableRow>
-                  {[
-                    { id: "sno", label: "SNO" },
-                    { id: "bill_date", label: "BILL DATE" },
-                    { id: "emp_id", label: "MEMBER ID" },
-                    { id: "member_name", label: "MEMBER NAME" },
-                    { id: "month_paid", label: "MONTH PAID" },
-                    { id: "pending", label: "PENDING" },
-                    { id: "discount", label: "DISCOUNT" },
-                    { id: "state", label: "STATE" },
-                    { id: "total_amount_received", label: "TOTAL" },
-                    { id: "payment_mode", label: "PAYMENT MODE" },
-                    { id: "start_date", label: "START DATE" },
-                    { id: "renewal_date", label: "RENEWAL DATE" }
-                  ].map((column) => (
-                    <TableCell
-                      key={column.id}
-                      sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}
-                    >
-                      <TableSortLabel
-                        active={orderBy === column.id}
-                        direction={orderBy === column.id ? order : "asc"}
-                        onClick={() => handleSort(column.id as keyof Transaction)}
-                      >
-                        {column.label}
-                      </TableSortLabel>
-
-                    </TableCell>
-                  ))}
-                  <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>ACTIONS</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sortedData.length ? (
-                  sortedData.map((t) => (
-                    <TableRow key={t.sno}>
-                      <TableCell>{t.sno}</TableCell>
-                      <TableCell>{formatDate(t.bill_date)}</TableCell>
-                      <TableCell>{t.emp_id}</TableCell>
-                      <TableCell>{t.member_name}</TableCell>
-                      <TableCell>{t.month_paid}</TableCell>
-                      <TableCell>{t.pending}</TableCell>
-                      <TableCell>{t.discount}</TableCell>
-                      <TableCell>{t.state}</TableCell>
-                      <TableCell>{t.total_amount_received}</TableCell>
-                      <TableCell>{t.payment_mode}</TableCell>
-                      <TableCell>{formatDate(t.start_date)}</TableCell>
-                      <TableCell>{formatDate(t.renewal_date)}</TableCell>
-                      <TableCell>
-                        <Button variant="contained" onClick={(e) => handleClick(e, t)} endIcon={<ArrowDropDownIcon />}>
-                          Actions
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
                   <TableRow>
-                    <TableCell colSpan={13} align="center">
-                      No transactions found
+                    {[
+                      { id: "sno", label: "SNO" },
+                      { id: "bill_date", label: "BILL DATE" },
+                      { id: "emp_id", label: "MEMBER ID" },
+                      { id: "member_name", label: "MEMBER NAME" },
+                      { id: "month_paid", label: "MONTH PAID" },
+                      { id: "pending", label: "PENDING" },
+                      { id: "discount", label: "DISCOUNT" },
+                      { id: "state", label: "STATE" },
+                      { id: "total_amount_received", label: "TOTAL" },
+                      { id: "payment_mode", label: "PAYMENT MODE" },
+                      { id: "start_date", label: "START DATE" },
+                      { id: "renewal_date", label: "RENEWAL DATE" }
+                    ].map((column) => (
+                      <TableCell
+                        key={column.id}
+                        sx={{
+                          backgroundColor: "#F7EEF9",
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <TableSortLabel
+                          active={orderBy === column.id}
+                          direction={orderBy === column.id ? order : 'asc'}
+                          onClick={() => handleSort(column.id as keyof Transaction)}
+                          sx={{
+                            '&.MuiTableSortLabel-active': {
+                              color: '#71045F',
+                            },
+                            '&.MuiTableSortLabel-active .MuiTableSortLabel-icon': {
+                              color: '#71045F',
+                            },
+                          }}
+                        >
+                          {column.label}
+                        </TableSortLabel>
+                      </TableCell>
+                    ))}
+                    <TableCell sx={{ backgroundColor: "#F7EEF9", fontWeight: 700 }}>
+                      ACTIONS
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {sortedData.length ? (
+                    sortedData.map((t) => (
+                      <TableRow key={t.sno}>
+                        <TableCell>{t.sno}</TableCell>
+                        <TableCell>{formatDate(t.bill_date)}</TableCell>
+                        <TableCell>{t.emp_id}</TableCell>
+                        <TableCell>{t.member_name}</TableCell>
+                        <TableCell>{t.month_paid}</TableCell>
+                        <TableCell>{t.pending}</TableCell>
+                        <TableCell>{t.discount}</TableCell>
+                        <TableCell>{t.state}</TableCell>
+                        <TableCell>{t.total_amount_received}</TableCell>
+                        <TableCell>{t.payment_mode}</TableCell>
+                        <TableCell>{formatDate(t.start_date)}</TableCell>
+                        <TableCell>{formatDate(t.renewal_date)}</TableCell>
+                        <TableCell>
+                          <Button variant="contained" onClick={(e) => handleClick(e, t)} endIcon={<ArrowDropDownIcon />}>
+                            Actions
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={13} align="center">
+                        No transactions found
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
         </Box>
-      </Box>
 
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        <MenuItem onClick={handleBill}>Pay Bill</MenuItem>
-      </Menu>
-      <TablePagination
-        rowsPerPageOptions={[50, 60, 100]}
-        component="div"
-        count={filtered.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        ActionsComponent={TablePaginationActions}
-      />
-      <Modal open={openEdit} onClose={() => setOpenEdit(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: 500,
-            bgcolor: "white",
-            boxShadow: 24,
-            p: 3,
-            borderRadius: 2,
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Edit Transaction</Typography>
-            <IconButton onClick={() => setOpenEdit(false)}>
-              <CloseIcon />
-            </IconButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={handleEdit}>Edit</MenuItem>
+          <MenuItem onClick={handleDelete}>Delete</MenuItem>
+          <MenuItem onClick={handleBill}>Pay Bill</MenuItem>
+        </Menu>
+        <TablePagination
+          rowsPerPageOptions={[50, 60, 100]}
+          component="div"
+          count={filtered.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          ActionsComponent={TablePaginationActions}
+        />
+        <Modal open={openEdit} onClose={() => setOpenEdit(false)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%",
+              maxWidth: 500,
+              bgcolor: "white",
+              boxShadow: 24,
+              p: 3,
+              borderRadius: 2,
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">Edit Transaction</Typography>
+              <IconButton onClick={() => setOpenEdit(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <TextField
+              sx={{ my: 1 }}
+              name="bill_date"
+              label="Bill Date"
+              type="date"
+              fullWidth
+              value={selectedTransaction?.bill_date || ""}
+              onChange={handleEditChange}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="start_date"
+              label="Start Date"
+              type="date"
+              fullWidth
+              value={selectedTransaction?.start_date || ""}
+              onChange={handleEditChange}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="member_name"
+              label="Member Name"
+              fullWidth
+              value={selectedTransaction?.member_name || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="month_paid"
+              label="Month Paid"
+              fullWidth
+              value={selectedTransaction?.month_paid || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="pending"
+              label="Pending"
+              fullWidth
+              value={selectedTransaction?.pending || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="discount"
+              label="Discount"
+              fullWidth
+              value={selectedTransaction?.discount || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="state"
+              label="State"
+              fullWidth
+              value={selectedTransaction?.state || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="total_amount_received"
+              label="Total Amount"
+              fullWidth
+              value={selectedTransaction?.total_amount_received || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="payment_mode"
+              label="Payment Mode"
+              fullWidth
+              value={selectedTransaction?.payment_mode || ""}
+              onChange={handleEditChange}
+            />
+            <TextField
+              sx={{ my: 1 }}
+              name="renewal_date"
+              label="Renewal Date"
+              type="date"
+              fullWidth
+              value={selectedTransaction?.renewal_date || ""}
+              onChange={handleEditChange}
+              InputLabelProps={{ shrink: true }}
+            />
+            <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+              <Button variant="outlined" onClick={() => setOpenEdit(false)} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleEditSubmit}
+                disabled={isSubmitting}
+                startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+              >
+                Save
+              </Button>
+            </Box>
           </Box>
-          <TextField
-            sx={{ my: 1 }}
-            name="bill_date"
-            label="Bill Date"
-            type="date"
-            fullWidth
-            value={selectedTransaction?.bill_date || ""}
-            onChange={handleEditChange}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="start_date"
-            label="Start Date"
-            type="date"
-            fullWidth
-            value={selectedTransaction?.start_date || ""}
-            onChange={handleEditChange}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="member_name"
-            label="Member Name"
-            fullWidth
-            value={selectedTransaction?.member_name || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="month_paid"
-            label="Month Paid"
-            fullWidth
-            value={selectedTransaction?.month_paid || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="pending"
-            label="Pending"
-            fullWidth
-            value={selectedTransaction?.pending || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="discount"
-            label="Discount"
-            fullWidth
-            value={selectedTransaction?.discount || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="state"
-            label="State"
-            fullWidth
-            value={selectedTransaction?.state || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="total_amount_received"
-            label="Total Amount"
-            fullWidth
-            value={selectedTransaction?.total_amount_received || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="payment_mode"
-            label="Payment Mode"
-            fullWidth
-            value={selectedTransaction?.payment_mode || ""}
-            onChange={handleEditChange}
-          />
-          <TextField
-            sx={{ my: 1 }}
-            name="renewal_date"
-            label="Renewal Date"
-            type="date"
-            fullWidth
-            value={selectedTransaction?.renewal_date || ""}
-            onChange={handleEditChange}
-            InputLabelProps={{ shrink: true }}
-          />
-          <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
-            <Button variant="outlined" onClick={() => setOpenEdit(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleEditSubmit}
-              disabled={isSubmitting}
-              startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-            >
-              Save
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
+        </Modal>
     </Box>
   );
 };

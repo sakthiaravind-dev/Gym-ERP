@@ -30,9 +30,10 @@ import StatGroup from "../components/dashboard/StatGroup";
 import { useLocation } from "react-router-dom";
 import { LucideIcon, Users } from "lucide-react";
 import { ReactNode } from 'react';
-
+import SearchIcon from '@mui/icons-material/Search';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { useParams } from 'react-router-dom';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -212,6 +213,8 @@ const tableHeaders = [
   { id: "member_end_date", label: "End Date" },
   { id: "actions", label: "Actions", disableSorting: true },
 ];
+
+// Update Member interface
 interface Member {
   member_id: string;
   member_name: string;
@@ -220,8 +223,11 @@ interface Member {
   member_status: string;
   referred_by: string;
   member_end_date: string;
-  sno: number; // Added for sorting
+  sno: number;
 }
+
+// Update sorting states in the Members component
+
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -246,12 +252,11 @@ const Members = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [cardConfig, setCardConfig] = useState<CardConfig[]>([]);
+
   const [order, setOrder] = useState<"asc" | "desc">("asc");
-
-  const [orderBy, setOrderBy] = useState("");
-
+  const [orderBy, setOrderBy] = useState<keyof Member>("member_id");
   // Added sort direction for sno
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
 
   const location = useLocation();
 
@@ -261,54 +266,92 @@ const Members = () => {
 
   useEffect(() => {
     applyFiltersAndSorting();
-  }, [page, rowsPerPage, memberData, searchQuery, sortDirection]);
+  }, [page, rowsPerPage, memberData, searchQuery, order, orderBy]);
+  const { query } = useParams<{ query?: string }>();
+  // ...existing state and logic...
+
+  useEffect(() => {
+    fetchAllMembers();
+  }, [location.search, query]);
 
   const fetchAllMembers = async () => {
-    const queryParams = new URLSearchParams(location.search);
-    const type = queryParams.get("type");
-
-    let query = supabase
+    let dbQuery = supabase
       .from("members")
-      .select("member_id, member_name, member_phone_number, member_type, member_status, referred_by, member_end_date");
+      .select("*");
 
-    if (type) {
-      if (type === "active" || type === "inactive") {
-        query = query.eq("member_status", type === "active" ? "active" : "Not-active");
-      } else {
-        query = query.eq("member_type", type);
-      }
+    // Filter by member_id or phone_number if we have a query param
+    if (query) {
+      // eq => exact match; switch to ilike if partial matches are desired
+      dbQuery = dbQuery.or(`member_id.eq.${query},member_phone_number.eq.${query}`);
     }
 
-    const { data, error } = await query;
-
+    const { data, error } = await dbQuery;
     if (error) {
       console.error("Error fetching members:", error);
-    } else if (data) {
-      // Assign a sno to each record for sorting
-      const withSno = data.map((member, index) => ({
-        ...member,
-        sno: index + 1,
-      }));
-      setMemberData(withSno);
-      setTotalCount(withSno.length);
+      toast.error("Failed to fetch members");
+      return;
+    }
+    if (data) {
+      // ...existing logic to handle, e.g., sorting or adding sno
+      setMemberData(data);
+      setTotalCount(data.length);
     }
   };
 
   const applyFiltersAndSorting = () => {
-    // First filter by search query
-    const queried = memberData.filter((member) =>
-      Object.values(member).some((value) => String(value).toLowerCase().includes(searchQuery.toLowerCase()))
+    let filtered = memberData.filter((member) =>
+      Object.values(member).some((value) =>
+        String(value).toLowerCase().includes(searchQuery.toLowerCase())
+      )
     );
 
-    // Sort by sno
-    if (sortDirection === "asc") {
-      queried.sort((a, b) => a.sno - b.sno);
-    } else {
-      queried.sort((a, b) => b.sno - a.sno);
-    }
+    // Apply sorting
+    filtered.sort((a, b) => {
+      // Handle member_id sorting
+      if (orderBy === "member_id") {
+        const numA = parseInt(a.member_id.replace(/\D/g, ''));
+        const numB = parseInt(b.member_id.replace(/\D/g, ''));
+        return order === "asc" ? numA - numB : numB - numA;
+      }
 
-    setTotalCount(queried.length);
-    setFilteredData(queried.slice(page * rowsPerPage, (page + 1) * rowsPerPage));
+      // Handle phone number sorting
+      if (orderBy === "member_phone_number") {
+        const numA = parseInt(a.member_phone_number.replace(/\D/g, ''));
+        const numB = parseInt(b.member_phone_number.replace(/\D/g, ''));
+        return order === "asc" ? numA - numB : numB - numA;
+      }
+
+      // Handle date sorting
+      if (orderBy === "member_end_date") {
+        const dateA = new Date(a.member_end_date || "");
+        const dateB = new Date(b.member_end_date || "");
+        return order === "asc"
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      }
+
+      // Handle numeric sno sorting
+      if (orderBy === "sno") {
+        return order === "asc" ? a.sno - b.sno : b.sno - a.sno;
+      }
+
+      // Handle other fields (string comparison)
+      const compareA = String(a[orderBy] || "").toLowerCase();
+      const compareB = String(b[orderBy] || "").toLowerCase();
+
+      return order === "asc"
+        ? compareA.localeCompare(compareB)
+        : compareB.localeCompare(compareA);
+    });
+
+    // Update sequential numbers after sorting
+    filtered = filtered.map((item, index) => ({
+      ...item,
+      sno: index + 1 // Keep sequential numbering regardless of page
+    }));
+
+    setTotalCount(filtered.length);
+    setFilteredData(filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage));
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -404,10 +447,6 @@ const Members = () => {
     setPage(0);
   };
 
-  // Toggle sort direction by sno
-  const handleSortBySno = () => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-  };
   const fetchData = async (table: string, column: string, filter?: string) => {
     let query = supabase.from(table).select(column).limit(1000);
     if (filter) {
@@ -451,7 +490,8 @@ const Members = () => {
 
 
   const handleSort = (property: keyof Member) => {
-    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -486,23 +526,40 @@ const Members = () => {
           marginBottom: 2,
         }}
       >
-        <TextField
-          placeholder="Search Members"
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearch}
-          sx={{ marginRight: 2, width: "300px" }}
-        />
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleExport}
-            sx={{ backgroundColor: "#2485bd", color: "#fff" }}
-          >
-            Export Data
-          </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flex: 1 }}>
+          <Box sx={{ position: 'relative', width: "300px" }}>
+            <TextField
+              placeholder="Search Members"
+              variant="outlined"
+              value={searchQuery}
+              onChange={handleSearch}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                ),
+              }}
+            />
+          </Box>
+          <TablePagination
+            rowsPerPageOptions={[50, 60, 100]}
+            component="div"
+            count={totalCount}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            ActionsComponent={() => null} //
+          />
         </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleExport}
+          sx={{ backgroundColor: "#2485bd", color: "#fff" }}
+        >
+          Export Data
+        </Button>
       </Box>
 
       <TableContainer component={Paper}>
@@ -513,7 +570,11 @@ const Members = () => {
                 <TableCell
                   key={header.id}
                   align="center"
-                  sx={{ backgroundColor: "#F7EEF9", fontWeight: "700" }}
+                  sx={{
+                    backgroundColor: "#F7EEF9",
+                    fontWeight: "700",
+                    cursor: header.disableSorting ? 'default' : 'pointer'
+                  }}
                 >
                   {header.disableSorting ? (
                     header.label
@@ -522,6 +583,14 @@ const Members = () => {
                       active={orderBy === header.id}
                       direction={orderBy === header.id ? order : "asc"}
                       onClick={() => handleSort(header.id as keyof Member)}
+                      sx={{
+                        '&.MuiTableSortLabel-active': {
+                          color: '#71045F',
+                        },
+                        '&.MuiTableSortLabel-active .MuiTableSortLabel-icon': {
+                          color: '#71045F',
+                        },
+                      }}
                     >
                       {header.label}
                     </TableSortLabel>
@@ -531,9 +600,9 @@ const Members = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedData.map((member) => (
+            {filteredData.map((member, index) => (
               <TableRow key={member.member_id}>
-                <TableCell align="center">{member.sno}</TableCell>
+                <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell align="center">{member.member_id}</TableCell>
                 <TableCell align="center">{member.member_name}</TableCell>
                 <TableCell align="center">{member.member_phone_number}</TableCell>
