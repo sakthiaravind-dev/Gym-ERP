@@ -274,29 +274,70 @@ const Members = () => {
     fetchAllMembers();
   }, [location.search, query]);
 
-  const fetchAllMembers = async () => {
+  // Update fetchAllMembers function in Members.tsx
+const fetchAllMembers = async () => {
+  try {
+    const queryParams = new URLSearchParams(location.search);
+    const type = queryParams.get("type");
+    
     let dbQuery = supabase
       .from("members")
       .select("*");
 
-    // Filter by member_id or phone_number if we have a query param
+    // Handle URL search param for type
+    if (type) {
+      switch (type) {
+        case "yearly":
+        case "half-yearly":
+        case "quarterly":
+        case "monthly":
+          dbQuery = dbQuery.eq("member_type", type);
+          break;
+        case "active":
+          dbQuery = dbQuery.eq("member_status", "active");
+          break;
+        case "inactive":
+          dbQuery = dbQuery.eq("member_status", "Not-active");
+          break;
+      }
+    }
+
+    // Handle search query from URL params
     if (query) {
-      // eq => exact match; switch to ilike if partial matches are desired
       dbQuery = dbQuery.or(`member_id.eq.${query},member_phone_number.eq.${query}`);
     }
 
     const { data, error } = await dbQuery;
+
     if (error) {
-      console.error("Error fetching members:", error);
-      toast.error("Failed to fetch members");
-      return;
+      throw error;
     }
+
     if (data) {
-      // ...existing logic to handle, e.g., sorting or adding sno
-      setMemberData(data);
-      setTotalCount(data.length);
+      const withSno = data
+        .sort((a, b) => {
+          const numA = parseInt(a.member_id.replace(/\D/g, ''));
+          const numB = parseInt(b.member_id.replace(/\D/g, ''));
+          return numA - numB;
+        })
+        .map((member, index) => ({
+          ...member,
+          sno: index + 1
+        }));
+
+      setMemberData(withSno);
+      setTotalCount(withSno.length);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching members:", error);
+    toast.error("Failed to fetch members");
+  }
+};
+
+// Update useEffect to depend on location.search
+useEffect(() => {
+  fetchAllMembers();
+}, [location.search, query]);
 
   const applyFiltersAndSorting = () => {
     let filtered = memberData.filter((member) =>
