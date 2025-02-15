@@ -33,6 +33,7 @@ import { ReactNode } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { useParams } from 'react-router-dom';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -266,44 +267,34 @@ const Members = () => {
   useEffect(() => {
     applyFiltersAndSorting();
   }, [page, rowsPerPage, memberData, searchQuery, order, orderBy]);
+  const { query } = useParams<{ query?: string }>();
+  // ...existing state and logic...
+
+  useEffect(() => {
+    fetchAllMembers();
+  }, [location.search, query]);
 
   const fetchAllMembers = async () => {
-    const queryParams = new URLSearchParams(location.search);
-    const type = queryParams.get("type");
-
-    let query = supabase
+    let dbQuery = supabase
       .from("members")
-      .select("*")
-      .order('member_id', { ascending: true });
+      .select("*");
 
-    if (type) {
-      if (type === "active" || type === "inactive") {
-        query = query.eq("member_status", type === "active" ? "active" : "Not-active");
-      } else {
-        query = query.eq("member_type", type);
-      }
+    // Filter by member_id or phone_number if we have a query param
+    if (query) {
+      // eq => exact match; switch to ilike if partial matches are desired
+      dbQuery = dbQuery.or(`member_id.eq.${query},member_phone_number.eq.${query}`);
     }
 
-    const { data, error } = await query;
-
+    const { data, error } = await dbQuery;
     if (error) {
       console.error("Error fetching members:", error);
       toast.error("Failed to fetch members");
-    } else if (data) {
-      // Add sequential numbers and sort by member_id
-      const withSno = data
-        .sort((a, b) => {
-          const numA = parseInt(a.member_id.replace(/\D/g, ''));
-          const numB = parseInt(b.member_id.replace(/\D/g, ''));
-          return numA - numB;
-        })
-        .map((member, index) => ({
-          ...member,
-          sno: index + 1
-        }));
-
-      setMemberData(withSno);
-      setTotalCount(withSno.length);
+      return;
+    }
+    if (data) {
+      // ...existing logic to handle, e.g., sorting or adding sno
+      setMemberData(data);
+      setTotalCount(data.length);
     }
   };
 
@@ -544,9 +535,9 @@ const Members = () => {
               onChange={handleSearch}
               fullWidth
               InputProps={{
-          startAdornment: (
-            <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
-          ),
+                startAdornment: (
+                  <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                ),
               }}
             />
           </Box>
