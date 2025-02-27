@@ -78,6 +78,7 @@ const theme = createTheme({
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -93,6 +94,7 @@ const App: React.FC = () => {
       } else {
         setIsLoggedIn(false);
       }
+      setLoading(false);
     };
 
     const resetChecker = async () => {
@@ -105,6 +107,10 @@ const App: React.FC = () => {
     resetChecker();
     checkAuthStatus();
   }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <ThemeProvider theme={theme}>

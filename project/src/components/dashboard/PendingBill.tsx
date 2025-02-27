@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -10,7 +12,14 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useParams, useNavigate } from "react-router-dom";
@@ -48,6 +57,8 @@ const PendingBill: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openSelect, setOpenSelect] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     sno: 0,
@@ -162,37 +173,85 @@ const PendingBill: React.FC = () => {
         .from("transactions")
         .select("*")
         .eq("emp_id", empId)
-        .eq("sno", sNo)
-        .maybeSingle();
+        .eq("sno", sNo);
 
       if (error) throw error;
-      if (!data) {
+      if (!data || data.length === 0) {
         toast.error("No transaction found");
         setLoading(false);
         return;
       }
 
+      if (data.length > 1) {
+        setTransactions(data);
+        setOpenSelect(true);
+        setLoading(false);
+        return;
+      }
+
+      const transaction = data[0];
+
       const { data: memberData, error: memberError } = await supabase
         .from("members")
         .select("member_type")
-        .eq("member_name", data.member_name)
+        .eq("member_name", transaction.member_name)
         .maybeSingle();
 
       if (memberError) throw memberError;
 
       setFormData({
-        sno: data.sno,
-        bill_date: data.bill_date || "",
-        start_date: data.start_date || "",
-        member_name: data.member_name || "",
-        month_paid: data.month_paid || "",
-        discount: data.discount || "",
-        pending: data.pending || "",
-        payment_mode: data.payment_mode || "",
-        state: data.state || "",
-        emp_id: data.emp_id || "",
-        renewal_date: data.renewal_date || "",
-        totalAmount: data.total_amount_received || "0",
+        sno: transaction.sno,
+        bill_date: transaction.bill_date || "",
+        start_date: transaction.start_date || "",
+        member_name: transaction.member_name || "",
+        month_paid: transaction.month_paid || "",
+        discount: transaction.discount || "",
+        pending: transaction.pending || "",
+        payment_mode: transaction.payment_mode || "",
+        state: transaction.state || "",
+        emp_id: transaction.emp_id || "",
+        renewal_date: transaction.renewal_date || "",
+        totalAmount: transaction.total_amount_received || "0",
+        tax: "0",
+        memberPack: memberData?.member_type || "",
+        billingAmount: "0",
+        packAmount: "0",
+        totalMonthPaid: "0",
+      });
+    } catch (error) {
+      toast.error("Error fetching transaction details");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectTransaction = async (transaction: any) => {
+    setOpenSelect(false);
+    setLoading(true);
+
+    try {
+      const { data: memberData, error: memberError } = await supabase
+        .from("members")
+        .select("member_type")
+        .eq("member_name", transaction.member_name)
+        .maybeSingle();
+
+      if (memberError) throw memberError;
+
+      setFormData({
+        sno: transaction.sno,
+        bill_date: transaction.bill_date || "",
+        start_date: transaction.start_date || "",
+        member_name: transaction.member_name || "",
+        month_paid: transaction.month_paid || "",
+        discount: transaction.discount || "",
+        pending: transaction.pending || "",
+        payment_mode: transaction.payment_mode || "",
+        state: transaction.state || "",
+        emp_id: transaction.emp_id || "",
+        renewal_date: transaction.renewal_date || "",
+        totalAmount: transaction.total_amount_received || "0",
         tax: "0",
         memberPack: memberData?.member_type || "",
         billingAmount: "0",
